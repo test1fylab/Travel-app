@@ -38,7 +38,8 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--ac)}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
-import {firebaseConfig} from './config.js';
+import * as CFG from './config.js';
+const firebaseConfig=CFG.firebaseConfig,mapsKey=CFG.mapsKey||'';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,addDoc,collection,onSnapshot,getDocs} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
@@ -57,7 +58,7 @@ const PACK=['護照','簽證/入境文件','機票/登機證','錢包與外幣',
 const COLORS=['#e11d48','#2563eb','#16a34a','#d97706','#7c3aed','#0891b2','#db2777'];
 const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
 
-let user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null;
+let G=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null;
 
 const myTripsCol=()=>collection(db,'users',user.uid,'trips');
 const itemsCol=()=>collection(db,'trips',route.tid,'items');
@@ -75,7 +76,7 @@ onAuthStateChanged(auth,u=>{user=u;enter()});
 window.addEventListener('hashchange',enter);
 async function login(){try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){toast('登入失敗或已取消')}}
 
-function cleanup(){unsubs.forEach(f=>f());unsubs=[];if(map){map.remove();map=null}layer=null;markers={};T=null;items=[];isEd=false;editId=null;selPlace=null;selId=null;dayF=0;needFit=true}
+function cleanup(){unsubs.forEach(f=>f());unsubs=[];if(map){if(!G&&map.remove)map.remove();map=null}gl.forEach(o=>{try{if(o.setMap)o.setMap(null)}catch(e){}});gl=[];iw=null;layer=null;markers={};T=null;items=[];isEd=false;editId=null;selPlace=null;selId=null;dayF=0;needFit=true}
 function enter(){cleanup();route=parse();if(route.tid)openTrip();else home()}
 
 /* ---------- 首頁 ---------- */
@@ -91,7 +92,7 @@ function home(){
 /* ---------- 旅程頁 ---------- */
 function shell(){
   app.innerHTML=`<div id=hd></div><div id=mapbox><div id=map></div></div><div id=dayf></div><nav id=nav></nav><div id=form></div><div id=list></div>`;
-  initMap();
+  initMap().catch(()=>{});
 }
 function openTrip(){
   shell();$('#hd').innerHTML=topbar()+'<p class=mu>載入中…</p>';
@@ -140,7 +141,7 @@ async function renderShare(){
   }else html+='<div class=mu>只有建立者可以看到編輯連結與管理編輯者。</div>';
   box.innerHTML=html;
 }
-function renderNav(){$('#nav').innerHTML=TABS.map((t,i)=>`<button class="${i==tab?'on':''}" data-tab=${i}>${t}</button>`).join('');$('#mapbox').style.display=tab==0?'block':'none';$('#dayf').style.display=tab==0?'block':'none';if(tab==0&&map)setTimeout(()=>map.invalidateSize(),50)}
+function renderNav(){$('#nav').innerHTML=TABS.map((t,i)=>`<button class="${i==tab?'on':''}" data-tab=${i}>${t}</button>`).join('');$('#mapbox').style.display=tab==0?'block':'none';$('#dayf').style.display=tab==0?'block':'none';if(tab==0&&map)setTimeout(()=>{if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()},50)}
 
 /* ---------- 表單 ---------- */
 function renderForm(){
@@ -195,31 +196,71 @@ function listExp(){const s=settle(),rates=T.rates||{};
   <h3>匯率(1 外幣 = ? ${esc(T.base)}${isEd?',可手動修改':''})</h3><div class=card><div class=row>${Object.keys(rates).map(c=>`<div><span class=mu>${esc(c)}</span><input type=number step=any value="${rates[c]}" data-r="${esc(c)}" ${isEd?'':'readonly'}></div>`).join('')}</div>${isEd?`<div class=row><input id=nc placeholder="新增幣別 例:GBP"><input id=nr type=number step=any placeholder="匯率"><button class=p data-a=addRate style="flex:0 0 60px;margin-bottom:6px">加</button></div>`:''}</div>`}
 function listChk(k){const a=itemsOf(k);return `<div class=card><div class=mu>已完成 ${a.filter(x=>x.done).length} / ${a.length}</div>${a.map(x=>`<div class=it><input type=checkbox style="width:auto;margin-top:5px" data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><div>${esc(x.title)}${x.date?`<div class=mu>${esc(x.date)}</div>`:''}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div>`).join('')||'<span class=mu>還沒有項目</span>'}</div>`}
 
-/* ---------- 地圖 ---------- */
-function initMap(){
-  map=L.map('map').setView([35.68,139.76],5);
+/* ---------- 地圖(有 Google 金鑰用 Google 地圖,否則用 OpenStreetMap) ---------- */
+let GL=null;
+function loadG(){return GL||(GL=new Promise((ok,no)=>{
+  window.__gm=()=>ok();
+  window.gm_authFailure=()=>toast('Google 地圖金鑰無效、網址不在允許清單,或尚未啟用必要的 API');
+  const sc=document.createElement('script');
+  sc.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(mapsKey)+'&v=weekly&language=zh-TW&loading=async&callback=__gm';
+  sc.onerror=()=>{GL=null;no(new Error('gmaps'))};document.head.appendChild(sc)}))}
+async function initMap(){
+  const el=$('#map');if(!el)return;
+  if(G){
+    try{await loadG();const {Map}=await google.maps.importLibrary('maps');await google.maps.importLibrary('marker');await google.maps.importLibrary('places');
+      if(!el.isConnected||$('#map')!==el)return;
+      map=new Map(el,{center:{lat:35.68,lng:139.76},zoom:5,mapId:'DEMO_MAP_ID',mapTypeControl:false,streetViewControl:false,fullscreenControl:false});
+      iw=new google.maps.InfoWindow();drawMap();return}
+    catch(e){G=false;toast('Google 地圖載入失敗,先改用 OpenStreetMap')}
+  }
+  if(!$('#map')||$('#map')!==el)return;
+  map=L.map(el).setView([35.68,139.76],5);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
-  layer=L.layerGroup().addTo(map);
+  layer=L.layerGroup().addTo(map);drawMap();
+}
+function clearMap(){
+  if(G){gl.forEach(o=>{if(o.setMap)o.setMap(null);else o.map=null});gl=[];if(iw)iw.close()}
+  else if(layer)layer.clearLayers();
+  markers={};
 }
 function drawMap(){
-  if(!map||!layer)return;layer.clearLayers();markers={};
+  if(!map)return;clearMap();
   const a=sortItin(itemsOf('itin')).filter(x=>x.lat!=null&&(!dayF||x.day==dayF)),days=[...new Set(a.map(x=>x.day))],pts=[];
   days.forEach(d=>{const g=a.filter(x=>x.day==d),c=COLORS[(d-1)%7],line=g.map(x=>[x.lat,x.lon]);
-    if(line.length>1)L.polyline(line,{color:c,weight:3,opacity:.7,dashArray:'6 6'}).addTo(layer);
-    g.forEach((x,i)=>{const m=L.marker([x.lat,x.lon],{icon:L.divIcon({className:'',html:`<div class=pin style="background:${c}">${i+1}</div>`,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(layer);
-      m.bindTooltip(`${x.time?x.time+' ':''}${x.title}`);m.on('click',()=>focusItem(x.id,false));markers[x.id]=m;pts.push([x.lat,x.lon])})});
-  if(needFit&&pts.length){pts.length==1?map.setView(pts[0],15):map.fitBounds(pts,{padding:[30,30],maxZoom:16});needFit=false}
+    if(G){
+      if(line.length>1)gl.push(new google.maps.Polyline({map,path:line.map(p=>({lat:p[0],lng:p[1]})),strokeColor:c,strokeOpacity:.7,strokeWeight:3}));
+      g.forEach((x,i)=>{const pin=document.createElement('div');pin.className='pin';pin.style.background=c;pin.textContent=i+1;
+        const m=new google.maps.marker.AdvancedMarkerElement({map,position:{lat:x.lat,lng:x.lon},content:pin,title:x.title});
+        m.addListener('click',()=>focusItem(x.id,false));gl.push(m);markers[x.id]=m;pts.push([x.lat,x.lon])});
+    }else{
+      if(line.length>1)L.polyline(line,{color:c,weight:3,opacity:.7,dashArray:'6 6'}).addTo(layer);
+      g.forEach((x,i)=>{const m=L.marker([x.lat,x.lon],{icon:L.divIcon({className:'',html:`<div class=pin style="background:${c}">${i+1}</div>`,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(layer);
+        m.bindTooltip(`${x.time?x.time+' ':''}${x.title}`);m.on('click',()=>focusItem(x.id,false));markers[x.id]=m;pts.push([x.lat,x.lon])});
+    }});
+  if(needFit&&pts.length){
+    if(G){if(pts.length==1){map.setCenter({lat:pts[0][0],lng:pts[0][1]});map.setZoom(15)}else{const bd=new google.maps.LatLngBounds();pts.forEach(p=>bd.extend({lat:p[0],lng:p[1]}));map.fitBounds(bd,40)}}
+    else pts.length==1?map.setView(pts[0],15):map.fitBounds(pts,{padding:[30,30],maxZoom:16});
+    needFit=false}
 }
 function focusItem(id,fly=true){
   selId=id;const x=items.find(i=>i.id==id);
   document.querySelectorAll('.it.sel').forEach(e=>e.classList.remove('sel'));const el=$('#i_'+id);if(el){el.classList.add('sel');if(!fly)el.scrollIntoView({block:'center',behavior:'smooth'})}
-  if(x&&x.lat!=null&&map){map.setView([x.lat,x.lon],Math.max(map.getZoom(),15));markers[id]&&markers[id].openTooltip();if(fly)$('#map').scrollIntoView({block:'nearest',behavior:'smooth'})}
+  if(x&&x.lat!=null&&map){
+    if(G){map.setCenter({lat:x.lat,lng:x.lon});if((map.getZoom()||0)<15)map.setZoom(15);const m=markers[id];if(m&&iw){iw.setContent(esc((x.time?x.time+' ':'')+x.title));iw.open({map,anchor:m})}}
+    else{map.setView([x.lat,x.lon],Math.max(map.getZoom(),15));markers[id]&&markers[id].openTooltip()}
+    if(fly)$('#map').scrollIntoView({block:'nearest',behavior:'smooth'})}
 }
 
-/* ---------- 地點搜尋(OpenStreetMap Nominatim) ---------- */
+/* ---------- 地點搜尋(Google Places 或 OpenStreetMap Nominatim) ---------- */
 async function geocode(q,limit=5){
+  if(G){
+    await loadG();const {Place}=await google.maps.importLibrary('places');
+    const {places}=await Place.searchByText({textQuery:q,fields:['displayName','formattedAddress','location'],maxResultCount:Math.max(1,Math.min(limit,20)),language:'zh-TW'});
+    return (places||[]).map(p=>({name:p.displayName||'',full:[p.displayName,p.formattedAddress].filter(Boolean).join(' · '),lat:p.location.lat(),lon:p.location.lng()}));
+  }
   const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit='+limit+'&accept-language=zh-TW&q='+encodeURIComponent(q));
-  if(!r.ok)throw new Error('geo');return r.json();
+  if(!r.ok)throw new Error('geo');
+  return (await r.json()).map(p=>({name:segsOf(p.display_name)[0]||p.display_name,full:p.display_name,lat:+p.lat,lon:+p.lon}));
 }
 
 /* ---------- 寫入 ---------- */
@@ -258,17 +299,17 @@ const A={
   cancelEdit(){editId=null;selPlace=null;renderForm()},
   async searchPlace(){const q=$('#placeq').value.trim();if(!q)return;const box=$('#resbox');box.innerHTML='<div class=mu>搜尋中…</div>';
     try{const r=await geocode(q+(T.region?' '+T.region:''));if(!r.length){box.innerHTML='<div class=mu>找不到,換個關鍵字試試</div>';return}
-      window.__res=r;box.innerHTML='<div class=res>'+r.map((p,i)=>`<div data-a=pickPlace data-i=${i}>${esc(p.display_name)}</div>`).join('')+'</div>'}
-    catch(e){box.innerHTML='<div class=mu>搜尋失敗,請稍後再試</div>'}},
-  pickPlace(e){const p=(window.__res||[])[+e.dataset.i];if(!p)return;selPlace={name:segsOf(p.display_name)[0]||p.display_name,lat:+p.lat,lon:+p.lon};$('#resbox').innerHTML='';if(!$('#ti').value.trim())$('#ti').value=selPlace.name;showSel()},
+      window.__res=r;box.innerHTML='<div class=res>'+r.map((p,i)=>`<div data-a=pickPlace data-i=${i}>${esc(p.full)}</div>`).join('')+'</div>'}
+    catch(e){box.innerHTML='<div class=mu>搜尋失敗'+(G?'(請確認 Google Cloud 已啟用 Places API (New),且金鑰允許它)':'')+',請稍後再試</div>'}},
+  pickPlace(e){const p=(window.__res||[])[+e.dataset.i];if(!p)return;selPlace={name:p.name,lat:p.lat,lon:p.lon};$('#resbox').innerHTML='';if(!$('#ti').value.trim())$('#ti').value=selPlace.name;showSel()},
   saveItin(){const ti=$('#ti').value.trim();if(!ti)return toast('請輸入行程名稱');
     const data={day:+$('#d').value||1,time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120)};
     if(selPlace){data.lat=selPlace.lat;data.lon=selPlace.lon;data.placeName=selPlace.name}
     guard(async()=>{if(editId){await updateDoc(doc(db,'trips',T.id,'items',editId),data);editId=null}else await addItem('itin',data);selPlace=null;needFit=true;renderForm()})},
   importSheet(){importRows($('#sp').value);$('#sp').value=''},
   async autoLocate(){if(!isEd)return;const todo=sortItin(itemsOf('itin')).filter(x=>x.lat==null);if(!todo.length)return toast('沒有需要定位的行程');
-    toast(`開始定位 ${todo.length} 項,約需 ${Math.ceil(todo.length*1.1)} 秒`);let ok=0;
-    for(const x of todo){try{const r=await geocode((segsOf(x.title)[0]||x.title)+' '+(T.region||''),1);if(r[0]){await updateDoc(doc(db,'trips',T.id,'items',x.id),{lat:+r[0].lat,lon:+r[0].lon,placeName:segsOf(r[0].display_name)[0]||''});ok++}}catch(e){}await sleep(1100)}
+    toast(`開始定位 ${todo.length} 項,約需 ${Math.ceil(todo.length*(G?.4:1.1))} 秒`);let ok=0;
+    for(const x of todo){try{const r=await geocode((segsOf(x.title)[0]||x.title)+' '+(T.region||''),1);if(r[0]){await updateDoc(doc(db,'trips',T.id,'items',x.id),{lat:r[0].lat,lon:r[0].lon,placeName:r[0].name||''});ok++}}catch(e){}await sleep(G?250:1100)}
     needFit=true;toast(`已定位 ${ok} / ${todo.length} 項,其餘請手動選位置`)},
   addMem(){const v=$('#mn').value.trim();if(!v||(T.members||[]).includes(v))return;guard(()=>updateDoc(tripRef(),{members:[...(T.members||[]),v]}).then(renderForm))},
   delMem(e){guard(()=>updateDoc(tripRef(),{members:(T.members||[]).filter(m=>m!=e.dataset.n)}).then(renderForm))},
