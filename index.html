@@ -11,7 +11,7 @@
 --sans:system-ui,-apple-system,"Noto Sans TC","Hiragino Sans","PingFang TC",sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%;background:#f3ead8}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.75 var(--sans);letter-spacing:.03em}
+body{overflow-x:hidden;margin:0;background:var(--bg);color:var(--tx);font:15px/1.75 var(--sans);letter-spacing:.03em}
 main{max-width:520px;margin:0 auto;padding:18px 20px calc(120px + env(safe-area-inset-bottom,0px))}
 a{color:var(--ac);text-underline-offset:3px}
 input,select,textarea{width:100%;padding:10px 2px;margin:0 0 8px;border:0;border-bottom:1px solid var(--bd);border-radius:0;background:transparent;color:var(--tx);font:inherit;font-size:16px;letter-spacing:.03em;outline:none}
@@ -42,7 +42,7 @@ h3{margin:26px 0 4px;font-family:var(--serif);font-weight:500;font-size:17px;let
 .chk{display:inline-flex;gap:6px;align-items:center;margin-right:14px;min-height:32px}
 details{margin-top:12px}summary{cursor:pointer;color:var(--mu);font-size:13px;letter-spacing:.1em;min-height:32px}
 #map{height:240px;border:1px solid var(--bd);border-radius:2px;margin:6px 0 12px;z-index:0}
-.leaflet-tile-pane{filter:grayscale(.75) sepia(.18) contrast(.94) brightness(1.02)}
+.leaflet-tile-pane{filter:saturate(.92)}
 .pin{width:22px;height:22px;border-radius:50%;color:#fff;font:600 11px var(--sans);display:flex;align-items:center;justify-content:center;border:1.5px solid #f6f3ec;box-shadow:0 1px 3px rgba(0,0,0,.35)}
 #dayf{margin-bottom:2px}
 .banner{border-left:3px solid var(--ac);padding:4px 12px;margin:8px 0 14px;font-size:13px;color:var(--mu)}
@@ -80,13 +80,13 @@ main{padding-top:0}
 .hmeta{font-size:13px;opacity:.9;letter-spacing:.08em;min-height:20px}
 .wave{position:absolute;left:0;right:0;bottom:-1px;height:22px;z-index:4;pointer-events:none;background:radial-gradient(circle at 14px 0,transparent 13px,var(--bg) 14px) 0 7px/28px 16px repeat-x,radial-gradient(circle at 14px 0,transparent 13px,var(--ac) 14px) 0 0/28px 16px repeat-x}
 .leaflet-top.leaflet-right{top:56px}
-.leaflet-tile-pane{filter:grayscale(.55) sepia(.12) contrast(.95) brightness(1.03)}
+.leaflet-tile-pane{filter:saturate(.92)}
 .pw{position:relative;width:28px;height:36px}
 .pn{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
 .pn span{transform:rotate(45deg);color:#fff;font:700 12px var(--sans)}
 #dayf{position:relative;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;display:flex;overflow-x:auto;margin:0 -20px;padding:14px 20px 10px;scrollbar-width:none}#dayf::-webkit-scrollbar{display:none}
-.pill{scroll-snap-align:center;flex:0 0 auto;min-width:76px;text-align:center;padding:6px 14px;margin-right:8px;border-radius:99px;border:1px solid var(--bd);background:var(--card2);cursor:pointer;line-height:1.3}
-.pill b{display:block;font-weight:600;font-size:14px}.pill span{display:block;font-size:11px;color:var(--mu)}
+.pill{scroll-snap-align:center;flex:0 0 auto;white-space:nowrap;min-width:0;text-align:center;padding:4px 12px;margin-right:6px;border-radius:99px;border:1px solid var(--bd);background:var(--card2);cursor:pointer;line-height:1.25}
+.pill b{display:block;font-weight:600;font-size:13px}.pill span{display:block;font-size:10px;color:var(--mu)}.pill.add{border-style:dashed}.pill.add b{color:var(--ac);font-size:15px}
 .pill.on{background:var(--ink);color:var(--on);border-color:var(--ink)}.pill.on span{color:var(--on);opacity:.75}
 .dhead{display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px}
 .dnum{font-family:var(--serif);font-weight:700;font-size:64px;line-height:1;color:var(--ink)}.dnum span{font-size:22px;color:var(--ac);font-weight:600;margin-left:6px}
@@ -291,14 +291,16 @@ function editView(){
   <input id=daytitle placeholder="當天標題,例如:淺草・晴空塔" value="${esc(ttl)}">
   <div id=erows>${g.map(x=>`<div class=erow data-id="${x.id}"><span class=grip aria-label=拖曳排序>≡</span><div class=em><div class=en>${esc(x.title)}</div><div class=ed2>${esc(x.time||'')}${x.tag?' · '+esc(x.tag):''}</div></div><button class=eb data-a=edit data-id="${x.id}">編輯</button><button class=eb data-a=del data-id="${x.id}">刪除</button></div>`).join('')||'<p class=mu>這天還沒有行程</p>'}</div>
   <button class=p data-a=openSheet style="margin-top:14px">＋ 新增行程</button>
-  <button class="p g" data-a=resortTime style="margin-top:8px">依時間重新排序</button>`}
+  <button class="p g" data-a=resortTime style="margin-top:8px">依時間重新排序</button>
+  <button class="p r" data-a=delDay style="margin-top:8px">刪除 Day ${d}</button>`}
 async function saveOrder(ids){const day=editDay;await guard(async()=>{const b=writeBatch(db);ids.forEach((id,i)=>b.update(doc(db,'trips',T.id,'items',id),{ord:(i+1)*1000}));b.update(tripRef(),{['manual.'+day]:true});await b.commit()})}
 const WD=['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const TAGC={景點:['#7a5410','rgba(184,137,47,.22)'],餐廳:['#9a4a2a','rgba(200,110,70,.18)'],交通:['#5a4a3a','rgba(110,90,70,.18)'],住宿:['#5d5a2f','rgba(120,115,60,.2)'],購物:['#8a4a55','rgba(150,80,90,.16)'],其他:['#7a6f62','rgba(125,115,100,.2)']};
 const dayDate=d=>{if(!T.startDate)return null;const t=new Date(T.startDate+'T00:00:00');if(isNaN(t))return null;t.setDate(t.getDate()+d-1);return t};
 const md=t=>t?`${t.getMonth()+1}/${t.getDate()}`:'';
 const km=(a,b)=>{const r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lon-a.lon)*r,h=Math.sin(dl/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)**2;return 12742*Math.asin(Math.sqrt(h))};
-const dayList=()=>[...new Set(itemsOf('itin').map(x=>x.day))].sort((a,b)=>a-b);
+const dayCount=()=>Math.max((T&&+T.dayCount)||0,...itemsOf('itin').map(x=>+x.day||0),0);
+const dayList=()=>Array.from({length:dayCount()},(_,i)=>i+1);
 function renderHeroMeta(){
   const e=$('#hmeta'),r=$('#hreg');if(!e||!T)return;
   const ds=dayList(),N=ds.length?Math.max(...ds):0,p=[];
@@ -310,7 +312,7 @@ function renderDayF(){
   const ds=dayList();
   if(!dayInit&&ds.length){dayF=ds[0];dayInit=true;needFit=true}
   if(dayF&&!ds.includes(dayF))dayF=0;
-  const dEl=$('#dayf');dEl.innerHTML=ds.length?`<div class="pill ${!dayF?'on':''}" data-a=day data-d=0><b>全部</b><span>${ds.length} 天</span></div>`+ds.map(d=>`<div class="pill ${dayF==d?'on':''}" data-a=day data-d=${d}><b>Day ${d}</b><span>${dayDate(d)?md(dayDate(d)):'&nbsp;'}</span></div>`).join(''):'';
+  const dEl=$('#dayf');dEl.innerHTML=(ds.length?`<div class="pill ${!dayF?'on':''}" data-a=day data-d=0><b>全部</b><span>${ds.length} 天</span></div>`+ds.map(d=>`<div class="pill ${dayF==d?'on':''}" data-a=day data-d=${d}><b>Day ${d}</b><span>${dayDate(d)?md(dayDate(d)):'&nbsp;'}</span></div>`).join(''):'')+(isEd?'<div class="pill add" data-a=addDay><b>＋</b><span>新增天</span></div>':'');
   const on=dEl.querySelector('.pill.on');if(on)dEl.scrollLeft=on.offsetLeft-(dEl.clientWidth-on.offsetWidth)/2;
 }
 function navUrl(day){
@@ -319,6 +321,7 @@ function navUrl(day){
   return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(p(a[0]))+'&destination='+encodeURIComponent(p(a[a.length-1]))+(wp?'&waypoints='+encodeURIComponent(wp):'')+'&travelmode=transit';
 }
 function timeline(g){
+  if(!g.length)return '<p class=mu style="margin:10px 0 20px">這天還沒有行程。</p>';
   let prev=null;
   return `<div class=tl>`+g.map(x=>{
     const has=x.lat!=null,d=has&&prev?km(prev,x):null;if(has)prev=x;
@@ -379,7 +382,7 @@ async function initMap(){
   }
   if(!$('#map')||$('#map')!==el)return;
   map=L.map(el,{zoomControl:false}).setView([35.68,139.76],5);L.control.zoom({position:'topright'}).addTo(map);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,detectRetina:true,attribution:'© OpenStreetMap contributors © CARTO'}).addTo(map);
   layer=L.layerGroup().addTo(map);drawMap();
 }
 const pinHTML=(n,c)=>`<div class=pw><div class=pn style="background:${c}"><span>${n}</span></div></div>`;
@@ -469,7 +472,7 @@ const A={
     catch(e){box.innerHTML='<div class=mu>搜尋失敗'+''+',請稍後再試</div>'}},
   pickPlace(e){const p=(window.__res||[])[+e.dataset.i];if(!p)return;selPlace={name:p.name,lat:p.lat,lon:p.lon};$('#resbox').innerHTML='';if(!$('#ti').value.trim())$('#ti').value=selPlace.name;showSel()},
   saveItin(){const ti=$('#ti').value.trim();if(!ti)return toast('請輸入行程名稱');
-    const data={day:+$('#d').value||1,time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120),tag:$('#tg').value};
+    const data={day:Math.min(60,Math.max(1,Math.round(+$('#d').value)||1)),time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120),tag:$('#tg').value};
     {const gv=$('#gl').value.trim(),g=parseGMaps(gv);if(g){data.url=g.url.slice(0,500);if(g.lat!=null&&!selPlace)selPlace={name:g.name,lat:g.lat,lon:g.lon}}else if(!gv)data.url=''}
     if(!editId&&T.manual&&T.manual[data.day])data.ord=ordFor(data.day,data.time);
     if(selPlace){data.lat=selPlace.lat;data.lon=selPlace.lon;data.placeName=selPlace.name}
@@ -479,6 +482,15 @@ const A={
     toast(`開始定位 ${todo.length} 項,約需 ${Math.ceil(todo.length*(G?.4:1.1))} 秒`);let ok=0;
     for(const x of todo){try{const r=await geocode((segsOf(x.title)[0]||x.title)+' '+(T.region||''),1);if(r[0]){await updateDoc(doc(db,'trips',T.id,'items',x.id),{lat:r[0].lat,lon:r[0].lon,placeName:r[0].name||''});ok++}}catch(e){}await sleep(G&&!gFail?250:1100)}
     needFit=true;toast(`已定位 ${ok} / ${todo.length} 項,其餘請手動選位置`)},
+  addDay(){if(!isEd)return;const n=dayCount()+1;if(n>60)return toast('最多 60 天');dayF=n;needFit=true;guard(()=>updateDoc(tripRef(),{dayCount:n}))},
+  delDay(){const d=editDay,N=dayCount(),its=itemsOf('itin'),mine=its.filter(x=>x.day==d);
+    if(N<=1)return toast('至少要保留一天');
+    if(!confirm(mine.length?`確定刪除 Day ${d}?這天的 ${mine.length} 筆行程會一併刪除,後面的天數會往前補。`:`確定刪除 Day ${d}?後面的天數會往前補。`))return;
+    const shift=o=>{const r={};Object.keys(o||{}).forEach(k=>{const n=+k;if(n<d)r[n]=o[k];else if(n>d)r[n-1]=o[k]});return r};
+    guard(async()=>{const b=writeBatch(db);
+      its.forEach(x=>{if(x.day==d)b.delete(doc(db,'trips',T.id,'items',x.id));else if(x.day>d)b.update(doc(db,'trips',T.id,'items',x.id),{day:x.day-1})});
+      b.update(tripRef(),{dayCount:N-1,dayTitles:shift(T.dayTitles),manual:shift(T.manual)});
+      await b.commit();editDay=0;document.body.classList.remove('editing');dayF=Math.min(d,N-1);needFit=true;renderList();window.scrollTo(0,0);toast('已刪除 Day '+d)})},
   enterEdit(){if(!isEd||!dayF)return;editDay=dayF;document.body.classList.add('editing');renderList();window.scrollTo(0,0)},
   exitEdit(){editDay=0;document.body.classList.remove('editing');needFit=true;renderList();setTimeout(()=>{if(map){if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()}},60);window.scrollTo(0,0)},
   resortTime(){guard(()=>updateDoc(tripRef(),{['manual.'+editDay]:false}).then(()=>toast('已依時間重新排序')))},
