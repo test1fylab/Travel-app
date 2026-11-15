@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#4a3426">
 <title>旅行安排</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -8,9 +9,8 @@
 :root{--bg:#f3ead8;--card:#f3ead8;--card2:#fbf6ea;--tx:#3a2a1e;--mu:#8c7b69;--ac:#b8892f;--ink:#4a3426;--on:#f3ead8;--bd:#e0d2b8;--hl:#f0d98c;--warn:#a3472a;color-scheme:light;
 --serif:"Noto Serif TC","Noto Serif JP","Hiragino Mincho ProN","Yu Mincho","PMingLiU",serif;
 --sans:system-ui,-apple-system,"Noto Sans TC","Hiragino Sans","PingFang TC",sans-serif}
-@media (prefers-color-scheme:dark){:root{--bg:#1e1712;--card:#1e1712;--card2:#2a211a;--tx:#efe4d0;--mu:#a89880;--ac:#d4a94c;--ink:#efe4d0;--on:#1e1712;--bd:#3a2f25;--hl:#7a6428;--warn:#e0805f;color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;background:#f3ead8}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.75 var(--sans);letter-spacing:.03em}
 main{max-width:520px;margin:0 auto;padding:18px 20px calc(120px + env(safe-area-inset-bottom,0px))}
 a{color:var(--ac);text-underline-offset:3px}
@@ -84,8 +84,8 @@ main{padding-top:0}
 .pw{position:relative;width:28px;height:36px}
 .pn{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
 .pn span{transform:rotate(45deg);color:#fff;font:700 12px var(--sans)}
-#dayf{display:flex;overflow-x:auto;margin:0 -20px;padding:14px 20px 10px;scrollbar-width:none}#dayf::-webkit-scrollbar{display:none}
-.pill{flex:0 0 auto;min-width:76px;text-align:center;padding:6px 14px;margin-right:8px;border-radius:99px;border:1px solid var(--bd);background:var(--card2);cursor:pointer;line-height:1.3}
+#dayf{position:relative;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;display:flex;overflow-x:auto;margin:0 -20px;padding:14px 20px 10px;scrollbar-width:none}#dayf::-webkit-scrollbar{display:none}
+.pill{scroll-snap-align:center;flex:0 0 auto;min-width:76px;text-align:center;padding:6px 14px;margin-right:8px;border-radius:99px;border:1px solid var(--bd);background:var(--card2);cursor:pointer;line-height:1.3}
 .pill b{display:block;font-weight:600;font-size:14px}.pill span{display:block;font-size:11px;color:var(--mu)}
 .pill.on{background:var(--ink);color:var(--on);border-color:var(--ink)}.pill.on span{color:var(--on);opacity:.75}
 .dhead{display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px}
@@ -146,7 +146,7 @@ const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
 
 let dayInit=false,G=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null;
 const TAGS=['景點','餐廳','交通','住宿','購物','其他'];
-let editDay=0,dragging=false;
+let editDay=0,dragging=false,gFail=false;
 
 const myTripsCol=()=>collection(db,'users',user.uid,'trips');
 const itemsCol=()=>collection(db,'trips',route.tid,'items');
@@ -310,7 +310,8 @@ function renderDayF(){
   const ds=dayList();
   if(!dayInit&&ds.length){dayF=ds[0];dayInit=true;needFit=true}
   if(dayF&&!ds.includes(dayF))dayF=0;
-  $('#dayf').innerHTML=ds.length?`<div class="pill ${!dayF?'on':''}" data-a=day data-d=0><b>全部</b><span>${ds.length} 天</span></div>`+ds.map(d=>`<div class="pill ${dayF==d?'on':''}" data-a=day data-d=${d}><b>Day ${d}</b><span>${dayDate(d)?md(dayDate(d)):'&nbsp;'}</span></div>`).join(''):'';
+  const dEl=$('#dayf');dEl.innerHTML=ds.length?`<div class="pill ${!dayF?'on':''}" data-a=day data-d=0><b>全部</b><span>${ds.length} 天</span></div>`+ds.map(d=>`<div class="pill ${dayF==d?'on':''}" data-a=day data-d=${d}><b>Day ${d}</b><span>${dayDate(d)?md(dayDate(d)):'&nbsp;'}</span></div>`).join(''):'';
+  const on=dEl.querySelector('.pill.on');if(on)dEl.scrollLeft=on.offsetLeft-(dEl.clientWidth-on.offsetWidth)/2;
 }
 function navUrl(day){
   const a=sortItin(itemsOf('itin')).filter(x=>x.day==day&&x.lat!=null);if(a.length<2)return '';
@@ -417,11 +418,11 @@ function focusItem(id,fly=true){
 
 /* ---------- 地點搜尋(Google Places 或 OpenStreetMap Nominatim) ---------- */
 async function geocode(q,limit=5){
-  if(G){
+  if(G&&!gFail){try{
     await loadG();const {Place}=await google.maps.importLibrary('places');
     const {places}=await Place.searchByText({textQuery:q,fields:['displayName','formattedAddress','location'],maxResultCount:Math.max(1,Math.min(limit,20)),language:'zh-TW'});
     return (places||[]).map(p=>({name:p.displayName||'',full:[p.displayName,p.formattedAddress].filter(Boolean).join(' · '),lat:p.location.lat(),lon:p.location.lng()}));
-  }
+  }catch(e){gFail=true;toast('Google 搜尋無法使用,已改用 OpenStreetMap 搜尋')}}
   const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit='+limit+'&accept-language=zh-TW&q='+encodeURIComponent(q));
   if(!r.ok)throw new Error('geo');
   return (await r.json()).map(p=>({name:segsOf(p.display_name)[0]||p.display_name,full:p.display_name,lat:+p.lat,lon:+p.lon}));
@@ -465,7 +466,7 @@ const A={
   async searchPlace(){const q=$('#placeq').value.trim();if(!q)return;const box=$('#resbox');box.innerHTML='<div class=mu>搜尋中…</div>';
     try{const r=await geocode(q+(T.region?' '+T.region:''));if(!r.length){box.innerHTML='<div class=mu>找不到,換個關鍵字試試</div>';return}
       window.__res=r;box.innerHTML='<div class=res>'+r.map((p,i)=>`<div data-a=pickPlace data-i=${i}>${esc(p.full)}</div>`).join('')+'</div>'}
-    catch(e){box.innerHTML='<div class=mu>搜尋失敗'+(G?'(請確認 Google Cloud 已啟用 Places API (New),且金鑰允許它)':'')+',請稍後再試</div>'}},
+    catch(e){box.innerHTML='<div class=mu>搜尋失敗'+''+',請稍後再試</div>'}},
   pickPlace(e){const p=(window.__res||[])[+e.dataset.i];if(!p)return;selPlace={name:p.name,lat:p.lat,lon:p.lon};$('#resbox').innerHTML='';if(!$('#ti').value.trim())$('#ti').value=selPlace.name;showSel()},
   saveItin(){const ti=$('#ti').value.trim();if(!ti)return toast('請輸入行程名稱');
     const data={day:+$('#d').value||1,time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120),tag:$('#tg').value};
@@ -476,7 +477,7 @@ const A={
   importSheet(){importRows($('#sp').value);$('#sp').value=''},
   async autoLocate(){if(!isEd)return;const todo=sortItin(itemsOf('itin')).filter(x=>x.lat==null);if(!todo.length)return toast('沒有需要定位的行程');
     toast(`開始定位 ${todo.length} 項,約需 ${Math.ceil(todo.length*(G?.4:1.1))} 秒`);let ok=0;
-    for(const x of todo){try{const r=await geocode((segsOf(x.title)[0]||x.title)+' '+(T.region||''),1);if(r[0]){await updateDoc(doc(db,'trips',T.id,'items',x.id),{lat:r[0].lat,lon:r[0].lon,placeName:r[0].name||''});ok++}}catch(e){}await sleep(G?250:1100)}
+    for(const x of todo){try{const r=await geocode((segsOf(x.title)[0]||x.title)+' '+(T.region||''),1);if(r[0]){await updateDoc(doc(db,'trips',T.id,'items',x.id),{lat:r[0].lat,lon:r[0].lon,placeName:r[0].name||''});ok++}}catch(e){}await sleep(G&&!gFail?250:1100)}
     needFit=true;toast(`已定位 ${ok} / ${todo.length} 項,其餘請手動選位置`)},
   enterEdit(){if(!isEd||!dayF)return;editDay=dayF;document.body.classList.add('editing');renderList();window.scrollTo(0,0)},
   exitEdit(){editDay=0;document.body.classList.remove('editing');needFit=true;renderList();setTimeout(()=>{if(map){if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()}},60);window.scrollTo(0,0)},
@@ -492,6 +493,12 @@ const A={
   preset(){guard(async()=>{const have=itemsOf('pack').map(x=>x.title);for(const t of PACK)if(!have.includes(t))await addItem('pack',{title:t,done:false});closeSheet()})},
   del(e){if(!confirm('確定刪除?'))return;guard(()=>deleteDoc(doc(db,'trips',T.id,'items',e.dataset.id)))}
 };
+let sx=0,sy=0,sOK=false;
+document.addEventListener('touchstart',e=>{sOK=!!(e.target.closest&&e.target.closest('#list'))&&tab==0&&!editDay&&!dragging&&e.touches.length==1;if(sOK){sx=e.touches[0].clientX;sy=e.touches[0].clientY}},{passive:true});
+document.addEventListener('touchend',e=>{if(!sOK)return;sOK=false;const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+  if(Math.abs(dx)<60||Math.abs(dy)>45||Math.abs(dx)<Math.abs(dy)*1.8)return;
+  const ds=dayList();if(!ds.length)return;const arr=[0,...ds];let i=arr.indexOf(dayF);if(i<0)i=0;i+=dx<0?1:-1;if(i<0||i>=arr.length)return;
+  dayF=arr[i];needFit=true;renderList()},{passive:true});
 document.addEventListener('pointerdown',e=>{
   const g=e.target.closest&&e.target.closest('.grip');if(!g||!isEd)return;
   const row=g.closest('.erow'),box=$('#erows');if(!row||!box)return;
