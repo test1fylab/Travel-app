@@ -50,9 +50,10 @@ details{margin-top:12px}summary{cursor:pointer;color:var(--mu);font-size:13px;le
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--on);padding:10px 18px;border-radius:2px;display:none;z-index:9999;font-size:13px;max-width:88vw;text-align:center}
 /* 底部導覽 */
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--bg);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px);z-index:20}
-nav button{flex:1;min-height:56px;border:0;background:none;color:var(--mu);font-size:13px;letter-spacing:.2em;position:relative;cursor:pointer}
-nav button.on{color:var(--tx)}
-nav button.on::after{content:"";position:absolute;left:50%;bottom:10px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--ac)}
+nav button{flex:1;min-height:60px;border:0;background:none;color:var(--mu);font-size:11px;letter-spacing:.1em;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+nav button svg{width:22px;height:22px;display:block}
+nav button.on{color:var(--ink)}nav button.on svg{stroke:var(--ac)}
+
 /* 新增按鈕與底部面板 */
 #fab{position:fixed;right:20px;bottom:calc(72px + env(safe-area-inset-bottom,0px));width:52px;height:52px;border-radius:50%;border:0;background:var(--ink);color:var(--on);font-size:26px;line-height:1;display:none;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.25);z-index:21;cursor:pointer}
 #veil{position:fixed;inset:0;background:rgba(20,18,15,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
@@ -151,6 +152,7 @@ const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
 
 let dayInit=false,G=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null;
 const TAGS=['景點','餐廳','交通','住宿','購物','其他'];
+const CATS=['門票','餐費','交通','住宿','購物','其他'],TAG2CAT={景點:'門票',餐廳:'餐費',交通:'交通',住宿:'住宿',購物:'購物',其他:'其他'};
 let editDay=0,dragging=false,gFail=false;
 
 const myTripsCol=()=>collection(db,'users',user.uid,'trips');
@@ -237,7 +239,14 @@ async function renderShare(){
   }else html+='<div class=mu>只有建立者可以看到編輯連結與管理編輯者。</div>';
   box.innerHTML=html;
 }
-function renderNav(){$('#nav').innerHTML=TABS.map((t,i)=>`<button class="${i==tab?'on':''}" data-tab=${i}>${t}</button>`).join('');$('#hero').classList.toggle('mini',tab!=0);$('#dayf').style.display=tab==0?'':'none';if(tab==0&&map)setTimeout(()=>{if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()},50)}
+const ICON=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICONS=[
+ ICON('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
+ ICON('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M5 7l11-3.5V7M3 12h18"/><circle cx="16.5" cy="15.5" r="1.1"/>'),
+ ICON('<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/>'),
+ ICON('<path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2.5 2.5 0 0 0 0-5z"/><path d="M14 6.5v11" stroke-dasharray="2 2"/>'),
+ ICON('<rect x="4" y="7.5" width="16" height="12.5" rx="2"/><path d="M9 7.5V5.5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M4 13h16"/>')];
+function renderNav(){$('#nav').innerHTML=TABS.map((t,i)=>`<button class="${i==tab?'on':''}" data-tab=${i}>${ICONS[i]}<span>${t}</span></button>`).join('');$('#hero').classList.toggle('mini',tab!=0);$('#dayf').style.display=tab==0?'':'none';if(tab==0&&map)setTimeout(()=>{if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()},50)}
 
 /* ---------- 表單 ---------- */
 function openSheet(){if(!isEd)return;renderForm();$('#sheet').classList.add('open');$('#veil').classList.add('open')}
@@ -252,13 +261,17 @@ function renderForm(){
   <div class=row><input id=placeq placeholder="搜尋地點(可選),例如:淺草寺" value="${esc(x?.placeName||'')}"><button class="p g" data-a=searchPlace style="flex:0 0 72px;margin-bottom:8px">搜尋</button></div>
   <input id=gl inputmode=url placeholder="貼上 Google 地圖連結(選填)" value="${x?esc(x.url||''):''}"><div id=resbox></div><div id=selp class=mu></div>
   <select id=tg>${['',...TAGS].map(t=>`<option value="${t}" ${(x&&x.tag==t)||(!x&&!t)?'selected':''}>${t||'類別(選填)'}</option>`).join('')}</select><input id=ti placeholder="行程名稱" value="${x?esc(x.title):''}"><input id=no placeholder="備註(選填)" value="${x?esc(x.note||''):''}">
+  <details ${x&&+x.amt>0?'open':''} style="margin:4px 0 10px"><summary>記帳(選填)</summary>${(T.members||[]).length?`<select id=xc style="margin-top:6px">${CATS.map(c=>`<option ${x&&((x.cat&&x.cat==c)||(!x.cat&&TAG2CAT[x.tag]==c))?'selected':''}>${c}</option>`).join('')}</select>
+  <div class=row><input id=xa type=number inputmode=decimal step=any placeholder="金額" value="${x&&+x.amt>0?x.amt:''}"><select id=xu>${curList().map(c=>`<option ${c==((x&&x.cur)||T.base)?'selected':''}>${c}</option>`).join('')}</select></div>
+  <div class=mu>誰出的錢:</div><select id=xp>${T.members.map(m=>`<option ${x&&x.payer==m?'selected':''}>${esc(m)}</option>`).join('')}</select>
+  <div class=mu>誰要分攤:</div><div>${T.members.map(m=>`<label class=chk><input type=checkbox class=xw value="${esc(m)}" ${!(x&&x.who&&x.who.length)||x.who.includes(m)?'checked':''}>${esc(m)}</label>`).join('')}</div>`:'<div class=mu style="margin:6px 0">要記帳,請先到「分帳」頁新增旅伴。</div>'}</details>
   <button class=p data-a=saveItin>${x?'儲存修改':'新增行程'}</button>${x?'<button class="p g" data-a=cancelEdit style="margin-top:6px">取消修改</button>':''}
   <details><summary>匯入與自動定位</summary><div class=mu style="margin:6px 0">貼上試算表內容:天數、時間、項目、備註(用 Tab 或逗號分隔),或選擇 CSV 檔。</div><textarea id=sp rows=4></textarea><button class=p data-a=importSheet>貼上內容匯入</button><input type=file id=csvf accept=".csv,.tsv,.txt" style="margin-top:6px">
   <button class="p g" data-a=autoLocate style="margin-top:6px">自動定位所有尚未定位的行程</button><div class=mu>會用「項目名稱的第一個地點 + 地區關鍵字」搜尋,結果可能不準,請到地圖確認並用 ✎ 修正。</div></details></div>`,
   `<div class=card><div class=mu>基準幣別</div><select id=base>${curList().map(c=>`<option ${c==T.base?'selected':''}>${c}</option>`).join('')}</select>
   <div>${(T.members||[]).map(m=>`<span class=chip>${esc(m)} <button class=x data-a=delMem data-n="${esc(m)}">×</button></span>`).join('')||'<span class=mu>先新增旅伴 ↓</span>'}</div>
   <div class=row><input id=mn placeholder="旅伴名字"><button class=p data-a=addMem style="flex:0 0 70px;margin-bottom:6px">加入</button></div></div>
-  ${(T.members||[]).length?`<div class=card><input id=ed placeholder="花費項目(晚餐、車票…)"><div class=row><input id=ea type=number inputmode=decimal step=any placeholder="金額"><select id=ec>${curList().map(c=>`<option>${c}</option>`).join('')}</select></div>
+  ${(T.members||[]).length?`<div class=card><select id=ecat>${CATS.map(c=>`<option>${c}</option>`).join('')}</select><input id=ed placeholder="花費項目(晚餐、車票…)"><div class=row><input id=ea type=number inputmode=decimal step=any placeholder="金額"><select id=ec>${curList().map(c=>`<option>${c}</option>`).join('')}</select></div>
   <select id=ep>${T.members.map(m=>`<option>${esc(m)}</option>`).join('')}</select><div class=mu>誰要分攤:</div><div>${T.members.map(m=>`<label class=chk><input type=checkbox class=ew value="${esc(m)}" checked>${esc(m)}</label>`).join('')}</div><button class=p data-a=addExp style="margin-top:6px">新增花費</button></div>`:''}`,
   `<div class=card><textarea id=mt rows=3 placeholder="寫點備忘…"></textarea><button class=p data-a=addMemo>新增備忘</button></div>`,
   `<div class=card><input id=ci placeholder="票券(機票、住宿、門票…)"><input id=cd type=date><button class=p data-a=addChk data-k=tix>新增</button></div>`,
@@ -331,11 +344,11 @@ function timeline(g){
   return `<div class=tl>`+g.map(x=>{
     const has=x.lat!=null,d=has&&prev?km(prev,x):null;if(has)prev=x;
     const tg=x.tag&&TAGC[x.tag]?`<span class=tag style="color:${TAGC[x.tag][0]};background:${TAGC[x.tag][1]}">${esc(x.tag)}</span>`:'';
-    const link=(x.url&&/^https?:\/\//.test(x.url))?x.url:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(has?x.lat+','+x.lon:(segsOf(x.title)[0]||x.title)+' '+(T.region||''));
+    const link=itemLink(x);
     return `<div class="tli ${selId==x.id?'sel':''}" id="i_${x.id}"><div class=tlt>${esc(x.time||'')}</div><div class=tld></div>
     <div class=tlc data-a=focus data-id="${x.id}" style="cursor:pointer">${isEd?`<div class=tca><button class=x data-a=edit data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button></div>`:''}
     ${tg}${has?'':'<span class=mu>(未定位)</span>'}<div class=tct style="${isEd?'padding-right:64px':''}">${esc(x.title)}</div>
-    ${x.placeName?`<div class=tcs>${esc(x.placeName)}</div>`:''}${x.note?`<div class=tcs>${esc(x.note)}</div>`:''}
+    ${x.placeName?`<div class=tcs>${esc(x.placeName)}</div>`:''}${x.note?`<div class=tcs>${esc(x.note)}</div>`:''}${+x.amt>0?`<div class=tcs style="color:var(--ink);font-weight:600">${esc(x.cat||'')} ${fmt(x.amt)} ${esc(x.cur||T.base)} · ${esc(x.payer||'')} 付</div>`:''}
     <div class=tcs>${d!=null?`距上一站約 ${d<1?Math.round(d*1000)+' m':d.toFixed(1)+' km'} · `:''}<a href="${link}" target=_blank rel=noopener>在 Google 地圖開啟</a></div></div></div>`}).join('')+`</div>`;
 }
 function listItin(){
@@ -359,14 +372,17 @@ function listItin(){
   });
   return html;
 }
+const expAll=()=>[...itemsOf('exp'),...itemsOf('itin').filter(x=>+x.amt>0).map(x=>({id:x.id,desc:x.title,amt:+x.amt,cur:x.cur||T.base,payer:x.payer,who:x.who||[],cat:x.cat,ts:x.ts,linked:true,day:x.day}))];
 function settle(){const b={};(T.members||[]).forEach(m=>b[m]=0);let tot=0;
-  itemsOf('exp').forEach(e=>{const a=e.amt*rate(e.cur),w=(e.who||[]).filter(x=>x in b);if(!w.length||!(e.payer in b))return;tot+=a;b[e.payer]+=a;w.forEach(x=>b[x]-=a/w.length)});
+  expAll().forEach(e=>{const a=e.amt*rate(e.cur),w=(e.who||[]).filter(x=>x in b);if(!w.length||!(e.payer in b))return;tot+=a;b[e.payer]+=a;w.forEach(x=>b[x]-=a/w.length)});
   const cr=Object.entries(b).filter(x=>x[1]>.5).sort((x,y)=>y[1]-x[1]),dr=Object.entries(b).filter(x=>x[1]<-.5).sort((x,y)=>x[1]-y[1]),out=[];
   let i=0,j=0;while(i<dr.length&&j<cr.length){const m=Math.min(-dr[i][1],cr[j][1]);out.push(`${esc(dr[i][0])} → ${esc(cr[j][0])}:${fmt(m)} ${esc(T.base)}`);dr[i][1]+=m;cr[j][1]-=m;if(dr[i][1]>-.5)i++;if(cr[j][1]<.5)j++}
   return {tot,out}}
-function listExp(){const s=settle(),rates=T.rates||{};
+function listExp(){const s=settle(),rates=T.rates||{},all=expAll().sort((a,b)=>(b.ts||0)-(a.ts||0)),cats={};
+  all.forEach(e=>{const k=e.cat||'其他';cats[k]=(cats[k]||0)+e.amt*rate(e.cur)});
   return `<h3>結算(共 ${fmt(s.tot)} ${esc(T.base)})</h3><div class=card>${s.out.map(x=>`<div>${x}</div>`).join('')||'<span class=mu>目前沒有需要轉帳的款項</span>'}</div>
-  <h3>花費明細</h3><div class=card>${itemsOf('exp').map(e=>`<div class=it><div>${esc(e.desc)} <b>${fmt(e.amt)} ${esc(e.cur)}</b>${e.cur!=T.base?` <span class=mu>≈ ${fmt(e.amt*rate(e.cur))} ${esc(T.base)}</span>`:''}<div class=mu>${esc(e.payer)} 付 · 分攤:${(e.who||[]).map(esc).join('、')}</div></div>${isEd?`<button class=x data-a=del data-id="${e.id}">🗑</button>`:''}</div>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
+  <h3>各類別花費</h3><div class=card>${Object.entries(cats).sort((p,q)=>q[1]-p[1]).map(([k,v])=>`<span class=chip>${esc(k)} ${fmt(v)}</span>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
+  <h3>花費明細</h3><div class=card>${all.map(e=>`<div class=it><div>${e.cat?`<span class=chip style="padding:0 10px;margin:0 6px 0 0;font-size:12px">${esc(e.cat)}</span>`:''}${esc(e.desc)} <b>${fmt(e.amt)} ${esc(e.cur)}</b>${e.cur!=T.base?` <span class=mu>≈ ${fmt(e.amt*rate(e.cur))} ${esc(T.base)}</span>`:''}<div class=mu>${esc(e.payer)} 付 · 分攤:${(e.who||[]).map(esc).join('、')}${e.linked?` · Day ${e.day} 行程`:''}</div></div>${isEd?(e.linked?`<button class=x data-a=editLinked data-id="${e.id}">✎</button>`:`<button class=x data-a=del data-id="${e.id}">🗑</button>`):''}</div>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
   <h3>匯率(1 外幣 = ? ${esc(T.base)}${isEd?',可手動修改':''})</h3><div class=card><div class=row>${Object.keys(rates).map(c=>`<div><span class=mu>${esc(c)}</span><input type=number step=any value="${rates[c]}" data-r="${esc(c)}" ${isEd?'':'readonly'}></div>`).join('')}</div>${isEd?`<div class=row><input id=nc placeholder="新增幣別 例:GBP"><input id=nr type=number step=any placeholder="匯率"><button class=p data-a=addRate style="flex:0 0 60px;margin-bottom:6px">加</button></div>`:''}</div>`}
 function listChk(k){const a=itemsOf(k);return `<div class=card><div class=mu>已完成 ${a.filter(x=>x.done).length} / ${a.length}</div>${a.map(x=>`<div class=it><input type=checkbox style="width:auto;margin-top:5px" data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><div>${esc(x.title)}${x.date?`<div class=mu>${esc(x.date)}</div>`:''}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div>`).join('')||'<span class=mu>還沒有項目</span>'}</div>`}
 
@@ -390,7 +406,8 @@ function addVectorBase(m,osm){
     if(map!==m)return;
     const f=L.maplibreGL||window.maplibreGL,vl=f({style:'https://tiles.openfreemap.org/styles/positron'});vl.addTo(m);
     m.attributionControl.addAttribution('<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>');
-    try{vl.getMaplibreMap().on('load',()=>{if(m.hasLayer(osm))m.removeLayer(osm)})}catch(e){}
+    try{const mm=vl.getMaplibreMap();mm.on('load',()=>{if(m.hasLayer(osm))m.removeLayer(osm);
+      try{(mm.getStyle().layers||[]).forEach(l=>{const tf=l.layout&&l.layout['text-field'];if(tf&&JSON.stringify(tf).includes('name')){try{mm.setLayoutProperty(l.id,'text-field',['coalesce',['get','name:zh-Hant'],['get','name_zh-Hant'],['get','name:zh_hant'],['get','name:zh-TW'],['get','name']])}catch(e){}}})}catch(e){}})}catch(e){}
   }).catch(()=>{VB=null;toast('淡色地圖載入失敗,已使用一般地圖')});
 }
 async function initMap(){
@@ -407,7 +424,9 @@ async function initMap(){
   const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);addVectorBase(map,osm);
   layer=L.layerGroup().addTo(map);drawMap();
 }
-const itemLink=x=>(x.url&&/^https?:\/\//.test(x.url))?x.url:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.lat!=null?x.lat+','+x.lon:(segsOf(x.title)[0]||x.title)+' '+(T.region||''));
+const itemLink=x=>{if(x.url&&/^https?:\/\//.test(x.url))return x.url;
+  const nm=(x.placeName||segsOf(x.title)[0]||x.title||'').trim(),q=encodeURIComponent(nm+(x.placeName?'':' '+(T.region||'')));
+  return x.lat!=null?`https://www.google.com/maps/search/${q}/@${x.lat},${x.lon},17z`:`https://www.google.com/maps/search/?api=1&query=${q}`};
 const popupHTML=x=>`<div style="font:14px/1.5 var(--sans);min-width:150px"><div style="font-weight:600">${esc(x.title)}</div><div style="color:var(--mu);font-size:12px">${esc(x.time||'')}${x.placeName?' · '+esc(x.placeName):''}</div><a class=pbtn href="${esc(itemLink(x))}" target=_blank rel=noopener>在 Google 地圖開啟</a></div>`;
 function hilite(id){selId=id;document.querySelectorAll('.tli.sel').forEach(e=>e.classList.remove('sel'));const el=$('#i_'+id);if(el)el.classList.add('sel')}
 const pinHTML=(n,c)=>`<div class=pw><div class=pn style="background:${c}"><span>${n}</span></div></div>`;
@@ -498,6 +517,7 @@ const A={
   saveItin(){const ti=$('#ti').value.trim();if(!ti)return toast('請輸入行程名稱');
     const data={day:Math.min(60,Math.max(1,Math.round(+$('#d').value)||1)),time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120),tag:$('#tg').value};
     {const gv=$('#gl').value.trim(),g=parseGMaps(gv);if(g){data.url=g.url.slice(0,500);if(g.lat!=null&&!selPlace)selPlace={name:g.name,lat:g.lat,lon:g.lon}}else if(!gv)data.url=''}
+    {const xa=$('#xa');if(xa){const amt=+xa.value;if(amt>0){const who=[...document.querySelectorAll('.xw:checked')].map(v=>v.value);if(!who.length)return toast('請選擇分攤者');data.amt=amt;data.cur=$('#xu').value;data.payer=$('#xp').value;data.who=who;data.cat=$('#xc').value}else if(editId){data.amt=0;data.cur='';data.payer='';data.who=[];data.cat=''}}}
     if(!editId&&T.manual&&T.manual[data.day])data.ord=ordFor(data.day,data.time);
     if(selPlace){data.lat=selPlace.lat;data.lon=selPlace.lon;data.placeName=selPlace.name}
     guard(async()=>{if(editId){await updateDoc(doc(db,'trips',T.id,'items',editId),data);editId=null}else await addItem('itin',data);selPlace=null;needFit=true;closeSheet();renderForm()})},
@@ -515,6 +535,7 @@ const A={
       its.forEach(x=>{if(x.day==d)b.delete(doc(db,'trips',T.id,'items',x.id));else if(x.day>d)b.update(doc(db,'trips',T.id,'items',x.id),{day:x.day-1})});
       b.update(tripRef(),{dayCount:N-1,dayTitles:shift(T.dayTitles),manual:shift(T.manual)});
       await b.commit();editDay=0;document.body.classList.remove('editing');dayF=Math.min(d,N-1);needFit=true;renderList();window.scrollTo(0,0);toast('已刪除 Day '+d)})},
+  editLinked(e){tab=0;editId=e.dataset.id;selPlace=null;renderNav();renderList();openSheet()},
   enterEdit(){if(!isEd||!dayF)return;editDay=dayF;document.body.classList.add('editing');renderList();window.scrollTo(0,0)},
   exitEdit(){editDay=0;document.body.classList.remove('editing');needFit=true;renderList();setTimeout(()=>{if(map){if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()}},60);window.scrollTo(0,0)},
   resortTime(){guard(()=>updateDoc(tripRef(),{['manual.'+editDay]:false}).then(()=>toast('已依時間重新排序')))},
@@ -522,7 +543,7 @@ const A={
   addMem(){const v=$('#mn').value.trim();if(!v||(T.members||[]).includes(v))return;guard(()=>updateDoc(tripRef(),{members:[...(T.members||[]),v]}).then(renderForm))},
   delMem(e){guard(()=>updateDoc(tripRef(),{members:(T.members||[]).filter(m=>m!=e.dataset.n)}).then(renderForm))},
   addExp(){const d=$('#ed').value.trim(),a=+$('#ea').value,w=[...document.querySelectorAll('.ew:checked')].map(x=>x.value);if(!d||!a||!w.length)return toast('請填項目、金額與分攤者');
-    guard(async()=>{await addItem('exp',{desc:d.slice(0,80),amt:a,cur:$('#ec').value,payer:$('#ep').value,who:w});$('#ed').value=$('#ea').value='';closeSheet()})},
+    guard(async()=>{await addItem('exp',{desc:d.slice(0,80),amt:a,cur:$('#ec').value,payer:$('#ep').value,who:w,cat:$('#ecat').value});$('#ed').value=$('#ea').value='';closeSheet()})},
   addRate(){const c=$('#nc').value.trim().toUpperCase().slice(0,6),r=+$('#nr').value;if(!c||!r)return;guard(()=>updateDoc(tripRef(),{['rates.'+c]:r}).then(renderForm))},
   addMemo(){const v=$('#mt').value.trim();if(!v)return;guard(async()=>{await addItem('memo',{text:v.slice(0,2000)});$('#mt').value='';closeSheet()})},
   addChk(e){const k=e.dataset.k,v=$('#ci').value.trim();if(!v)return;const o={title:v.slice(0,80),done:false};if(k=='tix'&&$('#cd').value)o.date=$('#cd').value;guard(async()=>{await addItem(k,o);$('#ci').value='';closeSheet()})},
@@ -583,6 +604,7 @@ document.addEventListener('change',e=>{const t=e.target;if(!T||!route.tid)return
   if(t.id=='tname'){guard(()=>updateDoc(tripRef(),{name:t.value.trim()||'未命名'}))}
   else if(t.id=='daytitle'){guard(()=>updateDoc(tripRef(),{['dayTitles.'+editDay]:t.value.trim().slice(0,40)}))}
   else if(t.id=='gl'){applyGL(t.value)}
+  else if(t.id=='tg'){const c=TAG2CAT[t.value],xc=$('#xc'),xa=$('#xa');if(c&&xc&&!(xa&&+xa.value>0))xc.value=c}
   else if(t.id=='startd'){guard(()=>updateDoc(tripRef(),{startDate:t.value||''}))}
   else if(t.id=='base'){guard(()=>updateDoc(tripRef(),{base:t.value}).then(renderForm))}
   else if(t.dataset.r){guard(()=>updateDoc(tripRef(),{['rates.'+t.dataset.r]:+t.value||1}))}
