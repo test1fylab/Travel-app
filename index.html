@@ -4,14 +4,17 @@
 <meta name="color-scheme" content="light only">
 <meta name="theme-color" content="#4a3426">
 <title>旅行安排</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 :root{--bg:#f3ead8;--card:#f3ead8;--card2:#fbf6ea;--tx:#3a2a1e;--mu:#8c7b69;--ac:#b8892f;--ink:#4a3426;--on:#f3ead8;--bd:#e0d2b8;--hl:#f0d98c;--warn:#a3472a;color-scheme:light;
---serif:"Noto Serif TC","Noto Serif JP","Hiragino Mincho ProN","Yu Mincho","PMingLiU",serif;
---sans:system-ui,-apple-system,"Noto Sans TC","Hiragino Sans","PingFang TC",sans-serif}
+--serif:"Cormorant Garamond","Noto Serif TC","Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",serif;
+--sans:"Jost","Noto Sans TC","Hiragino Sans","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%;background:#f3ead8}
-body{overflow-x:hidden;margin:0;background:var(--bg);color:var(--tx);font:15px/1.75 var(--sans);letter-spacing:.03em}
+body{overflow-x:hidden;margin:0;background:var(--bg);color:var(--tx);font:15px/1.75 var(--sans);letter-spacing:.03em;font-variant-numeric:lining-nums;font-feature-settings:'lnum' 1}
+button,input,select,textarea{font-feature-settings:'lnum' 1}
 main{max-width:520px;margin:0 auto;padding:18px 20px calc(120px + env(safe-area-inset-bottom,0px))}
 a{color:var(--ac);text-underline-offset:3px}
 input,select,textarea{width:100%;padding:10px 2px;margin:0 0 8px;border:0;border-bottom:1px solid var(--bd);border-radius:0;background:transparent;color:var(--tx);font:inherit;font-size:16px;letter-spacing:.03em;outline:none}
@@ -132,6 +135,49 @@ body.editing main{padding-top:calc(20px + env(safe-area-inset-top,0px))}
 .leaflet-popup-content-wrapper{border-radius:12px;background:var(--card2);color:var(--tx);box-shadow:0 6px 18px rgba(58,38,26,.25)}
 .leaflet-popup-tip{background:var(--card2)}.leaflet-popup-content{margin:12px 14px}
 .leaflet-container a.pbtn{display:block;margin-top:8px;text-align:center;background:var(--ink);color:var(--on)!important;border-radius:8px;padding:8px 12px;text-decoration:none;font-size:13px;letter-spacing:.06em}
+
+/* ---- 統一風格:圓角卡片、同一組字體(英文數字 Jost / Cormorant,中文 Noto) ---- */
+h3,.brand,.dt,.dnum,.tct,.et,#tname{font-feature-settings:'lnum' 1;font-variant-numeric:lining-nums}
+h3{font-weight:600;font-size:18px}
+#list .card,.cr{background:var(--card2);border:1px solid var(--bd);border-radius:16px;padding:14px 16px;margin:10px 0;box-shadow:0 2px 10px rgba(58,38,26,.06)}
+#list .card details:first-child{margin-top:0}
+#sheet .card{background:none;border:0;box-shadow:none;padding:4px 0}
+button.p{border-radius:12px}
+.chip{border-radius:99px;background:var(--bg)}
+.chip.on{background:var(--ink)}
+.banner{border-radius:12px;background:var(--card2);border:1px solid var(--bd);border-left:3px solid var(--ac)}
+.tlt,.ed2,.it b,.pill,.pin,.pn span{font-family:var(--sans)}
+#nbox{border-radius:20px}.cr{margin:0;box-shadow:none;background:transparent;border:0;padding:0}
+#sheet{border-radius:20px 20px 0 0}
+.mu{font-weight:400}
+/* 首頁 */
+.hhero{position:relative;height:196px;border-radius:22px;overflow:hidden;margin:6px 0 16px;background:linear-gradient(180deg,#f7e4b0 0%,#f2cf86 55%,#e9b95f 100%);box-shadow:0 8px 22px rgba(138,90,43,.22)}
+.hhero svg{position:absolute;inset:0;width:100%;height:100%}
+.hhero .ht{position:absolute;left:20px;top:18px;color:#4a3426;z-index:3}
+.hhero .ht b{display:block;font:600 26px/1.2 var(--serif);letter-spacing:.12em}
+.hhero .ht span{font-size:12px;letter-spacing:.3em;opacity:.8}
+.cld{animation:drift 38s linear infinite}.cld.b{animation-duration:55s;animation-delay:-20s}.cld.c{animation-duration:46s;animation-delay:-8s}
+@keyframes drift{from{transform:translateX(-120px)}to{transform:translateX(460px)}}
+.plane{animation:fly 14s ease-in-out infinite}
+@keyframes fly{0%{transform:translate(-60px,70px) rotate(-8deg)}50%{transform:translate(200px,36px) rotate(-4deg)}100%{transform:translate(460px,6px) rotate(-10deg)}}
+.pet{animation:fall 9s linear infinite;opacity:.9}.pet:nth-of-type(2n){animation-duration:12s;animation-delay:-4s}.pet:nth-of-type(3n){animation-duration:10s;animation-delay:-7s}
+@keyframes fall{0%{transform:translate(0,-20px) rotate(0)}100%{transform:translate(-50px,230px) rotate(300deg)}}
+.sun{animation:glow 5s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+@keyframes glow{50%{transform:scale(1.06);opacity:.9}}
+.go{display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;letter-spacing:.2em;min-height:52px;background:linear-gradient(90deg,#8a5a2b,#b8892f)!important;border-color:transparent!important;box-shadow:0 6px 16px rgba(138,90,43,.28)}
+.go svg{width:18px;height:18px;animation:nudge 1.8s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateX(4px)}}
+.tcard{position:relative;display:flex;gap:14px;align-items:stretch;background:var(--card2);border:1px solid var(--bd);border-radius:18px;padding:10px;margin-bottom:12px;box-shadow:0 2px 12px rgba(58,38,26,.07);text-decoration:none;color:var(--tx)}
+.tcv{flex:0 0 92px;height:92px;border-radius:13px;overflow:hidden;position:relative}
+.tcv svg{width:100%;height:100%;display:block}
+.tcard>a{display:flex;gap:14px;flex:1;min-width:0;color:inherit;text-decoration:none}
+.tcb{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;padding-right:34px}
+.tcn{font:600 18px/1.35 var(--serif);letter-spacing:.05em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tcm{font-size:12.5px;color:var(--mu);margin-top:2px}
+.tcm i{font-style:normal;display:inline-block;margin-right:10px}
+.tcx{position:absolute;right:2px;top:2px}
+.empty{text-align:center;padding:26px 10px;color:var(--mu);font-size:14px}
+@media (prefers-reduced-motion:reduce){.cld,.plane,.pet,.sun,.go svg{animation:none}}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -143,6 +189,8 @@ import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,addDoc,collection,onS
 
 const $=s=>document.querySelector(s),app=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const S2T_P='东東个個为為书書买買乱亂争爭于於亏虧云雲亚亞产產亲親亿億仅僅从從仓倉仪儀们們价價众眾优優伙夥会會伟偉传傳伤傷伦倫体體余餘佣傭侠俠侣侶侥僥侦偵侧側侨僑俭儉债債倾傾偿償储儲儿兒兰蘭关關兴興养養兽獸冈岡册冊写寫军軍农農冯馮冲衝决決况況冻凍净淨凉涼减減凑湊凤鳳凭憑击擊凿鑿刍芻划劃刘劉则則刚剛创創删刪别別刹剎剑劍剧劇劝勸办辦务務动動励勵劲勁劳勞势勢勋勳匀勻华華协協单單卖賣卢盧卫衛却卻厂廠厅廳历歷压壓厌厭厕廁厢廂县縣参參双雙发發变變叙敘叠疊号號叹嘆后後吗嗎吨噸听聽启啟吴吳呐吶员員咏詠响響哑啞哟喲唤喚啬嗇喷噴嘘噓团團园園围圍国國图圖圆圓圣聖场場坏壞块塊坚堅坛壇坝壩坞塢坟墳坠墜垄壟垒壘垦墾垫墊堑塹墙牆壮壯声聲壳殼壶壺处處备備复復够夠头頭夹夾夺奪奋奮奖獎奥奧妇婦妈媽妩嫵姗姍娄婁娱娛娲媧孙孫学學宁寧宝寶实實宠寵审審宪憲宫宮宽寬宾賓寝寢对對寻尋导導寿壽将將尔爾尘塵尝嘗尧堯尴尷尽盡层層属屬岁歲岂豈岗崗岛島峡峽崭嶄巅巔币幣师師帅帥带帶帧幀帮幫并並广廣庄莊庆慶库庫应應庙廟庞龐废廢开開异異弃棄张張弥彌弯彎归歸当當录錄彦彥径徑忆憶忧憂怀懷态態怜憐总總恋戀恳懇恶惡恼惱悦悅悬懸惊驚惧懼惨慘惯慣愿願戏戲战戰户戶扑撲执執扩擴扫掃扬揚扰擾抚撫抛拋抢搶护護报報担擔拟擬拥擁择擇挂掛挡擋挥揮损損换換据據掷擲摄攝摆擺摇搖摊攤撑撐敌敵数數斋齋断斷无無旧舊时時旷曠昼晝显顯晋晉晓曉晕暈暂暫术術机機杀殺杂雜权權条條来來杨楊杰傑极極构構枪槍柜櫃标標栋棟树樹样樣桥橋档檔桩樁梦夢检檢楼樓榄欖榈櫚横橫欢歡欧歐殴毆毕畢毙斃毁毀气氣汉漢汤湯沟溝没沒沥瀝沦淪沧滄泞濘泪淚泽澤洁潔洒灑浅淺浆漿浇澆测測济濟浑渾浓濃涛濤涝澇涡渦涣渙涨漲淀澱渊淵渔漁湾灣温溫湿濕溃潰滨濱滩灘灭滅灯燈灵靈灾災灿燦炉爐点點炼煉烁爍烂爛烛燭烟煙烦煩烧燒热熱爱愛爷爺牍牘牵牽犹猶狈狽狮獅独獨狭狹狱獄猎獵猫貓献獻玑璣环環现現玛瑪琐瑣电電画畫畅暢疗療疮瘡疯瘋痒癢皑皚盖蓋盘盤监監盏盞睁睜矫矯码碼础礎硕碩确確礼禮祸禍禅禪离離种種积積称稱税稅稳穩穷窮窃竊窍竅窝窩窜竄窥窺竖豎竞競笔筆笋筍笼籠筑築签簽简簡箩籮篮籃类類粮糧紧緊纠糾红紅纤纖约約级級纪紀纫紉纬緯纯純纱紗纲綱纳納纵縱纷紛纸紙纹紋纺紡纽紐线線练練组組细細织織终終绍紹经經绑綁结結绕繞绘繪给給络絡绝絕统統继繼续續绣繡维維绵綿绿綠缀綴缅緬缆纜缎緞缓緩缔締编編缘緣缚縛缝縫缩縮网網罗羅罚罰罢罷羁羈翘翹耸聳耻恥聂聶聋聾职職联聯聪聰肃肅肠腸肤膚肿腫胀脹胁脅胜勝脉脈脑腦脚腳脏髒腊臘腻膩腾騰舰艦舱艙艰艱艺藝节節芦蘆苍蒼苏蘇苹蘋茎莖荐薦荣榮药藥莱萊莲蓮获獲万萬萝蘿营營萧蕭蓝藍蔷薔蔼藹薮藪虏虜虑慮虾蝦蚀蝕蚁蟻蛮蠻蝉蟬补補衬襯袄襖装裝裤褲见見观觀规規视視览覽觉覺触觸计計订訂认認讥譏讨討让讓训訓议議讯訊记記讲講讳諱讶訝许許论論设設访訪证證评評识識诈詐诉訴诊診词詞译譯试試诗詩诚誠诞誕诠詮诡詭询詢该該详詳语語误誤说說诵誦请請诸諸诺諾读讀课課谁誰调調谅諒谈談谊誼谋謀谎謊谐諧谓謂谜謎谢謝谣謠谦謙谨謹谱譜贝貝贞貞负負贡貢财財责責贤賢败敗账賬货貨质質贩販贫貧贬貶购購贮貯贯貫贰貳贴貼贵貴贷貸贸貿费費贺賀贼賊贾賈资資赋賦赌賭赏賞赐賜赔賠赖賴赚賺赛賽赞贊赠贈赢贏赵趙趋趨跃躍践踐踊踴车車轧軋轨軌轩軒转轉轮輪软軟轰轟轴軸轻輕载載轿轎较較辅輔辆輛辈輩辉輝辑輯输輸辖轄辞辭边邊辽遼达達迁遷过過迈邁运運还還这這进進远遠违違连連迟遲选選逊遜递遞遗遺邓鄧邮郵邻鄰郑鄭释釋鉴鑑银銀铁鐵铃鈴铅鉛铜銅铭銘链鏈销銷锁鎖锅鍋锐銳错錯锦錦键鍵锯鋸镇鎮镜鏡长長门門闪閃闭閉问問闯闖闰閏闲閒间間闷悶闸閘闹鬧闺閨闻聞阀閥阁閣阅閱队隊阳陽阴陰阵陣阶階际際陆陸陈陳陕陝陨隕险險随隨隐隱隶隸难難雏雛雾霧静靜韩韓页頁顶頂顷頃项項顺順须須顾顧顿頓颁頒颂頌预預领領颇頗颈頸频頻颖穎题題颜顏额額风風飘飄飞飛饥飢饭飯饮飲饰飾饱飽饼餅馆館驰馳驱驅驶駛驻駐驾駕骂罵骄驕骆駱骑騎骗騙骚騷验驗骤驟鱼魚鲜鮮鲁魯鸟鳥鸡雞鸣鳴鸭鴨鸿鴻鹅鵝鹤鶴鹰鷹麦麥黄黃齐齊齿齒龙龍龟龜厦廈乐樂钟鐘钓釣钱錢针針钢鋼钥鑰钻鑽铺鋪铸鑄锋鋒汇匯泻瀉渐漸渗滲滚滾满滿滤濾滥濫漓灕潜潛潇瀟澜瀾举舉乡鄉习習乌烏乔喬亩畝仑侖伞傘党黨兑兌凯凱区區医醫卧臥厨廚叶葉吓嚇呕嘔屿嶼岚嵐岭嶺峦巒帘簾帜幟庐廬弹彈强強拣揀拦攔拨撥挠撓挤擠捞撈捡撿搀攙搁擱搂摟敛斂昙曇晒曬朴樸枢樞栏欄栖棲残殘毡氈氢氫沪滬泸瀘浏瀏涌湧涟漣灶竈焕煥猪豬琼瓊盐鹽矿礦砖磚稣穌窑窯笃篤筝箏筹籌粤粵缤繽脐臍舆輿艳艷茧繭荆荊莹瑩莺鶯萤螢蒋蔣虫蟲蚂螞蜗蝸衔銜袜襪觅覓诱誘跷蹺迹跡适適逻邏郁鬱酱醬酿釀钦欽钩鉤铲鏟阔闊陇隴雳靂韵韻顽頑饺餃馈饋驴驢鲤鯉鳄鱷涩澀驿驛苇葦荫蔭蓟薊',S2T={};for(let i=0;i<S2T_P.length;i+=2)S2T[S2T_P[i]]=S2T_P[i+1];
+const tw=s=>String(s??'').replace(/[\u3400-\u9fff]/g,c=>S2T[c]||c);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',3200)}
 if(!firebaseConfig||String(firebaseConfig.apiKey||'').startsWith('YOUR')){
@@ -184,11 +232,30 @@ function enter(){cleanup();route=parse();if(route.tid)openTrip();else home()}
 
 /* ---------- 首頁 ---------- */
 function topbar(){return `<div class=hd><span class="brand nm">旅 行 帖</span>${user?`<span class="mu nm" style="flex:0 1 auto">${esc(user.displayName||'')}</span><button class="p g s" data-a=logout>登出</button>`:`<button class="p s" data-a=login>登入</button>`}</div>`}
+const PAL=[['#e9c27a','#b8892f','#7a5230'],['#e8d3a6','#c49a52','#5f4430'],['#f0cf9a','#d09a4a','#8a4f2a'],['#dcc79c','#a98550','#4a3426'],['#efc9a0','#c27d4e','#6b3f2a']];
+const hashN=t=>{let h=0;for(const c of String(t))h=(h*31+c.charCodeAt(0))>>>0;return h};
+function coverSVG(id,k){const c=PAL[hashN(id)%PAL.length],g='g'+k;
+  return `<svg viewBox="0 0 92 92" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient></defs><rect width="92" height="92" fill="url(#${g})"/><circle cx="64" cy="26" r="11" fill="#fff6d8" opacity=".9"/><path d="M-4 70 L26 34 L44 56 L58 42 L98 80 L98 98 L-4 98Z" fill="${c[2]}" opacity=".85"/><path d="M-4 82 Q20 70 46 80 T98 78 L98 98 L-4 98Z" fill="#3a2a1e" opacity=".55"/></svg>`}
+function tripMeta(m){const p=[];if(m.region)p.push(esc(tw(m.region)));
+  if(m.startDate){const d=new Date(m.startDate+'T00:00:00');if(!isNaN(d)){const N=+m.dayCount||0,e=new Date(d);if(N>1)e.setDate(e.getDate()+N-1);p.push(N>1?`${md(d)} – ${md(e)}`:md(d))}}
+  if(+m.dayCount>0)p.push(m.dayCount>1?`${m.dayCount}天${m.dayCount-1}夜`:'1天');return p.map(x=>`<i>${x}</i>`).join('')}
+const HERO=`<div class=hhero><svg viewBox="0 0 390 196" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<circle class=sun cx="300" cy="66" r="30" fill="#fff6d8" opacity=".95"/>
+<g class="cld" fill="#fffaf0" opacity=".85"><ellipse cx="40" cy="48" rx="30" ry="9"/><ellipse cx="62" cy="42" rx="20" ry="8"/></g>
+<g class="cld b" fill="#fffaf0" opacity=".7"><ellipse cx="0" cy="88" rx="26" ry="7"/><ellipse cx="20" cy="83" rx="16" ry="6"/></g>
+<g class="cld c" fill="#fffaf0" opacity=".6"><ellipse cx="0" cy="26" rx="22" ry="6"/></g>
+<path d="M0 150 L120 96 L170 126 L236 76 L330 140 L390 118 L390 196 L0 196Z" fill="#c99a52" opacity=".8"/>
+<path d="M150 150 L228 70 L306 150Z" fill="#8a5a2b"/><path d="M205 92 L228 70 L251 92 L238 88 L228 96 L218 88Z" fill="#fff8e6"/>
+<path d="M0 168 Q70 146 150 164 T300 160 T390 156 L390 196 L0 196Z" fill="#4a3426"/>
+<path d="M0 182 Q90 168 190 180 T390 176 L390 196 L0 196Z" fill="#3a2a1e"/>
+<g class=plane><path d="M0 0 L30 -10 L10 4 L6 12 L2 5Z" fill="#fffaf0" stroke="#8a5a2b" stroke-width="1.2" stroke-linejoin="round"/></g>
+<g fill="#f6c6c0"><ellipse class=pet cx="90" cy="0" rx="4" ry="2.6"/><ellipse class=pet cx="170" cy="0" rx="3.6" ry="2.4" style="animation-delay:-3s"/><ellipse class=pet cx="250" cy="0" rx="4" ry="2.6" style="animation-delay:-6s"/><ellipse class=pet cx="330" cy="0" rx="3.4" ry="2.2" style="animation-delay:-1.5s"/><ellipse class=pet cx="400" cy="0" rx="4" ry="2.6" style="animation-delay:-8s"/><ellipse class=pet cx="40" cy="0" rx="3.4" ry="2.2" style="animation-delay:-5s"/></g>
+</svg><div class=ht><b>下一站,去哪裡?</b><span>TRAVEL JOURNAL</span></div></div>`;
 function home(){
   showNew=false;
-  if(!user){app.innerHTML=topbar()+`<div class=card><p>登入後可以建立旅程、分享給旅伴一起編輯。</p><p class=mu>沒有登入也能預覽別人分享給你的連結。</p><button class=p data-a=login>用 Google 登入</button></div>`;return}
-  const draw=homeDraw=()=>{app.innerHTML=topbar()+`<button class=p data-a=showNew>前去探索！</button>${showNew?`<div id=nveil data-a=hideNew></div><div id=nbox><div class=cr style="margin:0;border:0"><div class=mu style="margin-bottom:6px">建立新旅程</div><input id=nn placeholder="旅程名稱,例如:東京+山形 聖誕之旅"><input id=nr2 placeholder="地點,例如:日本東京"><div class=row><div><label>出發日</label><input type=date id=nd1></div><div><label>回程日</label><input type=date id=nd2></div></div><button class=p data-a=newTrip style="margin-top:6px">建立旅程</button><button class="p g" data-a=newTrip data-share=1 style="margin-top:6px">建立並邀請旅伴一起編輯</button></div><button class="p g" data-a=hideNew style="margin-top:6px">取消</button></div>`:''}
-  <h3>我的旅程</h3><div class=card>${mine.map(m=>`<div class=it><div><a href="#/t/${esc(m.id)}">${esc(m.name||'未命名')}</a></div><button class=x title="從清單移除" data-a=unlist data-id="${esc(m.id)}">✕</button></div>`).join('')||'<span class=mu>還沒有旅程</span>'}</div>`};
+  if(!user){app.innerHTML=topbar()+HERO+`<div class=card><p>登入後可以建立旅程、分享給旅伴一起編輯。</p><p class=mu>沒有登入也能預覽別人分享給你的連結。</p><button class="p go" data-a=login>用 Google 登入</button></div>`;return}
+  const draw=homeDraw=()=>{app.innerHTML=topbar()+HERO+`<button class="p go" data-a=showNew>前去探索！<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>${showNew?`<div id=nveil data-a=hideNew></div><div id=nbox><div class=cr><h3 style="margin-top:0">建立新旅程</h3><input id=nn placeholder="旅程名稱,例如:東京+山形 聖誕之旅"><input id=nr2 placeholder="地點,例如:日本東京"><div class=row><div><label>出發日</label><input type=date id=nd1></div><div><label>回程日</label><input type=date id=nd2></div></div><button class=p data-a=newTrip style="margin-top:6px">建立旅程</button><button class="p g" data-a=newTrip data-share=1 style="margin-top:6px">建立並邀請旅伴一起編輯</button></div><button class="p g" data-a=hideNew style="margin-top:6px">取消</button></div>`:''}
+  <h3>我的旅程</h3>${mine.map((m,i)=>`<div class=tcard><a href="#/t/${esc(m.id)}"><div class=tcv>${coverSVG(m.id,i)}</div><div class=tcb><div class=tcn>${esc(m.name||'未命名')}</div><div class=tcm>${tripMeta(m)||'<i>尚未設定日期</i>'}</div></div></a><button class="x tcx" title="從清單移除" data-a=unlist data-id="${esc(m.id)}" aria-label="從清單移除">✕</button></div>`).join('')||'<div class=empty>還沒有旅程<br>按上面的「前去探索！」開始第一趟</div>'}`};
   draw();
   unsubs.push(onSnapshot(myTripsCol(),s=>{mine=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0));if(!route.tid)draw()},()=>{}));
 }
@@ -220,7 +287,7 @@ async function tryJoin(){
   }catch(e){toast('邀請碼無效或已被更換,目前只能預覽')}
   history.replaceState(null,'','#/t/'+route.tid);route.join=null;
 }
-async function recordMine(){if(!user||!T)return;if(tripIdOpen===T.id+T.name)return;tripIdOpen=T.id+T.name;try{await setDoc(doc(db,'users',user.uid,'trips',T.id),{name:T.name||'',ts:Date.now()})}catch(e){}}
+async function recordMine(){if(!user||!T)return;const key=[T.id,T.name,T.region,T.startDate,dayCount()].join('|');if(tripIdOpen===key)return;tripIdOpen=key;try{await setDoc(doc(db,'users',user.uid,'trips',T.id),{name:T.name||'',region:T.region||'',startDate:T.startDate||'',dayCount:dayCount(),ts:Date.now()})}catch(e){}}
 
 function renderHeader(){
   if(!T)return;recordMine();
@@ -274,7 +341,7 @@ function renderForm(){
   const x=editId?items.find(i=>i.id==editId):null;
   f.innerHTML=[
   `<div class=card><div class=row><input id=d type=number inputmode=numeric min=1 placeholder="第幾天" value="${x?x.day:(dayF||1)}"><input id=t type=time value="${x?esc(x.time||''):''}"></div>
-  <div class=row><input id=placeq placeholder="搜尋地點(可選),例如:淺草寺" value="${esc(x?.placeName||'')}"><button class="p g" data-a=searchPlace style="flex:0 0 72px;margin-bottom:8px">搜尋</button></div>
+  <div class=row><input id=placeq placeholder="搜尋地點(可選),例如:淺草寺" value="${esc(tw(x?.placeName||''))}"><button class="p g" data-a=searchPlace style="flex:0 0 72px;margin-bottom:8px">搜尋</button></div>
   <input id=gl inputmode=url placeholder="貼上 Google 地圖連結(選填)" value="${x?esc(x.url||''):''}"><div id=resbox></div><div id=selp class=mu></div>
   <select id=tg>${['',...TAGS].map(t=>`<option value="${t}" ${(x&&x.tag==t)||(!x&&!t)?'selected':''}>${t||'類別(選填)'}</option>`).join('')}</select><input id=ti placeholder="行程名稱" value="${x?esc(x.title):''}"><input id=no placeholder="備註(選填)" value="${x?esc(x.note||''):''}">
   <details ${x&&+x.amt>0?'open':''} style="margin:4px 0 10px"><summary>記帳(選填)</summary>${(T.members||[]).length?`<select id=xc style="margin-top:6px">${CATS.map(c=>`<option ${x&&((x.cat&&x.cat==c)||(!x.cat&&TAG2CAT[x.tag]==c))?'selected':''}>${c}</option>`).join('')}</select>
@@ -291,7 +358,7 @@ function renderForm(){
   `<div class=card><input id=ci placeholder="行李項目"><button class=p data-a=addChk data-k=pack>新增</button><details><summary>載入常用行李清單</summary><button class=p data-a=preset style="margin-top:6px">加入常用 12 項</button></details></div>`][tab];
   if(tab==0)showSel();
 }
-function showSel(){const e=$('#selp');if(!e)return;const p=selPlace||(editId&&items.find(i=>i.id==editId)&&items.find(i=>i.id==editId).lat!=null?{name:items.find(i=>i.id==editId).placeName}:null);e.textContent=p?'已選位置:'+(p.name||''):'尚未選擇位置(不選也可以新增)'}
+function showSel(){const e=$('#selp');if(!e)return;const p=selPlace||(editId&&items.find(i=>i.id==editId)&&items.find(i=>i.id==editId).lat!=null?{name:tw(items.find(i=>i.id==editId).placeName)}:null);e.textContent=p?'已選位置:'+(p.name||''):'尚未選擇位置(不選也可以新增)'}
 
 /* ---------- 列表 ---------- */
 function renderList(){
@@ -361,7 +428,7 @@ function timeline(g){
     return `<div class="tli ${selId==x.id?'sel':''}" id="i_${x.id}"><div class=tlt>${esc(x.time||'')}</div><div class=tld></div>
     <div class=tlc data-a=focus data-id="${x.id}" style="cursor:pointer">${isEd?`<div class=tca><button class=x data-a=edit data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button></div>`:''}
     ${tg}${has?'':'<span class=mu>(未定位)</span>'}<div class=tct style="${isEd?'padding-right:64px':''}">${esc(x.title)}</div>
-    ${x.placeName?`<div class=tcs>${esc(x.placeName)}</div>`:''}${x.note?`<div class=tcs>${esc(x.note)}</div>`:''}${+x.amt>0?`<div class=tcs style="color:var(--ink);font-weight:600">${esc(x.cat||'')} ${fmt(x.amt)} ${esc(x.cur||T.base)} · ${esc(x.payer||'')} 付</div>`:''}
+    ${x.placeName?`<div class=tcs>${esc(tw(x.placeName))}</div>`:''}${x.note?`<div class=tcs>${esc(x.note)}</div>`:''}${+x.amt>0?`<div class=tcs style="color:var(--ink);font-weight:600">${esc(x.cat||'')} ${fmt(x.amt)} ${esc(x.cur||T.base)} · ${esc(x.payer||'')} 付</div>`:''}
     <div class=tcs>${d!=null?`距上一站約 ${d<1?Math.round(d*1000)+' m':d.toFixed(1)+' km'} · `:''}<a href="${link}" target=_blank rel=noopener>在 Google 地圖開啟</a></div></div></div>`}).join('')+`</div>`;
 }
 function listItin(){
@@ -438,9 +505,9 @@ async function initMap(){
   layer=L.layerGroup().addTo(map);drawMap();
 }
 const itemLink=x=>{if(x.url&&/^https?:\/\//.test(x.url))return x.url;
-  const nm=(x.placeName||segsOf(x.title)[0]||x.title||'').trim(),q=encodeURIComponent(nm+(x.placeName?'':' '+(T.region||'')));
+  const nm=(tw(x.placeName)||segsOf(x.title)[0]||x.title||'').trim(),q=encodeURIComponent(nm+(x.placeName?'':' '+(T.region||'')));
   return x.lat!=null?`https://www.google.com/maps/search/${q}/@${x.lat},${x.lon},17z`:`https://www.google.com/maps/search/?api=1&query=${q}`};
-const popupHTML=x=>`<div style="font:14px/1.5 var(--sans);min-width:150px"><div style="font-weight:600">${esc(x.title)}</div><div style="color:var(--mu);font-size:12px">${esc(x.time||'')}${x.placeName?' · '+esc(x.placeName):''}</div><a class=pbtn href="${esc(itemLink(x))}" target=_blank rel=noopener>在 Google 地圖開啟</a></div>`;
+const popupHTML=x=>`<div style="font:14px/1.5 var(--sans);min-width:150px"><div style="font-weight:600">${esc(x.title)}</div><div style="color:var(--mu);font-size:12px">${esc(x.time||'')}${x.placeName?' · '+esc(tw(x.placeName)):''}</div><a class=pbtn href="${esc(itemLink(x))}" target=_blank rel=noopener>在 Google 地圖開啟</a></div>`;
 function hilite(id){selId=id;document.querySelectorAll('.tli.sel').forEach(e=>e.classList.remove('sel'));const el=$('#i_'+id);if(el)el.classList.add('sel')}
 const pinHTML=(n,c)=>`<div class=pw><div class=pn style="background:${c}"><span>${n}</span></div></div>`;
 function clearMap(){
@@ -480,11 +547,11 @@ async function geocode(q,limit=5){
   if(G&&!gFail){try{
     await loadG();const {Place}=await google.maps.importLibrary('places');
     const {places}=await Place.searchByText({textQuery:q,fields:['displayName','formattedAddress','location'],maxResultCount:Math.max(1,Math.min(limit,20)),language:'zh-TW'});
-    return (places||[]).map(p=>({name:p.displayName||'',full:[p.displayName,p.formattedAddress].filter(Boolean).join(' · '),lat:p.location.lat(),lon:p.location.lng()}));
+    return (places||[]).map(p=>({name:tw(p.displayName||''),full:tw([p.displayName,p.formattedAddress].filter(Boolean).join(' · ')),lat:p.location.lat(),lon:p.location.lng()}));
   }catch(e){gFail=true;toast('Google 搜尋無法使用,已改用 OpenStreetMap 搜尋')}}
   const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit='+limit+'&accept-language='+encodeURIComponent('zh-Hant,zh-TW,zh-HK,zh,ja,en')+'&q='+encodeURIComponent(q));
   if(!r.ok)throw new Error('geo');
-  return (await r.json()).map(p=>({name:segsOf(p.display_name)[0]||p.display_name,full:p.display_name,lat:+p.lat,lon:+p.lon}));
+  return (await r.json()).map(p=>({name:tw(segsOf(p.display_name)[0]||p.display_name),full:tw(p.display_name),lat:+p.lat,lon:+p.lon}));
 }
 
 /* ---------- 寫入 ---------- */
@@ -513,7 +580,7 @@ const A={
       await setDoc(doc(db,'trips',id),o);
       await setDoc(doc(db,'trips',id,'editors',user.uid),{role:'owner',name:user.displayName||user.email||''});
       await setDoc(doc(db,'trips',id,'secrets','invite'),{token:randToken()});
-      await setDoc(doc(db,'users',user.uid,'trips',id),{name:n,ts:Date.now()});
+      await setDoc(doc(db,'users',user.uid,'trips',id),{name:n,region:rg,startDate:d1||'',dayCount:dc||0,ts:Date.now()});
       openShareNext=!!(btn&&btn.dataset&&btn.dataset.share);showNew=false;
       location.hash='#/t/'+id}catch(e){toast('建立失敗,請確認 Firestore 規則已發佈')}},
   openShare(){shareMode=true;$('#sheet').classList.add('open');$('#veil').classList.add('open');renderShare()},
