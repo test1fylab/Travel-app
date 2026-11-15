@@ -42,7 +42,7 @@ h3{margin:26px 0 4px;font-family:var(--serif);font-weight:500;font-size:17px;let
 .chk{display:inline-flex;gap:6px;align-items:center;margin-right:14px;min-height:32px}
 details{margin-top:12px}summary{cursor:pointer;color:var(--mu);font-size:13px;letter-spacing:.1em;min-height:32px}
 #map{height:240px;border:1px solid var(--bd);border-radius:2px;margin:6px 0 12px;z-index:0}
-.leaflet-tile-pane{filter:saturate(.92)}
+.leaflet-tile-pane{filter:grayscale(.55) sepia(.3) brightness(1.06) contrast(.9) saturate(.9)}
 .pin{width:22px;height:22px;border-radius:50%;color:#fff;font:600 11px var(--sans);display:flex;align-items:center;justify-content:center;border:1.5px solid #f6f3ec;box-shadow:0 1px 3px rgba(0,0,0,.35)}
 #dayf{margin-bottom:2px}
 .banner{border-left:3px solid var(--ac);padding:4px 12px;margin:8px 0 14px;font-size:13px;color:var(--mu)}
@@ -80,7 +80,7 @@ main{padding-top:0}
 .hmeta{font-size:13px;opacity:.9;letter-spacing:.08em;min-height:20px}
 .wave{position:absolute;left:0;right:0;bottom:-1px;height:22px;z-index:4;pointer-events:none;background:radial-gradient(circle at 14px 0,transparent 13px,var(--bg) 14px) 0 7px/28px 16px repeat-x,radial-gradient(circle at 14px 0,transparent 13px,var(--ac) 14px) 0 0/28px 16px repeat-x}
 .leaflet-top.leaflet-right{top:56px}
-.leaflet-tile-pane{filter:saturate(.92)}
+.leaflet-tile-pane{filter:grayscale(.55) sepia(.3) brightness(1.06) contrast(.9) saturate(.9)}
 .pw{position:relative;width:28px;height:36px}
 .pn{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
 .pn span{transform:rotate(45deg);color:#fff;font:700 12px var(--sans)}
@@ -232,7 +232,7 @@ async function renderShare(){
   }else html+='<div class=mu>只有建立者可以看到編輯連結與管理編輯者。</div>';
   box.innerHTML=html;
 }
-function renderNav(){$('#nav').innerHTML=TABS.map((t,i)=>`<button class="${i==tab?'on':''}" data-tab=${i}>${t}</button>`).join('');$('#hero').classList.toggle('mini',tab!=0);$('#dayf').style.display=tab==0?'block':'none';if(tab==0&&map)setTimeout(()=>{if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()},50)}
+function renderNav(){$('#nav').innerHTML=TABS.map((t,i)=>`<button class="${i==tab?'on':''}" data-tab=${i}>${t}</button>`).join('');$('#hero').classList.toggle('mini',tab!=0);$('#dayf').style.display=tab==0?'':'none';if(tab==0&&map)setTimeout(()=>{if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()},50)}
 
 /* ---------- 表單 ---------- */
 function openSheet(){if(!isEd)return;renderForm();$('#sheet').classList.add('open');$('#veil').classList.add('open')}
@@ -312,7 +312,7 @@ function renderDayF(){
   const ds=dayList();
   if(!dayInit&&ds.length){dayF=ds[0];dayInit=true;needFit=true}
   if(dayF&&!ds.includes(dayF))dayF=0;
-  const dEl=$('#dayf');dEl.innerHTML=(ds.length?`<div class="pill ${!dayF?'on':''}" data-a=day data-d=0><b>全部</b><span>${ds.length} 天</span></div>`+ds.map(d=>`<div class="pill ${dayF==d?'on':''}" data-a=day data-d=${d}><b>Day ${d}</b><span>${dayDate(d)?md(dayDate(d)):'&nbsp;'}</span></div>`).join(''):'')+(isEd?'<div class="pill add" data-a=addDay><b>＋</b><span>新增天</span></div>':'');
+  const dEl=$('#dayf');dEl.innerHTML=(ds.length?`<div class="pill ${!dayF?'on':''}" data-a=day data-d=0><b>全部</b><span>${ds.length} 天</span></div>`+ds.map(d=>`<div class="pill ${dayF==d?'on':''}" data-a=day data-d=${d}><b>D${d}</b><span>${dayDate(d)?md(dayDate(d)):'&nbsp;'}</span></div>`).join(''):'')+(isEd?'<div class="pill add" data-a=addDay><b>＋</b><span>新增天</span></div>':'');
   const on=dEl.querySelector('.pill.on');if(on)dEl.scrollLeft=on.offsetLeft-(dEl.clientWidth-on.offsetWidth)/2;
 }
 function navUrl(day){
@@ -337,6 +337,7 @@ function listItin(){
   const all=sortItin(itemsOf('itin')),ds=dayList(),N=ds.length?Math.max(...ds):0;
   if(!ds.length)return '<p class=mu style="margin-top:18px">還沒有行程。點右下角「＋」新增。</p>';
   let html='';
+  if(!T.startDate&&isEd)html+='<div class=mu style="margin-top:4px">在「分享與設定」填入出發日期,就會顯示每天的日期。</div>';
   if(T.startDate){const t0=new Date(T.startDate+'T00:00:00'),now=new Date();now.setHours(0,0,0,0);const k=Math.round((now-t0)/864e5)+1;
     if(k>=1&&k<=N&&ds.includes(k))html+=`<div class=today data-a=day data-d=${k}>今天是 Day ${k} · ${dayF==k?'今日行程':'前往今日行程'}</div>`}
   (dayF?[dayF]:ds).forEach(d=>{
@@ -382,7 +383,7 @@ async function initMap(){
   }
   if(!$('#map')||$('#map')!==el)return;
   map=L.map(el,{zoomControl:false}).setView([35.68,139.76],5);L.control.zoom({position:'topright'}).addTo(map);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,detectRetina:true,attribution:'© OpenStreetMap contributors © CARTO'}).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
   layer=L.layerGroup().addTo(map);drawMap();
 }
 const pinHTML=(n,c)=>`<div class=pw><div class=pn style="background:${c}"><span>${n}</span></div></div>`;
