@@ -78,15 +78,17 @@ main{padding-top:0}
 #tname{color:#fff;font-size:28px;font-family:var(--serif);font-weight:600;letter-spacing:.06em;width:100%;padding:2px 0;border:0;margin:0;line-height:1.3}
 #tname::placeholder{color:rgba(255,255,255,.6)}
 .hmeta{font-size:13px;opacity:.9;letter-spacing:.08em;min-height:20px}
-.wave{position:absolute;left:0;right:0;bottom:-1px;height:22px;z-index:4;pointer-events:none;background:radial-gradient(circle at 14px 0,transparent 13px,var(--bg) 14px) 0 7px/28px 16px repeat-x,radial-gradient(circle at 14px 0,transparent 13px,var(--ac) 14px) 0 0/28px 16px repeat-x}
+.wave{position:absolute;left:0;right:0;bottom:-1px;height:12px;background:var(--bg);z-index:4;pointer-events:none}
+.wave::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--ac)}
+.wave::after{content:"";position:absolute;left:0;right:0;top:6px;height:1px;background:var(--ac);opacity:.65}
 .leaflet-top.leaflet-right{top:56px}
 .leaflet-tile-pane{filter:grayscale(.55) sepia(.3) brightness(1.06) contrast(.9) saturate(.9)}
 .pw{position:relative;width:28px;height:36px}
 .pn{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
 .pn span{transform:rotate(45deg);color:#fff;font:700 12px var(--sans)}
-#dayf{position:relative;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;display:flex;overflow-x:auto;margin:0 -20px;padding:14px 20px 10px;scrollbar-width:none}#dayf::-webkit-scrollbar{display:none}
-.pill{scroll-snap-align:center;flex:0 0 auto;white-space:nowrap;min-width:0;text-align:center;padding:4px 12px;margin-right:6px;border-radius:99px;border:1px solid var(--bd);background:var(--card2);cursor:pointer;line-height:1.25}
-.pill b{display:block;font-weight:600;font-size:13px}.pill span{display:block;font-size:10px;color:var(--mu)}.pill.add{border-style:dashed}.pill.add b{color:var(--ac);font-size:15px}
+#dayf{position:relative;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;display:flex;overflow-x:auto;margin:0 -20px;padding:14px 20px 14px;scrollbar-width:none}#dayf::-webkit-scrollbar{display:none}
+.pill{flex:0 0 auto;width:56px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;white-space:nowrap;text-align:center;padding:0;margin-right:8px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);cursor:pointer;line-height:1.25;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.pill b{display:block;font-weight:600;font-size:15px}.pill span{display:block;font-size:10px;color:var(--mu)}.pill.drag{box-shadow:0 10px 22px rgba(58,38,26,.38);position:relative;z-index:3;border-color:var(--ac);transition:none}.pill.add{border-style:dashed}.pill.add b{color:var(--ac);font-size:15px}
 .pill.on{background:var(--ink);color:var(--on);border-color:var(--ink)}.pill.on span{color:var(--on);opacity:.75}
 .dhead{display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px}
 .dnum{font-family:var(--serif);font-weight:700;font-size:64px;line-height:1;color:var(--ink)}.dnum span{font-size:22px;color:var(--ac);font-weight:600;margin-left:6px}
@@ -120,7 +122,10 @@ body.editing main{padding-top:calc(20px + env(safe-area-inset-top,0px))}
 .em{flex:1;min-width:0}.en{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
 .ed2{font-size:13px;color:var(--mu);font-variant-numeric:tabular-nums}
 .eb{border:0;background:none;color:var(--ink);font-weight:700;font-size:14px;padding:8px 4px;min-height:40px;cursor:pointer}
-.erow.drag{box-shadow:0 10px 24px rgba(58,38,26,.28);position:relative;z-index:5}
+.erow.drag{box-shadow:0 16px 30px rgba(58,38,26,.38);position:relative;z-index:5;border-color:var(--ac);transition:none;will-change:transform}
+.leaflet-popup-content-wrapper{border-radius:12px;background:var(--card2);color:var(--tx);box-shadow:0 6px 18px rgba(58,38,26,.25)}
+.leaflet-popup-tip{background:var(--card2)}.leaflet-popup-content{margin:12px 14px}
+.leaflet-container a.pbtn{display:block;margin-top:8px;text-align:center;background:var(--ink);color:var(--on)!important;border-radius:8px;padding:8px 12px;text-decoration:none;font-size:13px;letter-spacing:.06em}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -337,6 +342,7 @@ function listItin(){
   const all=sortItin(itemsOf('itin')),ds=dayList(),N=ds.length?Math.max(...ds):0;
   if(!ds.length)return '<p class=mu style="margin-top:18px">還沒有行程。點右下角「＋」新增。</p>';
   let html='';
+  if(isEd&&ds.length>1)html+='<div class=mu style="margin-top:2px">長按 D1、D2… 方塊可左右拖曳,調整天數順序。</div>';
   if(!T.startDate&&isEd)html+='<div class=mu style="margin-top:4px">在「分享與設定」填入出發日期,就會顯示每天的日期。</div>';
   if(T.startDate){const t0=new Date(T.startDate+'T00:00:00'),now=new Date();now.setHours(0,0,0,0);const k=Math.round((now-t0)/864e5)+1;
     if(k>=1&&k<=N&&ds.includes(k))html+=`<div class=today data-a=day data-d=${k}>今天是 Day ${k} · ${dayF==k?'今日行程':'前往今日行程'}</div>`}
@@ -372,6 +378,21 @@ function loadG(){return GL||(GL=new Promise((ok,no)=>{
   const sc=document.createElement('script');
   sc.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(mapsKey)+'&v=weekly&language=zh-TW&loading=async&callback=__gm';
   sc.onerror=()=>{GL=null;no(new Error('gmaps'))};document.head.appendChild(sc)}))}
+let VB=null;
+function loadScript(src){return new Promise((ok,no)=>{const sc=document.createElement('script');sc.src=src;sc.onload=ok;sc.onerror=()=>no(new Error(src));document.head.appendChild(sc)})}
+function addVectorBase(m,osm){
+  (VB||(VB=(async()=>{
+    const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css';document.head.appendChild(css);
+    await loadScript('https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js');
+    await loadScript('https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js');
+    if(!(L.maplibreGL||window.maplibreGL))throw new Error('plugin');
+  })())).then(()=>{
+    if(map!==m)return;
+    const f=L.maplibreGL||window.maplibreGL,vl=f({style:'https://tiles.openfreemap.org/styles/positron'});vl.addTo(m);
+    m.attributionControl.addAttribution('<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>');
+    try{vl.getMaplibreMap().on('load',()=>{if(m.hasLayer(osm))m.removeLayer(osm)})}catch(e){}
+  }).catch(()=>{VB=null;toast('淡色地圖載入失敗,已使用一般地圖')});
+}
 async function initMap(){
   const el=$('#map');if(!el)return;
   if(G){
@@ -383,9 +404,12 @@ async function initMap(){
   }
   if(!$('#map')||$('#map')!==el)return;
   map=L.map(el,{zoomControl:false}).setView([35.68,139.76],5);L.control.zoom({position:'topright'}).addTo(map);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);addVectorBase(map,osm);
   layer=L.layerGroup().addTo(map);drawMap();
 }
+const itemLink=x=>(x.url&&/^https?:\/\//.test(x.url))?x.url:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.lat!=null?x.lat+','+x.lon:(segsOf(x.title)[0]||x.title)+' '+(T.region||''));
+const popupHTML=x=>`<div style="font:14px/1.5 var(--sans);min-width:150px"><div style="font-weight:600">${esc(x.title)}</div><div style="color:var(--mu);font-size:12px">${esc(x.time||'')}${x.placeName?' · '+esc(x.placeName):''}</div><a class=pbtn href="${esc(itemLink(x))}" target=_blank rel=noopener>在 Google 地圖開啟</a></div>`;
+function hilite(id){selId=id;document.querySelectorAll('.tli.sel').forEach(e=>e.classList.remove('sel'));const el=$('#i_'+id);if(el)el.classList.add('sel')}
 const pinHTML=(n,c)=>`<div class=pw><div class=pn style="background:${c}"><span>${n}</span></div></div>`;
 function clearMap(){
   if(G){gl.forEach(o=>{if(o.setMap)o.setMap(null);else o.map=null});gl=[];if(iw)iw.close()}
@@ -400,24 +424,23 @@ function drawMap(){
       if(line.length>1)gl.push(new google.maps.Polyline({map,path:line.map(p=>({lat:p[0],lng:p[1]})),strokeOpacity:0,icons:[{icon:{path:'M 0,-1 0,1',strokeOpacity:.85,strokeColor:c,strokeWeight:3,scale:1.4},offset:'0',repeat:'10px'}]}));
       g.forEach((x,i)=>{const pin=document.createElement('div');pin.innerHTML=pinHTML(i+1,c);
         const m=new google.maps.marker.AdvancedMarkerElement({map,position:{lat:x.lat,lng:x.lon},content:pin,title:x.title});
-        m.addListener('click',()=>focusItem(x.id,false));gl.push(m);markers[x.id]=m;pts.push([x.lat,x.lon])});
+        m.addListener('click',()=>{hilite(x.id);if(iw){iw.setContent(popupHTML(x));iw.open({map,anchor:m})}});gl.push(m);markers[x.id]=m;pts.push([x.lat,x.lon])});
     }else{
       if(line.length>1)L.polyline(line,{color:c,weight:3,opacity:.8,dashArray:'1 9',lineCap:'round'}).addTo(layer);
       g.forEach((x,i)=>{const m=L.marker([x.lat,x.lon],{icon:L.divIcon({className:'',html:pinHTML(i+1,c),iconSize:[28,36],iconAnchor:[14,35]})}).addTo(layer);
-        m.bindTooltip(`${x.time?x.time+' ':''}${x.title}`);m.on('click',()=>focusItem(x.id,false));markers[x.id]=m;pts.push([x.lat,x.lon])});
+        m.bindPopup(popupHTML(x),{offset:[0,-26]});m.on('click',()=>hilite(x.id));markers[x.id]=m;pts.push([x.lat,x.lon])});
     }});
   if(needFit&&pts.length){
     if(G){if(pts.length==1){map.setCenter({lat:pts[0][0],lng:pts[0][1]});map.setZoom(15)}else{const bd=new google.maps.LatLngBounds();pts.forEach(p=>bd.extend({lat:p[0],lng:p[1]}));map.fitBounds(bd,40)}}
     else pts.length==1?map.setView(pts[0],15):map.fitBounds(pts,{padding:[30,30],maxZoom:16});
     needFit=false}
 }
-function focusItem(id,fly=true){
-  selId=id;const x=items.find(i=>i.id==id);
-  document.querySelectorAll('.it.sel').forEach(e=>e.classList.remove('sel'));const el=$('#i_'+id);if(el){el.classList.add('sel');if(!fly)el.scrollIntoView({block:'center',behavior:'smooth'})}
+function focusItem(id){
+  hilite(id);const x=items.find(i=>i.id==id);
   if(x&&x.lat!=null&&map){
-    if(G){map.setCenter({lat:x.lat,lng:x.lon});if((map.getZoom()||0)<15)map.setZoom(15);const m=markers[id];if(m&&iw){iw.setContent(esc((x.time?x.time+' ':'')+x.title));iw.open({map,anchor:m})}}
-    else{map.setView([x.lat,x.lon],Math.max(map.getZoom(),15));markers[id]&&markers[id].openTooltip()}
-    if(fly)$('#map').scrollIntoView({block:'nearest',behavior:'smooth'})}
+    if(G){map.setCenter({lat:x.lat,lng:x.lon});if((map.getZoom()||0)<15)map.setZoom(15);const m=markers[id];if(m&&iw){iw.setContent(popupHTML(x));iw.open({map,anchor:m})}}
+    else{map.setView([x.lat,x.lon],Math.max(map.getZoom(),15));markers[id]&&markers[id].openPopup()}
+    $('#map').scrollIntoView({block:'nearest',behavior:'smooth'})}
 }
 
 /* ---------- 地點搜尋(Google Places 或 OpenStreetMap Nominatim) ---------- */
@@ -512,18 +535,48 @@ document.addEventListener('touchend',e=>{if(!sOK)return;sOK=false;const t=e.chan
   if(Math.abs(dx)<60||Math.abs(dy)>45||Math.abs(dx)<Math.abs(dy)*1.8)return;
   const ds=dayList();if(!ds.length)return;const arr=[0,...ds];let i=arr.indexOf(dayF);if(i<0)i=0;i+=dx<0?1:-1;if(i<0||i>=arr.length)return;
   dayF=arr[i];needFit=true;renderList()},{passive:true});
+let suppressClick=0;
+function dragSort(e,el,box,sel,ax,onDone){
+  const y=ax=='y',off=()=>y?window.scrollY:box.scrollLeft,pc=ev=>(y?ev.clientY:ev.clientX)+off(),
+        ps=n=>n.getBoundingClientRect()[y?'top':'left']+off(),sz=n=>y?n.offsetHeight:n.offsetWidth;
+  const p0=pc(e),s0=ps(el);dragging=true;el.classList.add('drag');
+  try{box.setPointerCapture(e.pointerId)}catch(x){}
+  const move=ev=>{
+    if(y){if(ev.clientY<90)window.scrollBy(0,-14);else if(ev.clientY>innerHeight-90)window.scrollBy(0,14)}
+    else{const r=box.getBoundingClientRect();if(ev.clientX<r.left+40)box.scrollLeft-=12;else if(ev.clientX>r.right-40)box.scrollLeft+=12}
+    el.style.transform='none';
+    const want=s0+(pc(ev)-p0),c=want+sz(el)/2,sibs=[...box.querySelectorAll(sel)].filter(r=>r!==el);let placed=false;
+    for(const r of sibs){if(c<ps(r)+sz(r)/2){box.insertBefore(el,r);placed=true;break}}
+    if(!placed&&sibs.length)sibs[sibs.length-1].after(el);
+    el.style.transform=`translate${y?'Y':'X'}(${want-ps(el)}px) scale(1.04)`};
+  const end=()=>{box.removeEventListener('pointermove',move);box.removeEventListener('pointerup',end);box.removeEventListener('pointercancel',end);
+    el.style.transform='';el.classList.remove('drag');dragging=false;suppressClick=Date.now()+350;
+    onDone([...box.querySelectorAll(sel)].map(r=>r.dataset.id||r.dataset.d))};
+  box.addEventListener('pointermove',move);box.addEventListener('pointerup',end);box.addEventListener('pointercancel',end);
+}
+async function saveDayOrder(arr){
+  const order=arr.map(Number);if(order.every((d,i)=>d===i+1)){renderList();return}
+  const pos={};order.forEach((d,i)=>pos[d]=i+1);
+  const remap=o=>{const r={};Object.keys(o||{}).forEach(k=>{if(pos[+k])r[pos[+k]]=o[k]});return r};
+  await guard(async()=>{const b=writeBatch(db);
+    itemsOf('itin').forEach(x=>{const nd=pos[x.day];if(nd&&nd!==x.day)b.update(doc(db,'trips',T.id,'items',x.id),{day:nd})});
+    b.update(tripRef(),{dayTitles:remap(T.dayTitles),manual:remap(T.manual)});await b.commit();
+    if(dayF&&pos[dayF])dayF=pos[dayF];needFit=true});
+  renderList()}
+let ldT=0,ldE=null,ldXY=null;
 document.addEventListener('pointerdown',e=>{
-  const g=e.target.closest&&e.target.closest('.grip');if(!g||!isEd)return;
-  const row=g.closest('.erow'),box=$('#erows');if(!row||!box)return;
-  e.preventDefault();dragging=true;row.classList.add('drag');box.setPointerCapture(e.pointerId);
-  const move=ev=>{const y=ev.clientY,sibs=[...box.querySelectorAll('.erow')].filter(r=>r!==row);let placed=false;
-    for(const r of sibs){const b=r.getBoundingClientRect();if(y<b.top+b.height/2){box.insertBefore(row,r);placed=true;break}}
-    if(!placed&&sibs.length)sibs[sibs.length-1].after(row)};
-  const up=()=>{box.removeEventListener('pointermove',move);box.removeEventListener('pointerup',up);box.removeEventListener('pointercancel',up);
-    row.classList.remove('drag');dragging=false;const ids=[...box.querySelectorAll('.erow')].map(r=>r.dataset.id);saveOrder(ids).then(()=>renderList())};
-  box.addEventListener('pointermove',move);box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
+  const tg=e.target;if(!tg||!tg.closest||dragging)return;
+  const g=tg.closest('.grip');
+  if(g&&isEd){const row=g.closest('.erow'),box=$('#erows');if(row&&box){e.preventDefault();dragSort(e,row,box,'.erow','y',ids=>saveOrder(ids).then(()=>renderList()))}return}
+  const p=tg.closest('.pill[data-d]');
+  if(p&&isEd&&p.dataset.d!=='0'){ldE=e;ldXY=[e.clientX,e.clientY];clearTimeout(ldT);
+    ldT=setTimeout(()=>{ldT=0;const box=$('#dayf');if(box&&p.isConnected){dragSort(ldE,p,box,'.pill[data-d]:not([data-d="0"])','x',saveDayOrder);if(navigator.vibrate)navigator.vibrate(12)}},380)}
 });
-document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-a]');if(!t)return;
+document.addEventListener('pointermove',e=>{if(ldT&&ldXY&&Math.hypot(e.clientX-ldXY[0],e.clientY-ldXY[1])>8){clearTimeout(ldT);ldT=0}});
+['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{if(ldT){clearTimeout(ldT);ldT=0}}));
+document.addEventListener('touchmove',e=>{if(dragging&&e.cancelable)e.preventDefault()},{passive:false});
+document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.pill,.grip'))e.preventDefault()});
+document.addEventListener('click',e=>{if(Date.now()<suppressClick)return;const t=e.target.closest('[data-tab],[data-a]');if(!t)return;
   if(t.dataset.tab!==undefined){tab=+t.dataset.tab;editId=null;selPlace=null;closeSheet();renderNav();renderForm();renderList();window.scrollTo(0,0)}
   else if(A[t.dataset.a]){if(t.tagName=='A'&&t.getAttribute('href')=='#')e.preventDefault();A[t.dataset.a](t)}});
 document.addEventListener('change',e=>{const t=e.target;if(!T||!route.tid)return;
