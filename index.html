@@ -82,11 +82,11 @@ main{padding-top:0}
 .ttl{display:flex;align-items:center;gap:6px;pointer-events:none}.ttl #tname{flex:1;min-width:0}
 .shb{pointer-events:auto;flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.7);background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .shb svg{width:18px;height:18px}
+.nveil{}#nveil{position:fixed;inset:0;background:rgba(58,42,30,.45);z-index:50}
+#nbox{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,420px);max-height:86vh;overflow-y:auto;background:var(--bg);padding:20px;z-index:51;border-radius:6px}
 .cr{border:1px solid var(--bd);background:var(--card2);padding:16px;margin:12px 0}
 .cr label{display:block;font-size:12px;color:var(--mu);letter-spacing:.1em}
-.wave{position:absolute;left:0;right:0;bottom:-1px;height:12px;background:var(--bg);z-index:4;pointer-events:none}
-.wave::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--ac)}
-.wave::after{content:"";position:absolute;left:0;right:0;top:6px;height:1px;background:var(--ac);opacity:.65}
+.wave{position:absolute;left:0;right:0;bottom:-1px;height:16px;z-index:4;pointer-events:none;border-top:2px solid var(--ac);background-color:var(--bg);background-image:linear-gradient(90deg,rgba(184,137,47,.5) 50%,transparent 50%),linear-gradient(rgba(184,137,47,.5) 50%,transparent 50%);background-size:12px 12px}
 .leaflet-top.leaflet-right{top:56px}
 .leaflet-tile-pane{filter:grayscale(.55) sepia(.3) brightness(1.06) contrast(.9) saturate(.9)}
 .pw{position:relative;width:28px;height:36px}
@@ -155,7 +155,7 @@ const PACK=['護照','簽證/入境文件','機票/登機證','錢包與外幣',
 const COLORS=['#8a5a2b','#b8892f','#7a4a3a','#5f6b3a','#a0522d','#6b4a32','#9a7b3c'];
 const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
 
-let dayInit=false,G=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null,shareMode=false,openShareNext=false;
+let homeDraw=null,showNew=false,dayInit=false,G=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null,shareMode=false,openShareNext=false;
 const TAGS=['景點','餐廳','交通','住宿','購物','其他'];
 const CATS=['門票','餐費','交通','住宿','購物','其他'],TAG2CAT={景點:'門票',餐廳:'餐費',交通:'交通',住宿:'住宿',購物:'購物',其他:'其他'};
 let editDay=0,dragging=false,gFail=false;
@@ -165,6 +165,9 @@ const itemsCol=()=>collection(db,'trips',route.tid,'items');
 const tripRef=()=>doc(db,'trips',route.tid);
 const itemsOf=t=>items.filter(x=>x.type==t);
 const rate=c=>c===T.base?1:(+T.rates?.[c]||1);
+const CNAME={TWD:'台幣',JPY:'日圓',USD:'美元',KRW:'韓元',EUR:'歐元',THB:'泰銖',HKD:'港幣',CNY:'人民幣',GBP:'英鎊',AUD:'澳幣',SGD:'新加坡幣',MYR:'馬幣',VND:'越南盾',CAD:'加幣'};
+const curLbl=c=>CNAME[c]?`${CNAME[c]} / ${c}`:c;
+const curOpt=(c,sel)=>`<option value="${esc(c)}" ${sel?'selected':''}>${esc(curLbl(c))}</option>`;
 const curList=()=>[T.base,...Object.keys(T.rates||{}).filter(c=>c!==T.base)];
 const fmt=n=>(Math.round(n*100)/100).toLocaleString();
 const segsOf=t=>String(t||'').split(/[、,，＋+\/]/).map(x=>x.trim()).filter(Boolean);
@@ -182,8 +185,9 @@ function enter(){cleanup();route=parse();if(route.tid)openTrip();else home()}
 /* ---------- 首頁 ---------- */
 function topbar(){return `<div class=hd><span class="brand nm">旅 行 帖</span>${user?`<span class="mu nm" style="flex:0 1 auto">${esc(user.displayName||'')}</span><button class="p g s" data-a=logout>登出</button>`:`<button class="p s" data-a=login>登入</button>`}</div>`}
 function home(){
+  showNew=false;
   if(!user){app.innerHTML=topbar()+`<div class=card><p>登入後可以建立旅程、分享給旅伴一起編輯。</p><p class=mu>沒有登入也能預覽別人分享給你的連結。</p><button class=p data-a=login>用 Google 登入</button></div>`;return}
-  const draw=()=>{app.innerHTML=topbar()+`<div class=cr><div class=mu style="margin-bottom:6px">建立新旅程</div><input id=nn placeholder="旅程名稱,例如:東京+山形 聖誕之旅"><input id=nr2 placeholder="地點,例如:日本東京"><div class=row><div><label>出發日</label><input type=date id=nd1></div><div><label>回程日</label><input type=date id=nd2></div></div><button class=p data-a=newTrip style="margin-top:6px">建立旅程</button><button class="p g" data-a=newTrip data-share=1 style="margin-top:6px">建立並邀請旅伴一起編輯</button></div>
+  const draw=homeDraw=()=>{app.innerHTML=topbar()+`<button class=p data-a=showNew>前去探索！</button>${showNew?`<div id=nveil data-a=hideNew></div><div id=nbox><div class=cr style="margin:0;border:0"><div class=mu style="margin-bottom:6px">建立新旅程</div><input id=nn placeholder="旅程名稱,例如:東京+山形 聖誕之旅"><input id=nr2 placeholder="地點,例如:日本東京"><div class=row><div><label>出發日</label><input type=date id=nd1></div><div><label>回程日</label><input type=date id=nd2></div></div><button class=p data-a=newTrip style="margin-top:6px">建立旅程</button><button class="p g" data-a=newTrip data-share=1 style="margin-top:6px">建立並邀請旅伴一起編輯</button></div><button class="p g" data-a=hideNew style="margin-top:6px">取消</button></div>`:''}
   <h3>我的旅程</h3><div class=card>${mine.map(m=>`<div class=it><div><a href="#/t/${esc(m.id)}">${esc(m.name||'未命名')}</a></div><button class=x title="從清單移除" data-a=unlist data-id="${esc(m.id)}">✕</button></div>`).join('')||'<span class=mu>還沒有旅程</span>'}</div>`};
   draw();
   unsubs.push(onSnapshot(myTripsCol(),s=>{mine=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0));if(!route.tid)draw()},()=>{}));
@@ -274,13 +278,13 @@ function renderForm(){
   <input id=gl inputmode=url placeholder="貼上 Google 地圖連結(選填)" value="${x?esc(x.url||''):''}"><div id=resbox></div><div id=selp class=mu></div>
   <select id=tg>${['',...TAGS].map(t=>`<option value="${t}" ${(x&&x.tag==t)||(!x&&!t)?'selected':''}>${t||'類別(選填)'}</option>`).join('')}</select><input id=ti placeholder="行程名稱" value="${x?esc(x.title):''}"><input id=no placeholder="備註(選填)" value="${x?esc(x.note||''):''}">
   <details ${x&&+x.amt>0?'open':''} style="margin:4px 0 10px"><summary>記帳(選填)</summary>${(T.members||[]).length?`<select id=xc style="margin-top:6px">${CATS.map(c=>`<option ${x&&((x.cat&&x.cat==c)||(!x.cat&&TAG2CAT[x.tag]==c))?'selected':''}>${c}</option>`).join('')}</select>
-  <div class=row><input id=xa type=number inputmode=decimal step=any placeholder="金額" value="${x&&+x.amt>0?x.amt:''}"><select id=xu>${curList().map(c=>`<option ${c==((x&&x.cur)||T.base)?'selected':''}>${c}</option>`).join('')}</select></div>
+  <div class=row><input id=xa type=number inputmode=decimal step=any placeholder="金額" value="${x&&+x.amt>0?x.amt:''}"><select id=xu>${curList().map(c=>curOpt(c,c==((x&&x.cur)||T.base))).join('')}</select></div>
   <div class=mu>誰出的錢:</div><select id=xp>${T.members.map(m=>`<option ${x&&x.payer==m?'selected':''}>${esc(m)}</option>`).join('')}</select>
   <div class=mu>誰要分攤:</div><div>${T.members.map(m=>`<label class=chk><input type=checkbox class=xw value="${esc(m)}" ${!(x&&x.who&&x.who.length)||x.who.includes(m)?'checked':''}>${esc(m)}</label>`).join('')}</div>`:'<div class=mu style="margin:6px 0">要記帳,請先到「分帳」頁新增旅伴。</div>'}</details>
   <button class=p data-a=saveItin>${x?'儲存修改':'新增行程'}</button>${x?'<button class="p g" data-a=cancelEdit style="margin-top:6px">取消修改</button>':''}
   <details><summary>匯入與自動定位</summary><div class=mu style="margin:6px 0">貼上試算表內容:天數、時間、項目、備註(用 Tab 或逗號分隔),或選擇 CSV 檔。</div><textarea id=sp rows=4></textarea><button class=p data-a=importSheet>貼上內容匯入</button><input type=file id=csvf accept=".csv,.tsv,.txt" style="margin-top:6px">
   <button class="p g" data-a=autoLocate style="margin-top:6px">自動定位所有尚未定位的行程</button><div class=mu>會用「項目名稱的第一個地點 + 地區關鍵字」搜尋,結果可能不準,請到地圖確認並用 ✎ 修正。</div></details></div>`,
-  (T.members||[]).length?`<div class=card><div class=mu>新增花費</div><select id=ecat>${CATS.map(c=>`<option>${c}</option>`).join('')}</select><input id=ed placeholder="花費項目(晚餐、車票…)"><div class=row><input id=ea type=number inputmode=decimal step=any placeholder="金額"><select id=ec>${curList().map(c=>`<option ${c==T.base?'selected':''}>${c}</option>`).join('')}</select></div>
+  (T.members||[]).length?`<div class=card><div class=mu>新增花費</div><select id=ecat>${CATS.map(c=>`<option>${c}</option>`).join('')}</select><input id=ed placeholder="花費項目(晚餐、車票…)"><div class=row><input id=ea type=number inputmode=decimal step=any placeholder="金額"><select id=ec>${curList().map(c=>curOpt(c,c==T.base)).join('')}</select></div>
   <div class=mu>誰先付的錢:</div><select id=ep>${T.members.map(m=>`<option>${esc(m)}</option>`).join('')}</select><div class=mu>誰要分攤:</div><div>${T.members.map(m=>`<label class=chk><input type=checkbox class=ew value="${esc(m)}" checked>${esc(m)}</label>`).join('')}</div><button class=p data-a=addExp style="margin-top:6px">新增花費</button></div>`:`<div class=card><p class=mu>要記花費,請先在「分帳」頁最上方加入旅伴。</p><button class=p data-a=closeSheet>知道了</button></div>`,
   `<div class=card><textarea id=mt rows=3 placeholder="寫點備忘…"></textarea><button class=p data-a=addMemo>新增備忘</button></div>`,
   `<div class=card><input id=ci placeholder="票券(機票、住宿、門票…)"><input id=cd type=date><button class=p data-a=addChk data-k=tix>新增</button></div>`,
@@ -389,10 +393,10 @@ function settle(){const b={};(T.members||[]).forEach(m=>b[m]=0);let tot=0;
   return {tot,out}}
 function listExp(){const s=settle(),rates=T.rates||{},all=expAll().sort((a,b)=>(b.ts||0)-(a.ts||0)),cats={};
   all.forEach(e=>{const k=e.cat||'其他';cats[k]=(cats[k]||0)+e.amt*rate(e.cur)});
-  return `<div class=card style="border-top:0"><div class=mu>旅伴與基準幣別</div>${isEd?`<select id=base>${curList().map(c=>`<option ${c==T.base?'selected':''}>${c}</option>`).join('')}</select>`:`<div>${esc(T.base)}</div>`}<div>${(T.members||[]).map(m=>`<span class=chip>${esc(m)}${isEd?` <button class=x data-a=delMem data-n="${esc(m)}" style="min-width:24px;min-height:20px">×</button>`:''}</span>`).join('')||'<span class=mu>先新增旅伴 ↓</span>'}</div>${isEd?`<div class=row><input id=mn placeholder="旅伴名字"><button class=p data-a=addMem style="flex:0 0 70px;margin-bottom:6px">加入</button></div>`:''}</div><h3>結算(共 ${fmt(s.tot)} ${esc(T.base)})</h3><div class=card>${s.out.map(x=>`<div>${x}</div>`).join('')||'<span class=mu>目前沒有需要轉帳的款項</span>'}</div>
+  return `<div class=card style="border-top:0"><div class=mu>旅伴與基準幣別</div>${isEd?`<select id=base>${curList().map(c=>curOpt(c,c==T.base)).join('')}</select>`:`<div>${esc(T.base)}</div>`}<div>${(T.members||[]).map(m=>`<span class=chip>${esc(m)}${isEd?` <button class=x data-a=delMem data-n="${esc(m)}" style="min-width:24px;min-height:20px">×</button>`:''}</span>`).join('')||'<span class=mu>先新增旅伴 ↓</span>'}</div>${isEd?`<div class=row><input id=mn placeholder="旅伴名字"><button class=p data-a=addMem style="flex:0 0 70px;margin-bottom:6px">加入</button></div>`:''}</div><h3>結算(共 ${fmt(s.tot)} ${esc(T.base)})</h3><div class=card>${s.out.map(x=>`<div>${x}</div>`).join('')||'<span class=mu>目前沒有需要轉帳的款項</span>'}</div>
   <h3>各類別花費</h3><div class=card>${Object.entries(cats).sort((p,q)=>q[1]-p[1]).map(([k,v])=>`<span class=chip>${esc(k)} ${fmt(v)}</span>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
   <h3>花費明細</h3><div class=card>${all.map(e=>`<div class=it><div>${e.cat?`<span class=chip style="padding:0 10px;margin:0 6px 0 0;font-size:12px">${esc(e.cat)}</span>`:''}${esc(e.desc)} <b>${fmt(e.amt)} ${esc(e.cur)}</b>${e.cur!=T.base?` <span class=mu>≈ ${fmt(e.amt*rate(e.cur))} ${esc(T.base)}</span>`:''}<div class=mu>${esc(e.payer)} 付 · 分攤:${(e.who||[]).map(esc).join('、')}${e.linked?` · Day ${e.day} 行程`:''}</div></div>${isEd?(e.linked?`<button class=x data-a=editLinked data-id="${e.id}">✎</button>`:`<button class=x data-a=del data-id="${e.id}">🗑</button>`):''}</div>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
-  <h3>匯率(1 外幣 = ? ${esc(T.base)}${isEd?',可手動修改':''})</h3><div class=card><div class=row>${Object.keys(rates).map(c=>`<div><span class=mu>${esc(c)}</span><input type=number step=any value="${rates[c]}" data-r="${esc(c)}" ${isEd?'':'readonly'}></div>`).join('')}</div>${isEd?`<div class=row><input id=nc placeholder="新增幣別 例:GBP"><input id=nr type=number step=any placeholder="匯率"><button class=p data-a=addRate style="flex:0 0 60px;margin-bottom:6px">加</button></div>`:''}</div>`}
+  <h3>匯率(1 外幣 = ? ${esc(T.base)}${isEd?',可手動修改':''})</h3><div class=card><div class=row>${Object.keys(rates).map(c=>`<div><span class=mu>${esc(curLbl(c))}</span><input type=number step=any value="${rates[c]}" data-r="${esc(c)}" ${isEd?'':'readonly'}></div>`).join('')}</div>${isEd?`<div class=row><input id=nc placeholder="新增幣別 例:GBP"><input id=nr type=number step=any placeholder="匯率"><button class=p data-a=addRate style="flex:0 0 60px;margin-bottom:6px">加</button></div>`:''}</div>`}
 function listChk(k){const a=itemsOf(k);return `<div class=card><div class=mu>已完成 ${a.filter(x=>x.done).length} / ${a.length}</div>${a.map(x=>`<div class=it><input type=checkbox style="width:auto;margin-top:5px" data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><div>${esc(x.title)}${x.date?`<div class=mu>${esc(x.date)}</div>`:''}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div>`).join('')||'<span class=mu>還沒有項目</span>'}</div>`}
 
 /* ---------- 地圖(有 Google 金鑰用 Google 地圖,否則用 OpenStreetMap) ---------- */
@@ -478,7 +482,7 @@ async function geocode(q,limit=5){
     const {places}=await Place.searchByText({textQuery:q,fields:['displayName','formattedAddress','location'],maxResultCount:Math.max(1,Math.min(limit,20)),language:'zh-TW'});
     return (places||[]).map(p=>({name:p.displayName||'',full:[p.displayName,p.formattedAddress].filter(Boolean).join(' · '),lat:p.location.lat(),lon:p.location.lng()}));
   }catch(e){gFail=true;toast('Google 搜尋無法使用,已改用 OpenStreetMap 搜尋')}}
-  const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit='+limit+'&accept-language=zh-TW&q='+encodeURIComponent(q));
+  const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit='+limit+'&accept-language='+encodeURIComponent('zh-Hant,zh-TW,zh-HK,zh,ja,en')+'&q='+encodeURIComponent(q));
   if(!r.ok)throw new Error('geo');
   return (await r.json()).map(p=>({name:segsOf(p.display_name)[0]||p.display_name,full:p.display_name,lat:+p.lat,lon:+p.lon}));
 }
@@ -500,6 +504,8 @@ const A={
   openSheet,closeSheet,
   logout(){signOut(auth)},
   sel(e){e.select&&e.select()},
+  showNew(){showNew=true;homeDraw&&homeDraw()},
+  hideNew(){showNew=false;homeDraw&&homeDraw()},
   async newTrip(btn){const n=$('#nn').value.trim()||'新旅程',rg=($('#nr2').value||'').trim().slice(0,40),d1=$('#nd1').value,d2=$('#nd2').value;
     let dc=0;if(d1&&d2){dc=Math.round((new Date(d2+'T00:00:00')-new Date(d1+'T00:00:00'))/864e5)+1;if(!(dc>=1)){return toast('回程日不能早於出發日')}if(dc>60)return toast('最多 60 天')}
     try{const id=doc(collection(db,'trips')).id;
@@ -508,7 +514,7 @@ const A={
       await setDoc(doc(db,'trips',id,'editors',user.uid),{role:'owner',name:user.displayName||user.email||''});
       await setDoc(doc(db,'trips',id,'secrets','invite'),{token:randToken()});
       await setDoc(doc(db,'users',user.uid,'trips',id),{name:n,ts:Date.now()});
-      openShareNext=!!(btn&&btn.dataset&&btn.dataset.share);
+      openShareNext=!!(btn&&btn.dataset&&btn.dataset.share);showNew=false;
       location.hash='#/t/'+id}catch(e){toast('建立失敗,請確認 Firestore 規則已發佈')}},
   openShare(){shareMode=true;$('#sheet').classList.add('open');$('#veil').classList.add('open');renderShare()},
   async shareLink(e){const u=e.dataset.u,t=e.dataset.t||'旅行行程';try{if(navigator.share){await navigator.share({title:t,text:t,url:u});return}}catch(x){if(x&&x.name=='AbortError')return}
