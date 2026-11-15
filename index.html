@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f6f3ec">
+<meta name="theme-color" content="#4a3426">
 <title>旅行安排</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
-:root{--bg:#f6f3ec;--card:#f6f3ec;--tx:#1f1d1a;--mu:#8a847a;--ac:#b7472a;--ink:#1f1d1a;--on:#f6f3ec;--bd:#dcd6ca;color-scheme:light;
+:root{--bg:#f3ead8;--card:#f3ead8;--card2:#fbf6ea;--tx:#3a2a1e;--mu:#8c7b69;--ac:#b8892f;--ink:#4a3426;--on:#f3ead8;--bd:#e0d2b8;--hl:#f0d98c;--warn:#a3472a;color-scheme:light;
 --serif:"Noto Serif TC","Noto Serif JP","Hiragino Mincho ProN","Yu Mincho","PMingLiU",serif;
 --sans:system-ui,-apple-system,"Noto Sans TC","Hiragino Sans","PingFang TC",sans-serif}
-@media (prefers-color-scheme:dark){:root{--bg:#1a1917;--card:#1a1917;--tx:#e9e5dc;--mu:#8f897e;--ac:#d9694b;--ink:#e9e5dc;--on:#1a1917;--bd:#35332f;color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root{--bg:#1e1712;--card:#1e1712;--card2:#2a211a;--tx:#efe4d0;--mu:#a89880;--ac:#d4a94c;--ink:#efe4d0;--on:#1e1712;--bd:#3a2f25;--hl:#7a6428;--warn:#e0805f;color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.75 var(--sans);letter-spacing:.03em}
@@ -61,6 +61,66 @@ nav button.on::after{content:"";position:absolute;left:50%;bottom:10px;width:4px
 #sheet.open{transform:none}
 #sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--bd);margin:8px auto 10px;cursor:pointer}
 #sheet .card{border-top:0;padding-top:4px}
+
+/* ---- 封面地圖行程頁 ---- */
+main{padding-top:0}
+#hero{position:relative;height:290px;margin:0 -20px;background:#4a3426;overflow:hidden}
+#hero.mini{height:150px}#hero.mini #map{visibility:hidden}
+#hero #map{position:absolute;inset:0;height:auto;border:0;margin:0;border-radius:0}
+.hshade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(58,38,26,.30) 0%,rgba(58,38,26,0) 28%,rgba(58,38,26,.18) 45%,rgba(58,38,26,.92) 100%);z-index:2}
+#hero.mini .hshade{background:linear-gradient(135deg,#4a3426,#6b4a32)}
+.htop{position:absolute;left:14px;right:14px;top:calc(12px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center;z-index:5}
+.hb{width:38px;height:38px;border-radius:50%;background:rgba(243,234,216,.92);color:#4a3426;display:flex;align-items:center;justify-content:center;font-size:22px;text-decoration:none;line-height:1}
+.hr button{border:0;border-radius:99px;background:rgba(243,234,216,.92);color:#4a3426;font-size:12px;padding:8px 14px;min-height:36px;cursor:pointer}
+.htitle{position:absolute;left:20px;right:20px;bottom:30px;color:#fff;z-index:4;pointer-events:none}
+.htitle input{pointer-events:auto}
+.hreg{font-size:11px;letter-spacing:.3em;opacity:.85;min-height:16px}
+#tname{color:#fff;font-size:28px;font-family:var(--serif);font-weight:600;letter-spacing:.06em;width:100%;padding:2px 0;border:0;margin:0;line-height:1.3}
+#tname::placeholder{color:rgba(255,255,255,.6)}
+.hmeta{font-size:13px;opacity:.9;letter-spacing:.08em;min-height:20px}
+.wave{position:absolute;left:0;right:0;bottom:-1px;height:22px;z-index:4;pointer-events:none;background:radial-gradient(circle at 14px 0,transparent 13px,var(--bg) 14px) 0 7px/28px 16px repeat-x,radial-gradient(circle at 14px 0,transparent 13px,var(--ac) 14px) 0 0/28px 16px repeat-x}
+.leaflet-top.leaflet-right{top:56px}
+.leaflet-tile-pane{filter:grayscale(.55) sepia(.12) contrast(.95) brightness(1.03)}
+.pw{position:relative;width:28px;height:36px}
+.pn{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
+.pn span{transform:rotate(45deg);color:#fff;font:700 12px var(--sans)}
+#dayf{display:flex;overflow-x:auto;margin:0 -20px;padding:14px 20px 10px;scrollbar-width:none}#dayf::-webkit-scrollbar{display:none}
+.pill{flex:0 0 auto;min-width:76px;text-align:center;padding:6px 14px;margin-right:8px;border-radius:99px;border:1px solid var(--bd);background:var(--card2);cursor:pointer;line-height:1.3}
+.pill b{display:block;font-weight:600;font-size:14px}.pill span{display:block;font-size:11px;color:var(--mu)}
+.pill.on{background:var(--ink);color:var(--on);border-color:var(--ink)}.pill.on span{color:var(--on);opacity:.75}
+.dhead{display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px}
+.dnum{font-family:var(--serif);font-weight:700;font-size:64px;line-height:1;color:var(--ink)}.dnum span{font-size:22px;color:var(--ac);font-weight:600;margin-left:6px}
+.dttl{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0 10px}
+.dt{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:.06em}
+.today{display:inline-block;margin:0 0 14px;font-size:13px;font-weight:600;background:linear-gradient(transparent 55%,var(--hl) 55%);cursor:pointer;color:var(--tx)}
+.navbtn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;border-radius:16px;background:linear-gradient(90deg,#8a5a2b,#b8892f);color:#fff;text-decoration:none;font-weight:600;letter-spacing:.08em;box-shadow:0 6px 16px rgba(138,90,43,.25);margin-bottom:20px}
+.navbtn.off{background:var(--bd);color:var(--mu);box-shadow:none;font-weight:400;font-size:13px}
+.tl{padding-top:4px}
+.tli{position:relative;display:grid;grid-template-columns:50px 14px 1fr;column-gap:10px;padding-bottom:16px}
+.tli::before{content:"";position:absolute;left:calc(50px + 10px + 6px);top:0;bottom:0;width:2px;background:var(--ink);opacity:.85}
+.tli:first-child::before{top:14px}.tli:last-child::before{bottom:calc(100% - 14px)}
+.tlt{font-size:13px;color:var(--mu);text-align:right;padding-top:5px;font-variant-numeric:tabular-nums}
+.tld{width:14px;height:14px;border-radius:50%;border:3px solid var(--ink);background:var(--bg);margin-top:7px;z-index:1}
+.tlc{background:var(--card2);border:1px solid var(--bd);border-radius:16px;padding:12px 14px;box-shadow:0 2px 10px rgba(58,38,26,.06);min-width:0;position:relative}
+.tli.sel .tlc{border-color:var(--ac);box-shadow:0 0 0 2px rgba(184,137,47,.25)}
+.tag{display:inline-block;padding:0 10px;border-radius:99px;font-size:12px;margin-right:6px;line-height:22px}
+.tct{font-family:var(--serif);font-size:17px;font-weight:600;letter-spacing:.04em;margin:6px 0 2px;word-break:break-word}
+.tcs{font-size:13px;color:var(--mu)}.tcs a{color:var(--mu)}
+.tca{position:absolute;right:4px;top:4px}.tca button{min-width:34px;min-height:34px}
+
+/* ---- 編輯行程頁 ---- */
+body.editing #hero,body.editing #dayf,body.editing #hd,body.editing nav,body.editing #fab{display:none!important}
+body.editing main{padding-top:calc(20px + env(safe-area-inset-top,0px))}
+.eh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+.et{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--ink);letter-spacing:.06em}
+.sync{display:flex;align-items:center;gap:8px;background:rgba(184,137,47,.14);color:var(--ink);border-radius:14px;padding:10px 14px;font-size:13px;font-weight:600;margin:12px 0 14px}
+.sync i{width:10px;height:10px;border-radius:50%;background:var(--ac);display:inline-block}
+.erow{display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--bd);border-radius:18px;padding:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(58,38,26,.06);user-select:none;-webkit-user-select:none}
+.grip{font-size:22px;color:var(--mu);touch-action:none;cursor:grab;padding:8px 6px;line-height:1}
+.em{flex:1;min-width:0}.en{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.ed2{font-size:13px;color:var(--mu);font-variant-numeric:tabular-nums}
+.eb{border:0;background:none;color:var(--ink);font-weight:700;font-size:14px;padding:8px 4px;min-height:40px;cursor:pointer}
+.erow.drag{box-shadow:0 10px 24px rgba(58,38,26,.28);position:relative;z-index:5}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -68,7 +128,7 @@ import * as CFG from './config.js';
 const firebaseConfig=CFG.firebaseConfig,mapsKey=CFG.mapsKey||'';
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,addDoc,collection,onSnapshot,getDocs} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,addDoc,collection,onSnapshot,getDocs,writeBatch} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 const $=s=>document.querySelector(s),app=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -81,10 +141,12 @@ if(!firebaseConfig||String(firebaseConfig.apiKey||'').startsWith('YOUR')){
 const fapp=initializeApp(firebaseConfig),auth=getAuth(fapp),db=getFirestore(fapp);
 const TABS=['行程','分帳','備忘','票券','行李'];
 const PACK=['護照','簽證/入境文件','機票/登機證','錢包與外幣','手機與充電器','行動電源','轉接頭','網卡/漫遊','盥洗用品','常備藥品','換洗衣物','雨具'];
-const COLORS=['#b7472a','#2f4b6e','#5b7f5a','#a8863d','#6b5b7b','#3f7f86','#a35a73'];
+const COLORS=['#8a5a2b','#b8892f','#7a4a3a','#5f6b3a','#a0522d','#6b4a32','#9a7b3c'];
 const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
 
-let G=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null;
+let dayInit=false,G=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null;
+const TAGS=['景點','餐廳','交通','住宿','購物','其他'];
+let editDay=0,dragging=false;
 
 const myTripsCol=()=>collection(db,'users',user.uid,'trips');
 const itemsCol=()=>collection(db,'trips',route.tid,'items');
@@ -102,7 +164,7 @@ onAuthStateChanged(auth,u=>{user=u;enter()});
 window.addEventListener('hashchange',enter);
 async function login(){try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){toast('登入失敗或已取消')}}
 
-function cleanup(){unsubs.forEach(f=>f());unsubs=[];if(map){if(!G&&map.remove)map.remove();map=null}gl.forEach(o=>{try{if(o.setMap)o.setMap(null)}catch(e){}});gl=[];iw=null;layer=null;markers={};T=null;items=[];isEd=false;editId=null;selPlace=null;selId=null;dayF=0;needFit=true}
+function cleanup(){unsubs.forEach(f=>f());unsubs=[];if(map){if(!G&&map.remove)map.remove();map=null}gl.forEach(o=>{try{if(o.setMap)o.setMap(null)}catch(e){}});gl=[];iw=null;layer=null;markers={};T=null;items=[];isEd=false;editId=null;selPlace=null;selId=null;dayF=0;dayInit=false;editDay=0;document.body.classList.remove('editing');needFit=true}
 function enter(){cleanup();route=parse();if(route.tid)openTrip();else home()}
 
 /* ---------- 首頁 ---------- */
@@ -117,7 +179,7 @@ function home(){
 
 /* ---------- 旅程頁 ---------- */
 function shell(){
-  app.innerHTML=`<div id=hd></div><div id=mapbox><div id=map></div></div><div id=dayf></div><div id=list></div><nav id=nav></nav><button id=fab data-a=openSheet aria-label=新增>＋</button><div id=veil data-a=closeSheet></div><div id=sheet><div class=grab data-a=closeSheet></div><div id=form></div></div>`;
+  app.innerHTML=`<div id=hero><div id=map></div><div class=hshade></div><div class=htop><a href="#/" class=hb aria-label=返回>‹</a><span class=hr id=hr></span></div><div class=htitle><div class=hreg id=hreg></div><input id=tname placeholder="旅程名稱" readonly><div class=hmeta id=hmeta></div></div><div class=wave></div></div><div id=hd></div><div id=dayf></div><div id=list></div><nav id=nav></nav><button id=fab data-a=openSheet aria-label=新增>＋</button><div id=veil data-a=closeSheet></div><div id=sheet><div class=grab data-a=closeSheet></div><div id=form></div></div>`;
   initMap().catch(()=>{});
 }
 function openTrip(){
@@ -146,17 +208,20 @@ async function recordMine(){if(!user||!T)return;if(tripIdOpen===T.id+T.name)retu
 
 function renderHeader(){
   if(!T)return;recordMine();
+  const hr=$('#hr');if(hr)hr.innerHTML=user?`<button data-a=logout>登出</button>`:`<button data-a=login>登入</button>`;
+  const tn=$('#tname');if(tn){if(document.activeElement!==tn)tn.value=T.name||'';tn.readOnly=!isEd}
   let banner='';
   if(!user)banner=`<div class=banner>👀 預覽模式。<a href="#" data-a=login>登入</a> 並使用旅程建立者給的「編輯連結」才能編輯。${route.join?'<br>你開啟的是編輯連結,請先登入以加入編輯。':''}</div>`;
   else if(!isEd)banner='<div class=banner>👀 預覽模式:你目前沒有編輯權限。請向建立者索取「編輯連結」。</div>';
   const share=user&&isEd?`<details><summary>分享與設定</summary><div class=card style="margin-top:6px;border-top:0" id=sharebox><span class=mu>載入中…</span></div></details>`:'';
-  $('#hd').innerHTML=topbar()+`<div class=hd><a href="#/" style="text-decoration:none;font-size:20px;min-width:28px;color:var(--mu)">‹</a><input id=tname value="${esc(T.name||'')}" ${isEd?'':'readonly'}></div>${banner}${share}`;
+  $('#hd').innerHTML=banner+share;
+  renderHeroMeta();
   if(user&&isEd)renderShare();
 }
 async function renderShare(){
   const box=$('#sharebox');if(!box)return;
   const base=location.origin+location.pathname+'#/t/'+T.id;
-  let html=`<div class=mu>預覽連結(知道連結的人只能看):</div><input readonly value="${esc(base)}" data-a=sel>`;
+  let html=`<div class=mu>出發日期(用來顯示每天的日期)</div><input type=date id=startd value="${esc(T.startDate||'')}"><div class=mu>預覽連結(知道連結的人只能看):</div><input readonly value="${esc(base)}" data-a=sel>`;
   if(T.ownerUid===user.uid){
     let token='';try{const s=await getDoc(doc(db,'trips',T.id,'secrets','invite'));token=s.exists()?s.data().token:''}catch(e){}
     if(!token){token=randToken();try{await setDoc(doc(db,'trips',T.id,'secrets','invite'),{token})}catch(e){}}
@@ -167,11 +232,11 @@ async function renderShare(){
   }else html+='<div class=mu>只有建立者可以看到編輯連結與管理編輯者。</div>';
   box.innerHTML=html;
 }
-function renderNav(){$('#nav').innerHTML=TABS.map((t,i)=>`<button class="${i==tab?'on':''}" data-tab=${i}>${t}</button>`).join('');$('#mapbox').style.display=tab==0?'block':'none';$('#dayf').style.display=tab==0?'block':'none';if(tab==0&&map)setTimeout(()=>{if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()},50)}
+function renderNav(){$('#nav').innerHTML=TABS.map((t,i)=>`<button class="${i==tab?'on':''}" data-tab=${i}>${t}</button>`).join('');$('#hero').classList.toggle('mini',tab!=0);$('#dayf').style.display=tab==0?'block':'none';if(tab==0&&map)setTimeout(()=>{if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()},50)}
 
 /* ---------- 表單 ---------- */
 function openSheet(){if(!isEd)return;renderForm();$('#sheet').classList.add('open');$('#veil').classList.add('open')}
-function closeSheet(){const a=$('#sheet'),b=$('#veil');if(a)a.classList.remove('open');if(b)b.classList.remove('open')}
+function closeSheet(){editId=null;selPlace=null;const a=$('#sheet'),b=$('#veil');if(a)a.classList.remove('open');if(b)b.classList.remove('open')}
 function renderForm(){
   const f=$('#form');if(!f||!T)return;
   const fab=$('#fab');if(fab)fab.style.display=isEd?'flex':'none';
@@ -180,8 +245,8 @@ function renderForm(){
   f.innerHTML=[
   `<div class=card><div class=row><input id=d type=number inputmode=numeric min=1 placeholder="第幾天" value="${x?x.day:(dayF||1)}"><input id=t type=time value="${x?esc(x.time||''):''}"></div>
   <div class=row><input id=placeq placeholder="搜尋地點(可選),例如:淺草寺" value="${esc(x?.placeName||'')}"><button class="p g" data-a=searchPlace style="flex:0 0 72px;margin-bottom:8px">搜尋</button></div>
-  <div id=resbox></div><div id=selp class=mu></div>
-  <input id=ti placeholder="行程名稱" value="${x?esc(x.title):''}"><input id=no placeholder="備註(選填)" value="${x?esc(x.note||''):''}">
+  <input id=gl inputmode=url placeholder="貼上 Google 地圖連結(選填)" value="${x?esc(x.url||''):''}"><div id=resbox></div><div id=selp class=mu></div>
+  <select id=tg>${['',...TAGS].map(t=>`<option value="${t}" ${(x&&x.tag==t)||(!x&&!t)?'selected':''}>${t||'類別(選填)'}</option>`).join('')}</select><input id=ti placeholder="行程名稱" value="${x?esc(x.title):''}"><input id=no placeholder="備註(選填)" value="${x?esc(x.note||''):''}">
   <button class=p data-a=saveItin>${x?'儲存修改':'新增行程'}</button>${x?'<button class="p g" data-a=cancelEdit style="margin-top:6px">取消修改</button>':''}
   <details><summary>匯入與自動定位</summary><div class=mu style="margin:6px 0">貼上試算表內容:天數、時間、項目、備註(用 Tab 或逗號分隔),或選擇 CSV 檔。</div><textarea id=sp rows=4></textarea><button class=p data-a=importSheet>貼上內容匯入</button><input type=file id=csvf accept=".csv,.tsv,.txt" style="margin-top:6px">
   <button class="p g" data-a=autoLocate style="margin-top:6px">自動定位所有尚未定位的行程</button><div class=mu>會用「項目名稱的第一個地點 + 地區關鍵字」搜尋,結果可能不準,請到地圖確認並用 ✎ 修正。</div></details></div>`,
@@ -199,20 +264,89 @@ function showSel(){const e=$('#selp');if(!e)return;const p=selPlace||(editId&&it
 
 /* ---------- 列表 ---------- */
 function renderList(){
-  const l=$('#list');if(!l||!T)return;
-  if(tab==0){renderDayF();l.innerHTML=listItin();drawMap()}
+  const l=$('#list');if(!l||!T||dragging)return;
+  if(editDay&&!isEd){editDay=0;document.body.classList.remove('editing')}
+  renderHeroMeta();
+  if(tab==0&&editDay){l.innerHTML=editView()}
+  else if(tab==0){renderDayF();l.innerHTML=listItin();drawMap()}
   else if(tab==1)l.innerHTML=listExp();
   else if(tab==2)l.innerHTML=itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div></div>`).join('')||'<p class=mu>還沒有備忘</p>';
   else l.innerHTML=listChk(tab==3?'tix':'pack');
 }
-function renderDayF(){
-  const ds=[...new Set(itemsOf('itin').map(x=>x.day))].sort((a,b)=>a-b);
-  $('#dayf').innerHTML=ds.length?`<span class="chip b ${!dayF?'on':''}" data-a=day data-d=0>全部</span>`+ds.map(d=>`<span class="chip b ${dayF==d?'on':''}" data-a=day data-d=${d}>第 ${d} 天</span>`).join(''):'';
+const sortItin=a=>{const man=(T&&T.manual)||{},tc=(x,y)=>(x.time||'').localeCompare(y.time||'');return [...a].sort((x,y)=>x.day-y.day||(man[x.day]?((x.ord??1e12)-(y.ord??1e12)||tc(x,y)):tc(x,y)))};
+function ordFor(day,time){const a=sortItin(itemsOf('itin')).filter(x=>x.day==day);if(!a.length)return 1000;let i=a.length;if(time)for(let k=0;k<a.length;k++)if(a[k].time&&a[k].time>time){i=k;break}
+  const po=i>0?(a[i-1].ord??i*1000):0,no=i<a.length?(a[i].ord??po+2000):po+2000;return (po+no)/2}
+function parseGMaps(u){u=String(u||'').trim();if(!/^https?:\/\//i.test(u))return null;
+  const m=u.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)||u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||u.match(/[?&](?:q|query|ll|destination)=(-?\d+\.\d+)(?:,|%2C)(-?\d+\.\d+)/);
+  let name='';const p=u.match(/\/place\/([^\/@?]+)/);if(p){try{name=decodeURIComponent(p[1].replace(/\+/g,' '))}catch(e){name=p[1]}}
+  return {url:u,lat:m?+m[1]:null,lon:m?+m[2]:null,name,short:/(maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(u)}}
+function applyGL(v){const g=parseGMaps(v);if(!g){if(String(v).trim())toast('請貼上以 https 開頭的連結');return}
+  if(g.lat!=null){selPlace={name:g.name||(selPlace&&selPlace.name)||'',lat:g.lat,lon:g.lon};if(!$('#ti').value.trim()&&g.name)$('#ti').value=g.name;showSel();toast('已帶入地標與位置')}
+  else toast(g.short?'短連結已保留,但無法自動取得位置,請確認名稱並用搜尋選擇位置':'連結已保留,但沒有讀到座標')}
+function editView(){
+  const d=editDay,g=sortItin(itemsOf('itin')).filter(x=>x.day==d),ttl=(T.dayTitles||{})[d]||'';
+  return `<div class=eh><button class="p g s" data-a=exitEdit>‹ Day ${d}</button><div class=et>編輯 Day ${d} 行程</div></div>
+  <p class=mu style="margin:0 0 12px">新增行程會依時間自動排序;按住左側 ≡ 可手動調整順序。Google 地圖完整連結可帶入地標與位置;短連結會保留,但可能需要自行確認名稱。</p>
+  <div class=sync><i></i>變更會即時同步給所有編輯者</div>
+  <input id=daytitle placeholder="當天標題,例如:淺草・晴空塔" value="${esc(ttl)}">
+  <div id=erows>${g.map(x=>`<div class=erow data-id="${x.id}"><span class=grip aria-label=拖曳排序>≡</span><div class=em><div class=en>${esc(x.title)}</div><div class=ed2>${esc(x.time||'')}${x.tag?' · '+esc(x.tag):''}</div></div><button class=eb data-a=edit data-id="${x.id}">編輯</button><button class=eb data-a=del data-id="${x.id}">刪除</button></div>`).join('')||'<p class=mu>這天還沒有行程</p>'}</div>
+  <button class=p data-a=openSheet style="margin-top:14px">＋ 新增行程</button>
+  <button class="p g" data-a=resortTime style="margin-top:8px">依時間重新排序</button>`}
+async function saveOrder(ids){const day=editDay;await guard(async()=>{const b=writeBatch(db);ids.forEach((id,i)=>b.update(doc(db,'trips',T.id,'items',id),{ord:(i+1)*1000}));b.update(tripRef(),{['manual.'+day]:true});await b.commit()})}
+const WD=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const TAGC={景點:['#7a5410','rgba(184,137,47,.22)'],餐廳:['#9a4a2a','rgba(200,110,70,.18)'],交通:['#5a4a3a','rgba(110,90,70,.18)'],住宿:['#5d5a2f','rgba(120,115,60,.2)'],購物:['#8a4a55','rgba(150,80,90,.16)'],其他:['#7a6f62','rgba(125,115,100,.2)']};
+const dayDate=d=>{if(!T.startDate)return null;const t=new Date(T.startDate+'T00:00:00');if(isNaN(t))return null;t.setDate(t.getDate()+d-1);return t};
+const md=t=>t?`${t.getMonth()+1}/${t.getDate()}`:'';
+const km=(a,b)=>{const r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lon-a.lon)*r,h=Math.sin(dl/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)**2;return 12742*Math.asin(Math.sqrt(h))};
+const dayList=()=>[...new Set(itemsOf('itin').map(x=>x.day))].sort((a,b)=>a-b);
+function renderHeroMeta(){
+  const e=$('#hmeta'),r=$('#hreg');if(!e||!T)return;
+  const ds=dayList(),N=ds.length?Math.max(...ds):0,p=[];
+  if(N)p.push(N>1?`${N}天${N-1}夜`:'1天');
+  if(T.startDate&&N&&dayDate(1))p.push(`${md(dayDate(1))} - ${md(dayDate(N))}`);
+  e.textContent=p.join(' · ');r.textContent=(T.region||'').toUpperCase();
 }
-const sortItin=a=>[...a].sort((x,y)=>x.day-y.day||(x.time||'').localeCompare(y.time||''));
+function renderDayF(){
+  const ds=dayList();
+  if(!dayInit&&ds.length){dayF=ds[0];dayInit=true;needFit=true}
+  if(dayF&&!ds.includes(dayF))dayF=0;
+  $('#dayf').innerHTML=ds.length?`<div class="pill ${!dayF?'on':''}" data-a=day data-d=0><b>全部</b><span>${ds.length} 天</span></div>`+ds.map(d=>`<div class="pill ${dayF==d?'on':''}" data-a=day data-d=${d}><b>Day ${d}</b><span>${dayDate(d)?md(dayDate(d)):'&nbsp;'}</span></div>`).join(''):'';
+}
+function navUrl(day){
+  const a=sortItin(itemsOf('itin')).filter(x=>x.day==day&&x.lat!=null);if(a.length<2)return '';
+  const p=x=>x.lat+','+x.lon,wp=a.slice(1,-1).slice(0,8).map(p).join('|');
+  return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(p(a[0]))+'&destination='+encodeURIComponent(p(a[a.length-1]))+(wp?'&waypoints='+encodeURIComponent(wp):'')+'&travelmode=transit';
+}
+function timeline(g){
+  let prev=null;
+  return `<div class=tl>`+g.map(x=>{
+    const has=x.lat!=null,d=has&&prev?km(prev,x):null;if(has)prev=x;
+    const tg=x.tag&&TAGC[x.tag]?`<span class=tag style="color:${TAGC[x.tag][0]};background:${TAGC[x.tag][1]}">${esc(x.tag)}</span>`:'';
+    const link=(x.url&&/^https?:\/\//.test(x.url))?x.url:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(has?x.lat+','+x.lon:(segsOf(x.title)[0]||x.title)+' '+(T.region||''));
+    return `<div class="tli ${selId==x.id?'sel':''}" id="i_${x.id}"><div class=tlt>${esc(x.time||'')}</div><div class=tld></div>
+    <div class=tlc data-a=focus data-id="${x.id}" style="cursor:pointer">${isEd?`<div class=tca><button class=x data-a=edit data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button></div>`:''}
+    ${tg}${has?'':'<span class=mu>(未定位)</span>'}<div class=tct style="${isEd?'padding-right:64px':''}">${esc(x.title)}</div>
+    ${x.placeName?`<div class=tcs>${esc(x.placeName)}</div>`:''}${x.note?`<div class=tcs>${esc(x.note)}</div>`:''}
+    <div class=tcs>${d!=null?`距上一站約 ${d<1?Math.round(d*1000)+' m':d.toFixed(1)+' km'} · `:''}<a href="${link}" target=_blank rel=noopener>在 Google 地圖開啟</a></div></div></div>`}).join('')+`</div>`;
+}
 function listItin(){
-  const a=sortItin(itemsOf('itin')).filter(x=>!dayF||x.day==dayF),ds=[...new Set(a.map(x=>x.day))];
-  return ds.map(d=>`<h3 style="border-left-color:${COLORS[(d-1)%7]}">第 ${d} 天</h3><div class=card>${a.filter(x=>x.day==d).map(x=>`<div class="it ${selId==x.id?'sel':''}" id="i_${x.id}"><div data-a=focus data-id="${x.id}" style="cursor:pointer"><b>${esc(x.time||'')}</b> ${esc(x.title)} ${x.lat!=null?'<span class=mu>📍</span>':'<span class=mu>(未定位)</span>'}${x.placeName?`<div class=mu>${esc(x.placeName)}</div>`:''}${x.note?`<div class=mu>${esc(x.note)}</div>`:''}<a class=mu href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.lat!=null?x.lat+','+x.lon:segsOf(x.title)[0]+' '+(T.region||''))}" target=_blank rel=noopener>在 Google 地圖開啟</a></div>${isEd?`<button class=x data-a=edit data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div>`).join('')}</div>`).join('')||'<p class=mu>還沒有行程。</p>';
+  const all=sortItin(itemsOf('itin')),ds=dayList(),N=ds.length?Math.max(...ds):0;
+  if(!ds.length)return '<p class=mu style="margin-top:18px">還沒有行程。點右下角「＋」新增。</p>';
+  let html='';
+  if(T.startDate){const t0=new Date(T.startDate+'T00:00:00'),now=new Date();now.setHours(0,0,0,0);const k=Math.round((now-t0)/864e5)+1;
+    if(k>=1&&k<=N&&ds.includes(k))html+=`<div class=today data-a=day data-d=${k}>今天是 Day ${k} · ${dayF==k?'今日行程':'前往今日行程'}</div>`}
+  (dayF?[dayF]:ds).forEach(d=>{
+    const g=all.filter(x=>x.day==d),dt=dayDate(d);
+    if(dayF){
+      const url=navUrl(d),title=(T.dayTitles||{})[d];
+      html+=`<div class=dhead><div><div class=dnum>${d}<span>/ ${N}</span></div><div class=mu style="margin-top:4px">${dt?md(dt)+' · '+WD[dt.getDay()]:''}</div></div>
+      <svg width=96 height=52 viewBox="0 0 96 52" aria-hidden=true style="opacity:.55"><g fill=none stroke="var(--ac)" stroke-width=1.6>${[0,1,2].map(r=>[0,1,2].map(c=>{const cx=18+c*30+(r%2?15:0),cy=14+r*12;return `<circle cx=${cx} cy=${cy} r=14 /><circle cx=${cx} cy=${cy} r=9 /><circle cx=${cx} cy=${cy} r=4 />`}).join('')).join('')}</g></svg></div>
+      <div class=dttl><div class=dt>${title?esc(title):'<span class=mu>(尚未命名)</span>'}</div>${isEd?'<button class="p g s" data-a=enterEdit>編輯行程</button>':''}</div>
+      ${url?`<a class=navbtn href="${url}" target=_blank rel=noopener>開啟當天 Google 導航路線</a>`:'<div class="navbtn off">當天至少要有兩個已定位的地點,才能開啟導航</div>'}`;
+    }else html+=`<h3 style="border-left-color:${COLORS[(d-1)%7]}">Day ${d} <span class=mu>${dt?md(dt):''}</span></h3>`;
+    html+=timeline(g);
+  });
+  return html;
 }
 function settle(){const b={};(T.members||[]).forEach(m=>b[m]=0);let tot=0;
   itemsOf('exp').forEach(e=>{const a=e.amt*rate(e.cur),w=(e.who||[]).filter(x=>x in b);if(!w.length||!(e.payer in b))return;tot+=a;b[e.payer]+=a;w.forEach(x=>b[x]-=a/w.length)});
@@ -238,15 +372,16 @@ async function initMap(){
   if(G){
     try{await loadG();const {Map}=await google.maps.importLibrary('maps');await google.maps.importLibrary('marker');await google.maps.importLibrary('places');
       if(!el.isConnected||$('#map')!==el)return;
-      map=new Map(el,{center:{lat:35.68,lng:139.76},zoom:5,mapId:'DEMO_MAP_ID',mapTypeControl:false,streetViewControl:false,fullscreenControl:false});
+      map=new Map(el,{center:{lat:35.68,lng:139.76},zoom:5,mapId:'DEMO_MAP_ID',mapTypeControl:false,streetViewControl:false,fullscreenControl:false,gestureHandling:'cooperative',zoomControlOptions:{position:google.maps.ControlPosition.RIGHT_CENTER}});
       iw=new google.maps.InfoWindow();drawMap();return}
     catch(e){G=false;toast('Google 地圖載入失敗,先改用 OpenStreetMap')}
   }
   if(!$('#map')||$('#map')!==el)return;
-  map=L.map(el).setView([35.68,139.76],5);
+  map=L.map(el,{zoomControl:false}).setView([35.68,139.76],5);L.control.zoom({position:'topright'}).addTo(map);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
   layer=L.layerGroup().addTo(map);drawMap();
 }
+const pinHTML=(n,c)=>`<div class=pw><div class=pn style="background:${c}"><span>${n}</span></div></div>`;
 function clearMap(){
   if(G){gl.forEach(o=>{if(o.setMap)o.setMap(null);else o.map=null});gl=[];if(iw)iw.close()}
   else if(layer)layer.clearLayers();
@@ -257,13 +392,13 @@ function drawMap(){
   const a=sortItin(itemsOf('itin')).filter(x=>x.lat!=null&&(!dayF||x.day==dayF)),days=[...new Set(a.map(x=>x.day))],pts=[];
   days.forEach(d=>{const g=a.filter(x=>x.day==d),c=COLORS[(d-1)%7],line=g.map(x=>[x.lat,x.lon]);
     if(G){
-      if(line.length>1)gl.push(new google.maps.Polyline({map,path:line.map(p=>({lat:p[0],lng:p[1]})),strokeColor:c,strokeOpacity:.7,strokeWeight:3}));
-      g.forEach((x,i)=>{const pin=document.createElement('div');pin.className='pin';pin.style.background=c;pin.textContent=i+1;
+      if(line.length>1)gl.push(new google.maps.Polyline({map,path:line.map(p=>({lat:p[0],lng:p[1]})),strokeOpacity:0,icons:[{icon:{path:'M 0,-1 0,1',strokeOpacity:.85,strokeColor:c,strokeWeight:3,scale:1.4},offset:'0',repeat:'10px'}]}));
+      g.forEach((x,i)=>{const pin=document.createElement('div');pin.innerHTML=pinHTML(i+1,c);
         const m=new google.maps.marker.AdvancedMarkerElement({map,position:{lat:x.lat,lng:x.lon},content:pin,title:x.title});
         m.addListener('click',()=>focusItem(x.id,false));gl.push(m);markers[x.id]=m;pts.push([x.lat,x.lon])});
     }else{
-      if(line.length>1)L.polyline(line,{color:c,weight:3,opacity:.7,dashArray:'6 6'}).addTo(layer);
-      g.forEach((x,i)=>{const m=L.marker([x.lat,x.lon],{icon:L.divIcon({className:'',html:`<div class=pin style="background:${c}">${i+1}</div>`,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(layer);
+      if(line.length>1)L.polyline(line,{color:c,weight:3,opacity:.8,dashArray:'1 9',lineCap:'round'}).addTo(layer);
+      g.forEach((x,i)=>{const m=L.marker([x.lat,x.lon],{icon:L.divIcon({className:'',html:pinHTML(i+1,c),iconSize:[28,36],iconAnchor:[14,35]})}).addTo(layer);
         m.bindTooltip(`${x.time?x.time+' ':''}${x.title}`);m.on('click',()=>focusItem(x.id,false));markers[x.id]=m;pts.push([x.lat,x.lon])});
     }});
   if(needFit&&pts.length){
@@ -333,7 +468,9 @@ const A={
     catch(e){box.innerHTML='<div class=mu>搜尋失敗'+(G?'(請確認 Google Cloud 已啟用 Places API (New),且金鑰允許它)':'')+',請稍後再試</div>'}},
   pickPlace(e){const p=(window.__res||[])[+e.dataset.i];if(!p)return;selPlace={name:p.name,lat:p.lat,lon:p.lon};$('#resbox').innerHTML='';if(!$('#ti').value.trim())$('#ti').value=selPlace.name;showSel()},
   saveItin(){const ti=$('#ti').value.trim();if(!ti)return toast('請輸入行程名稱');
-    const data={day:+$('#d').value||1,time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120)};
+    const data={day:+$('#d').value||1,time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120),tag:$('#tg').value};
+    {const gv=$('#gl').value.trim(),g=parseGMaps(gv);if(g){data.url=g.url.slice(0,500);if(g.lat!=null&&!selPlace)selPlace={name:g.name,lat:g.lat,lon:g.lon}}else if(!gv)data.url=''}
+    if(!editId&&T.manual&&T.manual[data.day])data.ord=ordFor(data.day,data.time);
     if(selPlace){data.lat=selPlace.lat;data.lon=selPlace.lon;data.placeName=selPlace.name}
     guard(async()=>{if(editId){await updateDoc(doc(db,'trips',T.id,'items',editId),data);editId=null}else await addItem('itin',data);selPlace=null;needFit=true;closeSheet();renderForm()})},
   importSheet(){importRows($('#sp').value);$('#sp').value=''},
@@ -341,6 +478,10 @@ const A={
     toast(`開始定位 ${todo.length} 項,約需 ${Math.ceil(todo.length*(G?.4:1.1))} 秒`);let ok=0;
     for(const x of todo){try{const r=await geocode((segsOf(x.title)[0]||x.title)+' '+(T.region||''),1);if(r[0]){await updateDoc(doc(db,'trips',T.id,'items',x.id),{lat:r[0].lat,lon:r[0].lon,placeName:r[0].name||''});ok++}}catch(e){}await sleep(G?250:1100)}
     needFit=true;toast(`已定位 ${ok} / ${todo.length} 項,其餘請手動選位置`)},
+  enterEdit(){if(!isEd||!dayF)return;editDay=dayF;document.body.classList.add('editing');renderList();window.scrollTo(0,0)},
+  exitEdit(){editDay=0;document.body.classList.remove('editing');needFit=true;renderList();setTimeout(()=>{if(map){if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()}},60);window.scrollTo(0,0)},
+  resortTime(){guard(()=>updateDoc(tripRef(),{['manual.'+editDay]:false}).then(()=>toast('已依時間重新排序')))},
+  dayTitle(){const cur=(T.dayTitles||{})[dayF]||'';const v=prompt('這一天的標題(例如:淺草・晴空塔)',cur);if(v===null)return;guard(()=>updateDoc(tripRef(),{['dayTitles.'+dayF]:v.trim().slice(0,40)}))},
   addMem(){const v=$('#mn').value.trim();if(!v||(T.members||[]).includes(v))return;guard(()=>updateDoc(tripRef(),{members:[...(T.members||[]),v]}).then(renderForm))},
   delMem(e){guard(()=>updateDoc(tripRef(),{members:(T.members||[]).filter(m=>m!=e.dataset.n)}).then(renderForm))},
   addExp(){const d=$('#ed').value.trim(),a=+$('#ea').value,w=[...document.querySelectorAll('.ew:checked')].map(x=>x.value);if(!d||!a||!w.length)return toast('請填項目、金額與分攤者');
@@ -351,11 +492,25 @@ const A={
   preset(){guard(async()=>{const have=itemsOf('pack').map(x=>x.title);for(const t of PACK)if(!have.includes(t))await addItem('pack',{title:t,done:false});closeSheet()})},
   del(e){if(!confirm('確定刪除?'))return;guard(()=>deleteDoc(doc(db,'trips',T.id,'items',e.dataset.id)))}
 };
+document.addEventListener('pointerdown',e=>{
+  const g=e.target.closest&&e.target.closest('.grip');if(!g||!isEd)return;
+  const row=g.closest('.erow'),box=$('#erows');if(!row||!box)return;
+  e.preventDefault();dragging=true;row.classList.add('drag');box.setPointerCapture(e.pointerId);
+  const move=ev=>{const y=ev.clientY,sibs=[...box.querySelectorAll('.erow')].filter(r=>r!==row);let placed=false;
+    for(const r of sibs){const b=r.getBoundingClientRect();if(y<b.top+b.height/2){box.insertBefore(row,r);placed=true;break}}
+    if(!placed&&sibs.length)sibs[sibs.length-1].after(row)};
+  const up=()=>{box.removeEventListener('pointermove',move);box.removeEventListener('pointerup',up);box.removeEventListener('pointercancel',up);
+    row.classList.remove('drag');dragging=false;const ids=[...box.querySelectorAll('.erow')].map(r=>r.dataset.id);saveOrder(ids).then(()=>renderList())};
+  box.addEventListener('pointermove',move);box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
+});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-a]');if(!t)return;
   if(t.dataset.tab!==undefined){tab=+t.dataset.tab;editId=null;selPlace=null;closeSheet();renderNav();renderForm();renderList();window.scrollTo(0,0)}
   else if(A[t.dataset.a]){if(t.tagName=='A'&&t.getAttribute('href')=='#')e.preventDefault();A[t.dataset.a](t)}});
 document.addEventListener('change',e=>{const t=e.target;if(!T||!route.tid)return;
   if(t.id=='tname'){guard(()=>updateDoc(tripRef(),{name:t.value.trim()||'未命名'}))}
+  else if(t.id=='daytitle'){guard(()=>updateDoc(tripRef(),{['dayTitles.'+editDay]:t.value.trim().slice(0,40)}))}
+  else if(t.id=='gl'){applyGL(t.value)}
+  else if(t.id=='startd'){guard(()=>updateDoc(tripRef(),{startDate:t.value||''}))}
   else if(t.id=='base'){guard(()=>updateDoc(tripRef(),{base:t.value}).then(renderForm))}
   else if(t.dataset.r){guard(()=>updateDoc(tripRef(),{['rates.'+t.dataset.r]:+t.value||1}))}
   else if(t.id=='region'){A.region(t)}
