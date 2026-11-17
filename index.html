@@ -304,7 +304,7 @@ const PACK=['護照','簽證/入境文件','機票/登機證','錢包與外幣',
 const COLORS=['#8a5a2b','#b8892f','#7a4a3a','#5f6b3a','#a0522d','#6b4a32','#9a7b3c'];
 const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
 
-let homeDraw=null,showNew=false,animNext='',dayInit=false,G=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null,shareMode=false,openShareNext=false;
+let homeDraw=null,showNew=false,animNext='',dayInit=false,G=false,GR=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null,shareMode=false,openShareNext=false;
 const TMODES=[['步行','🚶','walking'],['地鐵/電車','🚇','transit'],['巴士','🚌','transit'],['新幹線/火車','🚄','transit'],['計程車','🚕','driving'],['自駕/租車','🚗','driving'],['飛機','✈️','transit'],['船','⛴️','transit'],['其他','➡️','transit']];
 const fmtMin=m=>m>=60?`${Math.floor(m/60)} 小時${m%60?' '+m%60+' 分':''}`:`${m} 分`;
 const TAGS=['景點','餐廳','交通','住宿','購物','其他'];
@@ -789,7 +789,7 @@ async function initMap(){
   }
   if(!$('#map')||$('#map')!==el)return;
   map=L.map(el,{zoomControl:false}).setView([35.68,139.76],5);L.control.zoom({position:'topright'}).addTo(map);
-  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);addVectorBase(map,osm);
   layer=L.layerGroup().addTo(map);drawMap();
 }
 const itemLink=x=>{if(x.url&&/^https?:\/\//.test(x.url))return x.url;
@@ -952,7 +952,7 @@ const A={
     const sel=$('#tm');if(!sel.value)sel.value='地鐵/電車';const mode=sel.value,tmode=mode=='步行'?'WALK':(mode=='計程車'||mode=='自駕/租車')?'DRIVE':'TRANSIT';
     const old=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='估算中…'}
     try{let dur=0,walk=0,fare=0,fcur='',lines=[],from='',to='',gotFare=false;
-      if(G){
+      if(GR){
         await loadG();const {Route}=await google.maps.importLibrary('routes');
         let dep=new Date();{const dd=dayDate(day),nw=new Date();let base=(dd&&dd>nw)?new Date(dd):new Date(nw.getTime()+864e5);const hm=(time||'10:00').split(':');base.setHours(+hm[0]||10,+hm[1]||0,0,0);dep=base}
         const req={origin:{lat:prev.lat,lng:prev.lon},destination:{lat:dest.lat,lng:dest.lon},travelMode:tmode,fields:['durationMillis','distanceMeters','legs','travelAdvisory'],language:'zh-TW'};
@@ -973,9 +973,9 @@ const A={
       if(to)$('#tto').value=to;else if(!$('#tto').value&&(selPlace&&selPlace.name))$('#tto').value=tw(selPlace.name).slice(0,40);
       $('#tmin').value=Math.max(1,dur-walk);$('#twalk').value=walk||'';
       if(gotFare){const cu=$('#tcu');if(![...cu.options].some(o=>o.value==fcur)){const o=document.createElement('option');o.value=fcur;o.textContent=curLbl(fcur);cu.appendChild(o)}cu.value=fcur;$('#tc').value=Math.round(fare*100)/100}
-      toast(window.__rough?(window.__rough=0,'大眾運輸為粗略估算(依直線距離),建議按「路線 ↗」到 Google 地圖確認;車資請手動填寫'):gotFare?'已估算時間與車資(Google 預估,請自行確認)':(G&&tmode=='TRANSIT'?'已估算時間;Google 沒有提供這段的車資,請手動填寫':'已估算時間;車資請手動填寫'))
+      toast(window.__rough?(window.__rough=0,'大眾運輸為粗略估算(依直線距離),建議按「路線 ↗」到 Google 地圖確認;車資請手動填寫'):gotFare?'已估算時間與車資(Google 預估,請自行確認)':(GR&&tmode=='TRANSIT'?'已估算時間;Google 沒有提供這段的車資,請手動填寫':'已估算時間;車資請手動填寫'))
     }catch(e){let m=String((e&&e.message)||'');console.error('routes',e);
-      if(G&&/PERMISSION_DENIED|403/i.test(m)){try{const rr=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':mapsKey,'X-Goog-FieldMask':'routes.duration'},body:JSON.stringify({origin:{location:{latLng:{latitude:prev.lat,longitude:prev.lon}}},destination:{location:{latLng:{latitude:dest.lat,longitude:dest.lon}}},travelMode:'DRIVE'})});const jj=await rr.json();
+      if(GR&&/PERMISSION_DENIED|403/i.test(m)){try{const rr=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':mapsKey,'X-Goog-FieldMask':'routes.duration'},body:JSON.stringify({origin:{location:{latLng:{latitude:prev.lat,longitude:prev.lon}}},destination:{location:{latLng:{latitude:dest.lat,longitude:dest.lon}}},travelMode:'DRIVE'})});const jj=await rr.json();
         if(jj.error){const d=(jj.error.details||[]).find(x=>x.reason)||{};const why={SERVICE_DISABLED:'此專案沒有啟用 Routes API',API_KEY_SERVICE_BLOCKED:'金鑰的「API 限制」沒有勾 Routes API',API_KEY_HTTP_REFERRER_BLOCKED:'金鑰的網站限制擋住了這個網址',BILLING_DISABLED:'專案沒有綁定帳單',API_KEY_INVALID:'金鑰無效'}[d.reason];
           toast('Google 回應:'+(why||d.reason||'')+' ｜ '+String(jj.error.message||'').slice(0,90));return}}catch(e2){}}
       toast(/PERMISSION_DENIED|not enabled|403|API key/i.test(m)?'Google 拒絕了 Routes API:請到 Cloud Console 確認「Routes API」已啟用、金鑰的 API 限制有勾選它、專案已綁定帳單(詳見說明)':'估算失敗:'+(m||'請稍後再試').slice(0,80))}
