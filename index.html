@@ -793,11 +793,17 @@ function listExp(){const s=settle(),rates=T.rates||{},all=expAll().sort((a,b)=>(
   <h3>花費明細</h3><div class=card>${all.map(e=>`<div class=it><div>${e.cat?`<span class=chip style="padding:0 10px;margin:0 6px 0 0;font-size:12px">${esc(e.cat)}</span>`:''}${esc(e.desc)} <b>${fmt(e.amt)} ${esc(e.cur)}</b>${e.cur!=T.base?` <span class=mu>≈ ${fmt(e.amt*rate(e.cur))} ${esc(T.base)}</span>`:''}<div class=mu>${esc(e.payer)} 先付 · ${(e.who||[]).length} 人分:${(e.who||[]).map(esc).join('、')}${e.linked?` · Day ${e.day} 行程`:''}</div></div>${isEd?(e.linked?`<button class=x data-a=editLinked data-id="${e.id}">✎</button>`:`<button class=x data-a=del data-id="${e.id}">🗑</button>`):''}</div>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
   <h3>幣別與匯率</h3><div class=card><div class=mu>基準幣別</div>${isEd?`<select id=base>${curList().map(c=>curOpt(c,c==T.base)).join('')}</select>`:`<div>${esc(curLbl(T.base))}</div>`}<div class=mu style="margin-top:6px">匯率(1 外幣 = ? ${esc(T.base)}${isEd?',可手動修改':''})</div><div class=row>${Object.keys(rates).map(c=>`<div><span class=mu>${esc(curLbl(c))}</span><div class=uf><input type=number step=any value="${rates[c]}" data-r="${esc(c)}" ${isEd?'':'readonly'}><i>${esc(T.base)}</i></div></div>`).join('')}</div>${isEd?`<div class=row><input id=nc placeholder="新增幣別 例:GBP">${fld('匯率(1 外幣 = ?)','<input id=nr type=number step=any>',esc(T.base))}<button class=p data-a=addRate style="flex:0 0 60px;margin-bottom:6px">加</button></div>`:''}</div>`}
 const myMember=()=>{const n=user&&(T.mlink||{})[user.uid];return n&&(T.members||[]).includes(n)?n:''};
+const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+const maskMail=e=>{const p=String(e).split('@');return (p[0]||'').slice(0,2)+'***@'+(p[1]||'')};
+const memOf=n=>(T.memail||[]).find(x=>x.n===n);
+const memailPut=(n,e)=>sha(e).then(h=>[...(T.memail||[]).filter(x=>x.n!==n),{n,h,d:maskMail(e)}]);
 const linkedUid=n=>Object.keys(T.mlink||{}).find(u=>(T.mlink||{})[u]===n);
 function listMates(){const ms=T.members||[],me=myMember();
   return `<h3>一起出發的旅伴</h3>${ms.length?`<div class=pgrid>${ms.map((m,i)=>{const lu=linkedUid(m),mine_=user&&lu===user.uid;
     return `<div class=pcard><div class=av>${esc([...m][0]||'?')}</div><div class=mu style="letter-spacing:.2em;font-size:11px">TRAVELER ${String(i+1).padStart(2,'0')}</div><div class=pn2>${esc(m)}${mine_?' <span class=mu>(你)</span>':''}</div>
     <div>${lu?`<span class="bd g">已綁定編輯者</span>`:`<span class=bd>未綁定</span>`}</div>
+    <div class=mu style="font-size:12px;margin-top:4px">Gmail:${memOf(m)?esc(memOf(m).d):'尚未設定'}</div>
+    ${isEd&&(!lu||T.ownerUid===(user&&user.uid))?`<button class=x data-a=setMail data-n="${esc(m)}" style="min-height:28px;font-size:12px">${memOf(m)?'修改':'設定'} Gmail</button>`:''}
     ${isEd&&!me&&!lu?`<button class="p g s" data-a=claim data-n="${esc(m)}" style="margin-top:6px">這是我</button>`:''}
     ${mine_?`<button class="p g s" data-a=nick style="margin-top:6px">改暱稱</button>`:''}
     <div>${isEd&&lu&&T.ownerUid===(user&&user.uid)&&!mine_?`<button class=x data-a=unlink data-n="${esc(m)}" style="min-height:28px;font-size:12px">解除綁定</button>`:''}${isEd?`<button class=x data-a=delMem data-n="${esc(m)}" style="min-height:28px;font-size:12px">移除</button>`:''}</div></div>`}).join('')}</div>`:'<div class=card><span class=mu>還沒有旅伴。按右下角 ＋ 新增;旅伴名單用來分帳。</span></div>'}
@@ -987,17 +993,26 @@ const A={
     if(!confirm(`把第 ${d} 天的 ${g.length} 個行程全部移到第 ${n} 天?`))return;
     const base=Math.max(0,...itemsOf('itin').filter(x=>x.day==n).map(x=>+x.ord||0));
     guard(async()=>{const b=writeBatch(db);sortItin(g).forEach((x,i)=>b.update(doc(db,'trips',T.id,'items',x.id),{day:n,ord:base+(i+1)*1000}));if((T.manual||{})[n]||(T.manual||{})[d])b.update(tripRef(),{['manual.'+n]:true});await b.commit();toast('已移動');dayF=n;exitEdit_()})},
-  claim(e){if(!isEd||myMember())return;guard(()=>updateDoc(tripRef(),{['mlink.'+user.uid]:e.dataset.n}).then(()=>{toast('已綁定');renderList()}))},
+  async claim(e){if(!isEd||myMember())return;const n=e.dataset.n,m=memOf(n);
+    if(!m)return toast('請先替「'+n+'」設定 Gmail,才能綁定');
+    const em=String((user&&user.email)||'').toLowerCase();if(!em||await sha(em)!==m.h)return toast('目前登入的帳號'+(em?'('+maskMail(em)+')':'')+'和設定的 Gmail('+m.d+')不符,無法綁定');
+    guard(()=>updateDoc(tripRef(),{['mlink.'+user.uid]:n}).then(()=>{toast('已綁定');renderList()}))},
+  async setMail(e){const n=e.dataset.n;const v=prompt('輸入「'+n+'」的 Gmail(只有登入這個帳號的人才能綁定這位旅伴)','');if(v===null)return;const em=v.trim().toLowerCase();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return toast('Gmail 格式不正確');const arr=await memailPut(n,em);guard(()=>updateDoc(tripRef(),{memail:arr}).then(()=>{toast('已設定 Gmail');renderList()}))},
   unlink(e){const u=linkedUid(e.dataset.n);if(!u)return;if(!confirm('解除「'+e.dataset.n+'」和編輯者的綁定?'))return;guard(()=>updateDoc(tripRef(),{['mlink.'+u]:''}))},
-  joinMe(){if(!isEd||myMember())return;let n=(user.displayName||user.email||'我').slice(0,12),k=2;const base=n;while((T.members||[]).includes(n))n=base+(k++);
-    guard(()=>updateDoc(tripRef(),{members:[...(T.members||[]),n],['mlink.'+user.uid]:n}).then(()=>{toast('已加入旅伴名單');renderList()}))},
+  async joinMe(){if(!isEd||myMember())return;let n=(user.displayName||user.email||'我').slice(0,12),k=2;const base=n;while((T.members||[]).includes(n))n=base+(k++);
+    const up={members:[...(T.members||[]),n],['mlink.'+user.uid]:n};if(user.email)up.memail=await memailPut(n,String(user.email).toLowerCase());
+    guard(()=>updateDoc(tripRef(),up).then(()=>{toast('已加入旅伴名單');renderList()}))},
   nick(){const old=myMember();if(!old)return;let v=prompt('你的暱稱(帳目裡的名字會一起更新)',old);if(v===null)return;v=v.trim().slice(0,12);if(!v||v===old)return;
     if((T.members||[]).includes(v))return toast('已經有同名的旅伴了');
-    guard(async()=>{const b=writeBatch(db);b.update(tripRef(),{members:(T.members||[]).map(m=>m===old?v:m),['mlink.'+user.uid]:v});
+    guard(async()=>{const b=writeBatch(db);b.update(tripRef(),{members:(T.members||[]).map(m=>m===old?v:m),['mlink.'+user.uid]:v,memail:(T.memail||[]).map(x=>x.n===old?{...x,n:v}:x)});
       items.forEach(x=>{const u={};if(x.payer===old)u.payer=v;if(Array.isArray(x.who)&&x.who.includes(old))u.who=x.who.map(w=>w===old?v:w);if(Object.keys(u).length)b.update(doc(db,'trips',T.id,'items',x.id),u)});
       await b.commit();try{await updateDoc(doc(db,'trips',T.id,'editors',user.uid),{name:v})}catch(e){}toast('暱稱已更新')})},
   addMem(){const v=$('#mn').value.trim();if(!v||(T.members||[]).includes(v))return;guard(()=>updateDoc(tripRef(),{members:[...(T.members||[]),v]}).then(()=>{renderForm();renderList();const i=$('#mn');if(i)i.focus()}))},
-  delMem(e){{const n=e.dataset.n,up={members:(T.members||[]).filter(m=>m!=n)};Object.keys(T.mlink||{}).forEach(u=>{if(T.mlink[u]===n)up['mlink.'+u]=''});guard(()=>updateDoc(tripRef(),up).then(()=>{renderForm();renderList()}))}},
+  delMem(e){{const n=e.dataset.n,used=items.filter(x=>x.type=='exp'&&(x.payer===n||(Array.isArray(x.who)&&x.who.includes(n)))).length;
+    if(!confirm('確定要移除旅伴「'+n+'」嗎?'))return;
+    if(!confirm('再確認一次:移除「'+n+'」後,他和編輯者的綁定會解除'+(used?`,而且有 ${used} 筆帳目用到這個名字(帳目不會被刪除,但分帳結果可能不準)`:'')+'。真的要移除嗎?'))return;
+    const up={members:(T.members||[]).filter(m=>m!=n),memail:(T.memail||[]).filter(x=>x.n!==n)};Object.keys(T.mlink||{}).forEach(u=>{if(T.mlink[u]===n)up['mlink.'+u]=''});guard(()=>updateDoc(tripRef(),up).then(()=>{renderForm();renderList()}))}},
   addExp(){const d=$('#ed').value.trim(),a=+$('#ea').value,w=[...document.querySelectorAll('.ew:checked')].map(x=>x.value);if(!d||!a||!w.length)return toast('請填項目、金額與分攤者');
     guard(async()=>{await addItem('exp',{desc:d.slice(0,80),amt:a,cur:$('#ec').value,payer:$('#ep').value,who:w,cat:$('#ecat').value});$('#ed').value=$('#ea').value='';closeSheet()})},
   addRate(){const c=$('#nc').value.trim().toUpperCase().slice(0,6),r=+$('#nr').value;if(!c||!r)return;guard(()=>updateDoc(tripRef(),{['rates.'+c]:r}).then(renderForm))},
