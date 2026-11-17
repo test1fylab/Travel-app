@@ -295,6 +295,16 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 .tkw{flex:1;position:relative;height:20px;text-align:center}.tkw i{position:absolute;left:0;right:0;top:9px;border-top:2px dashed #6F8FA8}.tkw span{position:relative;background:#f8efdc;padding:0 4px;font-size:14px}
 .tkn{font-size:13px;color:var(--mu);margin-top:8px}
 .fhr{font-size:13.5px;margin:6px 0}.fhr details{margin:4px 0}.fhr summary{cursor:pointer;color:var(--ac)}.fhr details div{padding:1px 0}
+.fcard{padding:0}.fcard .fcb{padding:16px}
+
+.tsub{font-size:13.5px;color:var(--mu);margin:2px 0 4px}
+.thr{font-size:14px;color:var(--mu);margin:4px 0}
+.tnote{display:flex;gap:8px;align-items:flex-start;margin:8px 0 4px;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.65;color:#5a3f22;background:color-mix(in srgb,var(--c,#C9962E) 14%,#fffaf0);border:1px solid color-mix(in srgb,var(--c,#C9962E) 40%,transparent)}
+.fcard .tnote{--c:#C9962E}.tnote span{white-space:pre-wrap;word-break:break-word}
+.tli.now .tlc{border:2px solid var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent),0 4px 14px rgba(58,38,26,.12)}
+.tli.now .tld{animation:nowp 1.6s ease-in-out infinite;background:var(--c)!important}
+@keyframes nowp{50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--c) 10%,transparent)}}
+.tag.nowc{background:#dff0dc!important;color:#2f6a3a!important;margin-left:6px}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -486,7 +496,7 @@ function renderForm(){
   `<div class=card><div class=row>${fld('第幾天',`<input id=d type=number inputmode=numeric min=1 value="${x?x.day:(dayF||1)}">`,'天')}${fld('時間(選填)',`<input id=t type=time value="${x?esc(x.time||''):''}">`)}</div>
   <div class=row><input id=placeq placeholder="搜尋地點(可選),例如:淺草寺" value="${esc(tw(x?.placeName||''))}"><button class="p g" data-a=searchPlace style="flex:0 0 72px;margin-bottom:8px">搜尋</button></div>
   <input id=gl inputmode=url placeholder="搜尋不到?貼上 Google 地圖連結來定位(選填)" value="${x?esc(x.url||''):''}"><div id=resbox></div><div id=selp class=mu></div>
-  <select id=tg>${['',...TAGS].map(t=>`<option value="${t}" ${(x&&x.tag==t)||(!x&&t==(tab==6?'餐廳':''))?'selected':''}>${t||'類別(選填)'}</option>`).join('')}</select><input id=ti placeholder="行程名稱" value="${x?esc(x.title):''}"><input id=no placeholder="備註(選填)" value="${x?esc(x.note||''):''}">
+  <select id=tg>${['',...TAGS].map(t=>`<option value="${t}" ${(x&&x.tag==t)||(!x&&t==(tab==6?'餐廳':''))?'selected':''}>${t||'類別(選填)'}</option>`).join('')}</select><input id=ti placeholder="行程名稱" value="${x?esc(x.title):''}"><input id=sb placeholder="副標題(選填),例如:下地島天然雙池 · 龍宮傳說" maxlength=60 value="${x?esc(x.sub||''):''}"><input id=hr placeholder="營業時間/資訊(選填),例如:24h · 免費停車場" maxlength=60 value="${x?esc(x.hours||''):''}"><textarea id=no rows=3 maxlength=300 placeholder="敘述/小提醒(選填),例如:木棧道來回約 30 分,順路看帶岩">${x?esc(x.note||''):''}</textarea>
   <details ${x&&(tsegsOf(x).length||+x.tc)?'open':''} style="margin:4px 0 10px"><summary>交通:從上一站怎麼過來(選填)</summary>
   <div class=mu style="font-size:12px;margin:6px 0">一段一段加,例如:步行 5 分 250 公尺;電車(東武晴空塔線)3 分 → 東京晴空塔</div>
   <div id=tsegs>${x?tsegsOf(x).map(tsRow).join(''):''}</div>
@@ -528,6 +538,12 @@ function tixCard(x){const k=x.kind||'spot',ed=isEd?`<div class=tka><button class
     <div class=tkr><div><div class=tkm>${esc(x.t1||'--:--')}</div><div class=tkl>${k=='flight'?ln(x.fromc,x.from):esc(x.from||'')}</div></div><div class=tkw><i></i><span>${ic}</span></div><div style="text-align:right"><div class=tkm>${esc(x.t2||'--:--')}</div><div class=tkl>${k=='flight'?ln(x.toc,x.to):esc(x.to||'')}</div></div></div></div>
     ${x.note?`<div class=tkn>${esc(x.note)}</div>`:''}</div>`}
   return `<div class="tkc ${x.done?'dn':''}"><div class=tkt0>${ck}<span class=tkti>🎫 ${esc(x.title||'')}</span>${ed}</div><div class=tkb style="font-size:14px">${x.date?`<div>${tixDate(x.date)}${x.t1?' '+esc(x.t1):''}${+x.qty>0?` · ${x.qty} 張`:''}</div>`:(+x.qty>0?`<div>${x.qty} 張</div>`:'')}${x.note?`<div class=mu>${esc(x.note)}</div>`:''}</div></div>`}
+function markNow(){document.querySelectorAll('.tli.now').forEach(e=>{e.classList.remove('now');const c=e.querySelector('.tag.nowc');if(c)c.remove()});
+  if(!T||tab!=0)return;const ph=tripPhase();if(ph.p!='during')return;const n=new Date(),hm=n.getHours()*60+n.getMinutes(),mn=t=>{const m=/^(\d+):(\d+)/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
+  const li=[...document.querySelectorAll('.tli[data-day="'+ph.k+'"]')].map(e=>({e,m:mn(e.dataset.time)})).filter(o=>o.m!=null);let cur=null;
+  li.forEach((o,i)=>{if(o.m<=hm){const nx=li[i+1];if(nx?hm<nx.m:hm<o.m+120)cur=o}});
+  if(cur){cur.e.classList.add('now');const tg=cur.e.querySelector('.tlc .tag');const chip='<span class="tag nowc">目前行程</span>';if(tg)tg.insertAdjacentHTML('afterend',chip);else cur.e.querySelector('.tlc').insertAdjacentHTML('afterbegin',chip)}}
+setInterval(markNow,30000);
 function listTix(){const all=itemsOf('tix'),kk=x=>x.kind||'spot',n=all.filter(x=>x.done).length,pc=all.length?Math.round(n/all.length*100):0;
   const T3=[['all','全部'],['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點票']];
   const a=all.filter(x=>tixTab=='all'||kk(x)==tixTab).sort((p,q)=>(p.date||'9').localeCompare(q.date||'9')||(p.t1||'').localeCompare(q.t1||''));
@@ -551,7 +567,7 @@ function renderList(){
   else if(tab==6)l.innerHTML=listFood();
   else if(tab==4)l.innerHTML='<h3 style="margin-top:6px">行李清單</h3>'+listChk('pack')+'<h3>備忘錄</h3>'+listMemo();
   else l.innerHTML=listTix();
-  hydrate();
+  hydrate();markNow();
   if(animNext){const c=animNext;animNext='';l.classList.remove('anim','sl','sr','up');void l.offsetWidth;l.classList.add('anim',c);setTimeout(()=>l.classList.remove('anim','sl','sr','up'),450)}
 }
 const sortItin=a=>{const man=(T&&T.manual)||{},tc=(x,y)=>(x.time||'').localeCompare(y.time||'');return [...a].sort((x,y)=>x.day-y.day||(man[x.day]?((x.ord??1e12)-(y.ord??1e12)||tc(x,y)):tc(x,y)))};
@@ -622,10 +638,10 @@ function timeline(g){
       cx=`<div class=tlx>${sg.map(g=>{const md_=TMODES.find(m=>m[0]==g.m)||['','➡️'];const wk=g.m=='步行',ds=+g.dist>0?(g.dist>=1000?(g.dist/1000).toFixed(1)+' 公里':g.dist+' 公尺'):'';return `<div class=xl1>${md_[1]} ${esc(wk?'步行':(g.ln||g.m||'移動'))}${+g.min>0?` <span class=xm>${g.min} 分</span>`:''}${wk&&ds?` · ${ds}`:''}${!wk&&g.to?` → ${esc(g.to)}`:''}</div>`}).join('')}${l3||route_?`<div class=xl3>${l3}${route_?` <a class=xl href="${route_}" target=_blank rel=noopener>路線 ↗</a>`:''}${route_?` <a class=xl data-a=jt data-from="${esc(((pv&&(pv.placeName||pv.title))||'').split(/[,，]/)[0])}" data-to="${esc((x.placeName||x.title||'').split(/[,，]/)[0])}" href="https://world.jorudan.co.jp/mln/en/" target=_blank rel=noopener>Japan Transit ↗</a>`:''}</div>`:''}</div>`}}
     const tg=x.tag&&TAGC[x.tag]?`<span class=tag style="color:${TAGC[x.tag][0]};background:${TAGC[x.tag][1]}">${TAGI[x.tag]} ${esc(x.tag)}</span>`:'';
     const link=itemLink(x);
-    return `<div class="tli ${selId==x.id?'sel':''} ${x.done?'done':''} ${cx?'hx':''}" id="i_${x.id}" style="--c:${cc};--cp:${cp};--cn:${cn}">${cx}<div class=tlt>${esc(x.time||'')}</div><div class=tld data-a=toggleDone data-id="${x.id}" title="標記完成"></div>
+    return `<div class="tli ${selId==x.id?'sel':''} ${x.done?'done':''} ${cx?'hx':''}" id="i_${x.id}" data-day="${x.day}" data-time="${esc(x.time||'')}" style="--c:${cc};--cp:${cp};--cn:${cn}">${cx}<div class=tlt>${esc(x.time||'')}</div><div class=tld data-a=toggleDone data-id="${x.id}" title="標記完成"></div>
     <div class=tlc data-a=focus data-id="${x.id}" style="cursor:pointer;border-left:4px solid ${cc}">${isEd?`<div class=tca><button class=x data-a=edit data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button></div>`:''}
     ${tg}${has?'':'<span class=mu>(未定位)</span>'}<div class=tct style="${isEd?'padding-right:64px':''}">${esc(x.title)}</div>
-    ${x.placeName?`<div class=tcs>${esc(tw(x.placeName))}</div>`:''}${x.note?`<div class=tcs>${esc(x.note)}</div>`:''}${+x.amt>0?`<div class=tcs style="color:var(--ink);font-weight:600">${esc(x.cat||'')} ${fmt(x.amt)} ${esc(x.cur||T.base)} · ${esc(x.payer||'')} 付</div>`:''}
+    ${x.sub?`<div class=tsub>${esc(x.sub)}</div>`:''}${x.placeName&&!x.sub?`<div class=tcs>${esc(tw(x.placeName))}</div>`:''}${x.hours?`<div class=thr>🕒 ${esc(x.hours)}</div>`:''}${x.note?`<div class=tnote>💡 <span>${esc(x.note)}</span></div>`:''}${+x.amt>0?`<div class=tcs style="color:var(--ink);font-weight:600">${esc(x.cat||'')} ${fmt(x.amt)} ${esc(x.cur||T.base)} · ${esc(x.payer||'')} 付</div>`:''}
     <div class=tcs>${d!=null?`距上一站約 ${d<1?Math.round(d*1000)+' m':d.toFixed(1)+' km'} · `:''}<a href="${link}" target=_blank rel=noopener>在 Google 地圖開啟</a></div></div></div>`}).join('')+`</div>`;
 }
 
@@ -721,28 +737,15 @@ function listHome(){const ds=dayList(),all=sortItin(itemsOf('itin')),N=ds.length
     return `<div class=dcard data-a=goDay data-d=${d}><div class=dci data-wk="${esc(f?tw(f.placeName||f.title):'')}" data-strict=1>${dayScene(d)}</div><div class=dcb><div class=row2><span class=kick>DAY ${d}</span><span class=mu>${dt?md(dt):''}</span></div><div class=dctt>${esc(ttl)}</div>${g.slice(0,3).map(x=>`<div class=dcs>→ ${esc(x.title)}</div>`).join('')||'<div class=dcs>—</div>'}${g.length>3?`<div class=dcs>… 還有 ${g.length-3} 個</div>`:''}</div></div>`}).join('')}</div>`;
   html+=`<div class=kick style="margin-top:20px">FOOD</div><h3 style="margin-top:2px">旅程餐廳</h3><div class="card foodcta" data-tab=6><div class=fe>🍜</div><div style="flex:1;min-width:0"><div style="font-weight:500">${fcount?`共 ${fcount} 間餐廳與行程連動`:'還沒有餐廳'}</div><div class=mu style="font-size:13px">${fcount?all.filter(x=>x.tag=='餐廳').slice(0,3).map(x=>esc(x.title)).join('、'):'新增行程時選類別「餐廳」,就會出現在這裡'}</div></div><div class=arw>→</div></div>`;
   return html}
-/* ---------- 餐廳:從 Google 取得照片與營業時間(按鈕觸發,結果只暫存在本機 1 天) ---------- */
-const gpGet=id=>{try{const c=JSON.parse(localStorage.getItem('gp1:'+id)||'null');return c&&Date.now()-c.t<864e5?c:null}catch(e){return null}};
-async function gPlace(x){const H={'Content-Type':'application/json','X-Goog-Api-Key':mapsKey},rg=String(T.region||'').replace(/^日本/,''),FM='id,displayName,formattedAddress,rating,userRatingCount,regularOpeningHours.weekdayDescriptions,photos';let p;
-  if(x.gid){const j=await fetch('https://places.googleapis.com/v1/places/'+encodeURIComponent(x.gid)+'?languageCode=zh-TW',{headers:{...H,'X-Goog-FieldMask':FM}}).then(r=>r.json());if(j.error)throw new Error(j.error.message||j.error.status);p=j}
-  else{const body={textQuery:((x.placeName?tw(x.placeName).split(/[,,]/)[0]:x.title)+' '+rg).trim(),languageCode:'zh-TW',pageSize:1};if(x.lat!=null)body.locationBias={circle:{center:{latitude:x.lat,longitude:x.lon},radius:800}};
-    const j=await fetch('https://places.googleapis.com/v1/places:searchText',{method:'POST',headers:{...H,'X-Goog-FieldMask':'places.'+FM.split(',').join(',places.')},body:JSON.stringify(body)}).then(r=>r.json());if(j.error)throw new Error(j.error.message||j.error.status);p=(j.places||[])[0];if(!p)throw new Error('Google 找不到這間店')}
-  let photo='';if(p.photos&&p.photos[0]){try{const pr=await fetch('https://places.googleapis.com/v1/'+p.photos[0].name+'/media?maxWidthPx=900&skipHttpRedirect=true&key='+encodeURIComponent(mapsKey)).then(r=>r.json());photo=pr.photoUri||''}catch(e){}}
-  const o={t:Date.now(),photo,hours:((p.regularOpeningHours||{}).weekdayDescriptions)||[],rating:p.rating||0,n:p.userRatingCount||0,addr:p.formattedAddress||''};
-  try{localStorage.setItem('gp1:'+x.id,JSON.stringify(o))}catch(e){}
-  if(isEd&&!x.gid&&p.id)updateDoc(doc(db,'trips',T.id,'items',x.id),{gid:p.id}).catch(()=>{});
-  return o}
-const todayHours=h=>{if(!h||!h.length)return '';const l=h[(new Date().getDay()+6)%7]||'';return l.replace(/^[^:：]*[:：]\s*/,'')};
 function listFood(){const fs=sortItin(itemsOf('itin')).filter(x=>x.tag=='餐廳'),rg=String(T.region||'').replace(/^日本/,'');
-  let html=`<a class=lnk data-tab=7 href="javascript:void 0" style="display:inline-block;margin:6px 0 0">‹ 回首頁</a><div class=kick style="margin-top:10px">FOOD</div><h3 style="margin-top:2px">旅程餐廳</h3><div class=mu>和行程連動:新增或編輯行程時把類別選「餐廳」,就會出現在這裡。</div>${fs.length?`<button class="p g" data-a=gAll style="margin-top:10px">一次載入所有餐廳的照片與營業時間</button>`:''}`;
+  let html=`<a class=lnk data-tab=7 href="javascript:void 0" style="display:inline-block;margin:6px 0 0">‹ 回首頁</a><div class=kick style="margin-top:10px">FOOD</div><h3 style="margin-top:2px">旅程餐廳</h3><div class=mu>和行程連動:新增或編輯行程時把類別選「餐廳」,就會出現在這裡。</div>`;
   if(!fs.length)return html+`<div class=card style="margin-top:12px"><div class=mu>還沒有餐廳。${isEd?'按右下角 ＋ 直接新增一間(類別已預設為餐廳)。':''}</div></div>`;
-  return html+fs.map(x=>{const dt=dayDate(x.day),has=x.lat!=null,nav=has?`https://www.google.com/maps/dir/?api=1&destination=${x.lat},${x.lon}&travelmode=walking`:'',link=itemLink(x),nm=tw(x.placeName||x.title),gp=gpGet(x.id);
-    return `<div class=fcard><div class="fci ${gp&&gp.photo?'has':''}" ${gp&&gp.photo?`style="background-image:url('${esc(gp.photo).replace(/'/g,'%27')}')"`:`data-wk="${esc((rg+' '+nm).trim())}" data-strict=1`}><span class=fe>🍽</span></div><div class=fcb>
+  return html+fs.map(x=>{const dt=dayDate(x.day),has=x.lat!=null,nav=has?`https://www.google.com/maps/dir/?api=1&destination=${x.lat},${x.lon}&travelmode=walking`:'',link=itemLink(x),nm=tw(x.placeName||x.title);
+    return `<div class=fcard><div class=fcb>
     <div class=row2><span class=kick>DAY ${x.day}${x.time?' · '+esc(x.time):''}</span><span class=mu>${dt?md(dt):''}</span></div><div class=dctt>${esc(x.title)}</div>
     ${x.addr?`<div class=fad>📍 ${esc(tw(x.addr))}</div>`:has?`<div class=fad>📍 <span data-addr="${x.lat},${x.lon}">${esc(nm)}</span></div>`:''}
-    ${gp?`<div class=fhr>${gp.rating?`⭐ ${gp.rating}${gp.n?` (${gp.n})`:''} · `:''}${gp.hours.length?`今日營業:${esc(todayHours(gp.hours))}`:'營業時間:Google 未提供'}${gp.hours.length?`<details><summary>每週營業時間</summary>${gp.hours.map(h=>`<div>${esc(h)}</div>`).join('')}</details>`:''}<div class=mu style="font-size:11px">資料來自 Google 地圖(暫存於本機 1 天)</div></div>`:''}
-    <div class=fin data-wkx="${esc((rg+' '+nm).trim())}">${esc(x.note||'')}</div>
-    <div class=fbt>${nav?`<a class=fb1 href="${nav}" target=_blank rel=noopener>導航</a>`:''}<button class=fb1 data-a=gFetch data-id="${x.id}" style="background:var(--card2);color:var(--tx);border:1px solid var(--bd)">${gp?'重新載入':'取得照片與營業時間'}</button><a class=fb2 href="${link}" target=_blank rel=noopener>在 Google 地圖查看 ↗</a>${isEd?`<button class=x data-a=edit data-id="${x.id}">✎</button>`:''}</div></div></div>`}).join('')}
+    ${x.sub?`<div class=tsub>${esc(x.sub)}</div>`:''}${x.hours?`<div class=thr>🕒 ${esc(x.hours)}</div>`:''}${x.note?`<div class=tnote>💡 <span>${esc(x.note)}</span></div>`:''}
+    <div class=fbt>${nav?`<a class=fb1 href="${nav}" target=_blank rel=noopener>導航</a>`:''}<a class=fb2 href="${link}" target=_blank rel=noopener>在 Google 地圖查看 ↗</a>${isEd?`<button class=x data-a=edit data-id="${x.id}">✎</button>`:''}</div></div></div>`}).join('')}
 function dayScene(d){const th=[['#f7e4b0','#f2cf86','#c99a52','#8a5a2b'],['#f6d3a6','#eaa86b','#b9714a','#7a3f2a'],['#e9dfc2','#d3c08f','#a58a5a','#5f4430']][(d-1)%3];
   return `<svg class=dscene viewBox="0 0 150 84" preserveAspectRatio="xMidYMid slice" aria-hidden=true><defs><clipPath id=dsc${d}><rect width=150 height=84 rx=16 /></clipPath><linearGradient id=dsg${d} x1=0 y1=0 x2=0 y2=1><stop offset=0 stop-color="${th[0]}"/><stop offset=1 stop-color="${th[1]}"/></linearGradient></defs><g clip-path="url(#dsc${d})">
   <rect width=150 height=84 fill="url(#dsg${d})"/><circle class=sun cx=116 cy=22 r=11 fill="#fff6d8"/>
@@ -960,7 +963,7 @@ const A={
     catch(e){box.innerHTML='<div class=mu>搜尋失敗 → 可改貼下方「Google 地圖連結」來定位</div>'}},
   pickPlace(e){const p=(window.__res||[])[+e.dataset.i];if(!p)return;selPlace={name:p.name,lat:p.lat,lon:p.lon,addr:p.full||''};$('#resbox').innerHTML='';if(!$('#ti').value.trim())$('#ti').value=selPlace.name;showSel()},
   saveItin(){const ti=$('#ti').value.trim();if(!ti)return toast('請輸入行程名稱');
-    const data={day:Math.min(60,Math.max(1,Math.round(+$('#d').value)||1)),time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120),tag:$('#tg').value};
+    const data={day:Math.min(60,Math.max(1,Math.round(+$('#d').value)||1)),time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,300),sub:$('#sb').value.trim().slice(0,60),hours:$('#hr').value.trim().slice(0,60),tag:$('#tg').value};
     {const gv=$('#gl').value.trim(),g=parseGMaps(gv);if(g){data.url=g.url.slice(0,500);if(g.lat!=null&&!selPlace)selPlace={name:g.name,lat:g.lat,lon:g.lon}}else if(!gv)data.url=''}
     {const xa=$('#xa');if(xa){const amt=+xa.value;if(amt>0){const who=[...document.querySelectorAll('.xw:checked')].map(v=>v.value);if(!who.length)return toast('請選擇分攤者');data.amt=amt;data.cur=$('#xu').value;data.payer=$('#xp').value;data.who=who;data.cat=$('#xc').value}else if(editId){data.amt=0;data.cur='';data.payer='';data.who=[];data.cat=''}}}
     {const tsEl=$('#tsegs');if(tsEl){const segs=[...tsEl.querySelectorAll('.tsg')].map(r=>(()=>{const m=r.querySelector('.tsm').value,w=m=='步行';return {m,ln:w?'':r.querySelector('.tsl').value.trim().slice(0,30),to:w?'':r.querySelector('.tst2').value.trim().slice(0,30),dist:w?Math.max(0,Math.min(99999,Math.round(+r.querySelector('.tsd2').value)||0)):0,min:Math.max(0,Math.min(1440,Math.round(+r.querySelector('.tsn').value)||0))}})()).filter(g=>g.ln||g.to||g.min||g.dist),tc=Math.max(0,+$('#tc').value||0);
@@ -1031,12 +1034,6 @@ const A={
     else d.qty=Math.max(1,Math.round(+g('tx_qty'))||1);
     if(!d.title&&!d.from&&!d.to)return toast('請至少填寫名稱或站點');
     guard(async()=>{if(tixEditId){await updateDoc(doc(db,'trips',T.id,'items',tixEditId),d)}else await addItem('tix',{...d,done:false});tixEditId=null;closeSheet()})},
-  async gFetch(e){if(!GR)return toast('需要在 config.js 填入 Google 金鑰,並啟用 Places API (New)');const x=items.find(i=>i.id==e.dataset.id);if(!x)return;e.disabled=true;e.textContent='載入中…';
-    try{await gPlace(x);renderList()}catch(err){toast('Google 取得失敗:'+String((err&&err.message)||'').slice(0,90));e.disabled=false;e.textContent='取得照片與營業時間'}},
-  async gAll(e){if(!GR)return toast('需要在 config.js 填入 Google 金鑰,並啟用 Places API (New)');const fs=itemsOf('itin').filter(x=>x.tag=='餐廳'&&!gpGet(x.id));if(!fs.length)return toast('都已載入');
-    if(!confirm(`將向 Google 查詢 ${fs.length} 間餐廳(會用到 Places API 額度),繼續嗎?`))return;e.disabled=true;let ok=0,bad='';
-    for(const x of fs){try{await gPlace(x);ok++;e.textContent=`載入中 ${ok}/${fs.length}`}catch(err){bad=String((err&&err.message)||'').slice(0,60);if(/PERMISSION|API key|not enabled|403/i.test(bad))break}}
-    renderList();toast(bad?`已載入 ${ok} 間;失敗原因:${bad}`:`已載入 ${ok} 間`)},
   addSeg(){const el=$('#tsegs');if(!el)return;const rows=el.querySelectorAll('.tsg'),last=rows.length?rows[rows.length-1].querySelector('.tsm').value:'';el.insertAdjacentHTML('beforeend',tsRow({m:last=='步行'?'地鐵/電車':'步行'}))},
   delSeg(e){const r=e.closest('.tsg');if(r)r.remove()},
   preset(){guard(async()=>{const have=itemsOf('pack').map(x=>x.title);for(const t of PACK)if(!have.includes(t))await addItem('pack',{title:t,done:false});closeSheet()})},
