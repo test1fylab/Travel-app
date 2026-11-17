@@ -953,20 +953,23 @@ const A={
     const old=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='估算中…'}
     try{let dur=0,walk=0,fare=0,fcur='',lines=[],from='',to='',gotFare=false;
       if(GR){
-        await loadG();const {Route}=await google.maps.importLibrary('routes');
+        const dnm=(selPlace&&selPlace.name)||'',pnm=prev.placeName||'';
+        const wp=(nm,x)=>nm?{address:String(nm).split(/[,，]/)[0].trim()+(T.region?' '+T.region.replace(/^日本/,''):'')}:{location:{latLng:{latitude:x.lat,longitude:x.lon}}};
+        const callR=async(dep,byName)=>{const body={origin:byName&&pnm?wp(pnm,prev):{location:{latLng:{latitude:prev.lat,longitude:prev.lon}}},destination:byName&&dnm?wp(dnm,dest):{location:{latLng:{latitude:dest.lat,longitude:dest.lon}}},travelMode:tmode,languageCode:'zh-TW',units:'METRIC'};
+          if(tmode=='TRANSIT'&&dep)body.departureTime=dep.toISOString();
+          const rr=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':mapsKey,'X-Goog-FieldMask':'routes.duration,routes.distanceMeters,routes.legs.steps.travelMode,routes.legs.steps.staticDuration,routes.legs.steps.transitDetails,routes.travelAdvisory.transitFare'},body:JSON.stringify(body)});
+          const jj=await rr.json();if(jj.error)throw new Error((jj.error.status||'')+': '+(jj.error.message||''));return jj.routes&&jj.routes[0]};
         let dep=new Date();{const dd=dayDate(day),nw=new Date();let base=(dd&&dd>nw)?new Date(dd):new Date(nw.getTime()+864e5);const hm=(time||'10:00').split(':');base.setHours(+hm[0]||10,+hm[1]||0,0,0);dep=base}
-        const req={origin:{lat:prev.lat,lng:prev.lon},destination:{lat:dest.lat,lng:dest.lon},travelMode:tmode,fields:['durationMillis','distanceMeters','legs','travelAdvisory'],language:'zh-TW'};
-        if(tmode=='TRANSIT')req.departureTime=dep;
-        let res=await Route.computeRoutes(req),r=res&&res.routes&&res.routes[0];
-        if(!r&&tmode=='TRANSIT'){const d2=new Date(dep);do{d2.setDate(d2.getDate()+1)}while([0,6].includes(d2.getDay()));d2.setHours(10,0,0,0);req.departureTime=d2;try{res=await Route.computeRoutes(req);r=res&&res.routes&&res.routes[0]}catch(e){}}
+        let r=await callR(dep,true);if(!r)r=await callR(dep,false);
+        if(!r&&tmode=='TRANSIT'){const d2=new Date(dep);do{d2.setDate(d2.getDate()+1)}while([0,6].includes(d2.getDay()));d2.setHours(10,0,0,0);r=await callR(d2,true)||await callR(d2,false)}
+        if(!r&&tmode=='TRANSIT'){r=null}
+        const sec=x=>x?parseInt(String(x),10)||0:0;
         if(!r){const kk=km(prev,dest);dur=Math.round(kk/(tmode=='WALK'?4.5:tmode=='DRIVE'?35:22)*60+(tmode=='TRANSIT'?8:2));window.__rough=1}
-        else dur=Math.round((r.durationMillis||0)/6e4);
-        if(r){
-        try{(r.legs||[]).forEach(l=>(l.steps||[]).forEach(st=>{const td=st.transitDetails;
-          if(td){const ln=td.transitLine||{},nm=ln.nameShort||ln.name||'';if(nm&&!lines.includes(nm))lines.push(nm);const sd=td.stopDetails||{};if(!from)from=(sd.departureStop&&sd.departureStop.name)||'';to=(sd.arrivalStop&&sd.arrivalStop.name)||to}
-          else if(String(st.travelMode||'').toUpperCase().startsWith('WALK'))walk+=(st.staticDurationMillis||0)/6e4}))}catch(e){}
-        try{const tf=r.travelAdvisory&&r.travelAdvisory.transitFare;if(tf){fare=(+tf.units||0)+(+tf.nanos||0)/1e9;fcur=tf.currencyCode||'';gotFare=fare>0}}catch(e){}
-        }
+        else{dur=Math.round(sec(r.duration)/60);window.__dist=r.distanceMeters||0;
+          try{(r.legs||[]).forEach(l=>(l.steps||[]).forEach(st=>{const td=st.transitDetails;
+            if(td){const ln=td.transitLine||{},nm=ln.name||ln.nameShort||'';if(nm&&!lines.includes(nm))lines.push(nm);const sd=td.stopDetails||{};if(!from)from=(sd.departureStop&&sd.departureStop.name)||'';to=(sd.arrivalStop&&sd.arrivalStop.name)||to}
+            else if(st.travelMode=='WALK')walk+=sec(st.staticDuration)/60}))}catch(e){}
+          try{const tf=r.travelAdvisory&&r.travelAdvisory.transitFare;if(tf){fare=(+tf.units||0)+(+tf.nanos||0)/1e9;fcur=tf.currencyCode||'';gotFare=fare>0}}catch(e){}}
       }else if(tmode!='TRANSIT'){
         const prof=tmode=='WALK'?'routed-foot/route/v1/foot':'routed-car/route/v1/driving';
         const r=await fetch(`https://routing.openstreetmap.de/${prof}/${prev.lon},${prev.lat};${dest.lon},${dest.lat}?overview=false`).then(x=>x.json());
@@ -977,7 +980,7 @@ const A={
       if(to)$('#tto').value=to;else if(!$('#tto').value&&(selPlace&&selPlace.name))$('#tto').value=tw(selPlace.name).slice(0,40);
       $('#tmin').value=Math.max(1,dur-walk);$('#twalk').value=walk||'';
       if(gotFare){const cu=$('#tcu');if(![...cu.options].some(o=>o.value==fcur)){const o=document.createElement('option');o.value=fcur;o.textContent=curLbl(fcur);cu.appendChild(o)}cu.value=fcur;$('#tc').value=Math.round(fare*100)/100}
-      toast(window.__rough?(window.__rough=0,'Google 沒有提供這段的路線資料,已用直線距離粗估時間;請按「路線 ↗」到 Google 地圖確認,車資請手動填寫'):gotFare?'已估算時間與車資(Google 預估,請自行確認)':(GR&&tmode=='TRANSIT'?'已估算時間;Google 沒有提供這段的車資,請手動填寫':'已估算時間;車資請手動填寫'))
+      toast(window.__rough?(window.__rough=0,'Google 沒有提供這段的路線資料,已用直線距離粗估時間;請按「路線 ↗」到 Google 地圖確認,車資請手動填寫'):gotFare?'已估算'+(window.__dist?` ${(window.__dist/1000).toFixed(1)} km、`:'')+'時間與車資(Google 預估,請自行確認)':(GR&&tmode=='TRANSIT'?'已估算'+(window.__dist?` ${(window.__dist/1000).toFixed(1)} km、`:'')+'時間;Google 沒有提供這段的車資,請手動填寫':'已估算時間;車資請手動填寫'))
     }catch(e){let m=String((e&&e.message)||'');console.error('routes',e);
       if(GR&&/PERMISSION_DENIED|403/i.test(m)){try{const rr=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':mapsKey,'X-Goog-FieldMask':'routes.duration'},body:JSON.stringify({origin:{location:{latLng:{latitude:prev.lat,longitude:prev.lon}}},destination:{location:{latLng:{latitude:dest.lat,longitude:dest.lon}}},travelMode:'DRIVE'})});const jj=await rr.json();
         if(jj.error){const d=(jj.error.details||[]).find(x=>x.reason)||{};const why={SERVICE_DISABLED:'此專案沒有啟用 Routes API',API_KEY_SERVICE_BLOCKED:'金鑰的「API 限制」沒有勾 Routes API',API_KEY_HTTP_REFERRER_BLOCKED:'金鑰的網站限制擋住了這個網址',BILLING_DISABLED:'專案沒有綁定帳單',API_KEY_INVALID:'金鑰無效'}[d.reason];
@@ -1064,3 +1067,4 @@ document.addEventListener('change',e=>{const t=e.target;if(!T||!route.tid)return
 
 try{if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 </script></body></html>
+ㄒ
