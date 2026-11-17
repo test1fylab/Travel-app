@@ -279,6 +279,7 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 .pka{display:flex;gap:8px;padding:12px 0 6px;align-items:center}.pka input{flex:1;min-width:0;margin:0}.pka button{white-space:nowrap;width:auto!important;flex:none;padding:10px 18px}.pka input{width:auto!important;flex:1 1 90px!important}
 
 .cgo{bottom:44px!important}.lmk{filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))}.cover{height:430px}
+.tsg{border-left:3px solid var(--bd);padding-left:8px;margin:6px 0}.xm{color:var(--ac);font-weight:600;font-size:12px}.xl1{margin:1px 0}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -306,6 +307,9 @@ const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
 
 let homeDraw=null,showNew=false,animNext='',dayInit=false,G=false,GR=!!mapsKey&&!String(mapsKey).startsWith('YOUR'),gl=[],iw=null,user=null,route={},T=null,items=[],isEd=false,tab=0,unsubs=[],mine=[],dayF=0,editId=null,selPlace=null,selId=null,map=null,layer=null,markers={},needFit=true,tripIdOpen=null,shareMode=false,openShareNext=false;
 const TMODES=[['步行','🚶','walking'],['地鐵/電車','🚇','transit'],['巴士','🚌','transit'],['新幹線/火車','🚄','transit'],['計程車','🚕','driving'],['自駕/租車','🚗','driving'],['飛機','✈️','transit'],['船','⛴️','transit'],['其他','➡️','transit']];
+const tsegsOf=x=>{if(Array.isArray(x.tsegs)&&x.tsegs.length)return x.tsegs;const o=[];if(x.tm||x.tline||x.tto||+x.tmin>0)o.push({m:x.tm||'地鐵/電車',ln:x.tline||'',to:x.tto||'',min:+x.tmin||0});if(+x.twalk>0)o.push({m:'步行',ln:'',to:'',min:+x.twalk});return o};
+const tsegMin=x=>tsegsOf(x).reduce((a,g)=>a+(+g.min||0),0);
+const tsRow=g=>`<div class=tsg><div class=row><select class=tsm>${TMODES.map(m=>`<option ${g&&g.m==m[0]?'selected':''}>${m[0]}</option>`).join('')}</select><input class=tsl placeholder="路線/車種(選填)" maxlength=30 value="${g?esc(g.ln||''):''}"></div><div class=row><input class=tst placeholder="到哪裡(站名/地點)" maxlength=30 value="${g?esc(g.to||''):''}"><input class=tsn type=number inputmode=numeric min=0 placeholder="幾分鐘" value="${g&&+g.min>0?g.min:''}" style="max-width:90px"><button class=x type=button data-a=delSeg aria-label=刪除>✕</button></div></div>`;
 const fmtMin=m=>m>=60?`${Math.floor(m/60)} 小時${m%60?' '+m%60+' 分':''}`:`${m} 分`;
 const TAGS=['景點','餐廳','交通','住宿','購物','其他'];
 const CATS=['門票','餐費','交通','住宿','購物','其他'],TAG2CAT={景點:'門票',餐廳:'餐費',交通:'交通',住宿:'住宿',購物:'購物',其他:'其他'};
@@ -466,13 +470,11 @@ function renderForm(){
   <div class=row><input id=placeq placeholder="搜尋地點(可選),例如:淺草寺" value="${esc(tw(x?.placeName||''))}"><button class="p g" data-a=searchPlace style="flex:0 0 72px;margin-bottom:8px">搜尋</button></div>
   <input id=gl inputmode=url placeholder="搜尋不到?貼上 Google 地圖連結來定位(選填)" value="${x?esc(x.url||''):''}"><div id=resbox></div><div id=selp class=mu></div>
   <select id=tg>${['',...TAGS].map(t=>`<option value="${t}" ${(x&&x.tag==t)||(!x&&t==(tab==6?'餐廳':''))?'selected':''}>${t||'類別(選填)'}</option>`).join('')}</select><input id=ti placeholder="行程名稱" value="${x?esc(x.title):''}"><input id=no placeholder="備註(選填)" value="${x?esc(x.note||''):''}">
-  <details ${x&&(x.tm||x.tline||+x.tmin||+x.tc)?'open':''} style="margin:4px 0 10px"><summary>交通:從上一站怎麼過來(選填)</summary>
-  <select id=tm style="margin-top:6px">${['',...TMODES.map(m=>m[0])].map(m=>`<option value="${m}" ${x&&x.tm==m?'selected':''}>${m||'交通方式'}</option>`).join('')}</select>
-  <input id=tline placeholder="路線或車種,例如:京阪+地鐵" value="${x?esc(x.tline||''):''}">
-  <div class=row><input id=tfrom placeholder="出發站點" value="${x?esc(x.tfrom||''):''}"><input id=tto placeholder="到達站點" value="${x?esc(x.tto||''):''}"></div>
-  <div class=row><input id=tmin type=number inputmode=numeric min=0 placeholder="約幾分鐘" value="${x&&+x.tmin>0?x.tmin:''}"><input id=twalk type=number inputmode=numeric min=0 placeholder="另加步行幾分" value="${x&&+x.twalk>0?x.twalk:''}"></div>
-  <div class=row><input id=tc type=number inputmode=decimal step=any placeholder="車資(選填)" value="${x&&+x.tc>0?x.tc:''}"><select id=tcu>${curList().map(c=>curOpt(c,c==((x&&x.tcu)||T.base))).join('')}</select></div>
-  <button class="p g" data-a=estTransit>用 Google 自動估算時間與車資</button><div class=mu style="font-size:12px">先搜尋選好這個行程的地點,上一站也要已定位。估算結果會填進上面的欄位,可以再修改。</div></details>
+  <details ${x&&(tsegsOf(x).length||+x.tc)?'open':''} style="margin:4px 0 10px"><summary>交通:從上一站怎麼過來(選填)</summary>
+  <div class=mu style="font-size:12px;margin:6px 0">一段一段加,例如:步行 5 分 → 淺草站;電車(東武晴空塔線)3 分 → 東京晴空塔</div>
+  <div id=tsegs>${x?tsegsOf(x).map(tsRow).join(''):''}</div>
+  <button class="p g" type=button data-a=addSeg>＋ 新增一段</button>
+  <div class=row style="margin-top:8px"><input id=tc type=number inputmode=decimal step=any placeholder="總車資(選填)" value="${x&&+x.tc>0?x.tc:''}"><select id=tcu>${curList().map(c=>curOpt(c,c==((x&&x.tcu)||T.base))).join('')}</select></div></details>
   <details ${x&&+x.amt>0?'open':''} style="margin:4px 0 10px"><summary>記帳(選填)</summary>${(T.members||[]).length?`<select id=xc style="margin-top:6px">${CATS.map(c=>`<option ${x&&((x.cat&&x.cat==c)||(!x.cat&&TAG2CAT[x.tag]==c))?'selected':''}>${c}</option>`).join('')}</select>
   <div class=row><input id=xa type=number inputmode=decimal step=any placeholder="金額" value="${x&&+x.amt>0?x.amt:''}"><select id=xu>${curList().map(c=>curOpt(c,c==((x&&x.cur)||T.base))).join('')}</select></div>
   <div class=mu>誰出的錢:</div><select id=xp>${T.members.map(m=>`<option ${x&&x.payer==m?'selected':''}>${esc(m)}</option>`).join('')}</select>
@@ -570,10 +572,10 @@ function timeline(g){
   return `<div class=tl>`+g.map((x,ix)=>{
     const cc=tcol(x),cp=ix?tcol(g[ix-1]):cc,cn=ix<g.length-1?tcol(g[ix+1]):cc;
     const has=x.lat!=null,pv=prev,d=has&&prev?km(prev,x):null;if(has)prev=x;
-    let cx='';if(x.tm||x.tline||x.tfrom||x.tto||+x.tmin>0||+x.twalk>0||+x.tc>0){const md_=TMODES.find(m=>m[0]==x.tm)||['','➡️','transit'];
-      const route_=has&&pv?`https://www.google.com/maps/dir/?api=1&origin=${pv.lat},${pv.lon}&destination=${x.lat},${x.lon}&travelmode=${md_[2]}`:'';
-      const l3=[+x.tmin>0?`約 ${fmtMin(+x.tmin)}`:'',+x.tc>0?`${fmt(+x.tc)} ${esc(x.tcu||T.base)}`:''].filter(Boolean).join(' · ')+(+x.twalk>0?`${+x.tmin>0?' ':''}＋ 步行 ${x.twalk} 分`:'');
-      cx=`<div class=tlx><div class=xl1>${md_[1]} ${esc(x.tline||x.tm||'移動')}</div>${x.tfrom||x.tto?`<div class=xl2>${esc(x.tfrom||'')} → ${esc(x.tto||'')}</div>`:''}${l3||route_?`<div class=xl3>${l3}${route_?` <a class=xl href="${route_}" target=_blank rel=noopener>路線 ↗</a>`:''}</div>`:''}</div>`}
+    let cx='';{const sg=tsegsOf(x);if(sg.length||+x.tc>0){const tot=sg.reduce((a,g)=>a+(+g.min||0),0);
+      const route_=has&&pv?`https://www.google.com/maps/dir/?api=1&origin=${pv.lat},${pv.lon}&destination=${x.lat},${x.lon}`:'';
+      const l3=[tot>0?`共 ${fmtMin(tot)}`:'',+x.tc>0?`${fmt(+x.tc)} ${esc(x.tcu||T.base)}`:''].filter(Boolean).join(' · ');
+      cx=`<div class=tlx>${sg.map(g=>{const md_=TMODES.find(m=>m[0]==g.m)||['','➡️'];return `<div class=xl1>${md_[1]} ${esc(g.ln||g.m||'移動')}${+g.min>0?` <span class=xm>${g.min} 分</span>`:''}${g.to?` → ${esc(g.to)}`:''}</div>`}).join('')}${l3||route_?`<div class=xl3>${l3}${route_?` <a class=xl href="${route_}" target=_blank rel=noopener>路線 ↗</a>`:''}</div>`:''}</div>`}}
     const tg=x.tag&&TAGC[x.tag]?`<span class=tag style="color:${TAGC[x.tag][0]};background:${TAGC[x.tag][1]}">${TAGI[x.tag]} ${esc(x.tag)}</span>`:'';
     const link=itemLink(x);
     return `<div class="tli ${selId==x.id?'sel':''} ${x.done?'done':''} ${cx?'hx':''}" id="i_${x.id}" style="--c:${cc};--cp:${cp};--cn:${cn}">${cx}<div class=tlt>${esc(x.time||'')}</div><div class=tld data-a=toggleDone data-id="${x.id}" title="標記完成"></div>
@@ -708,7 +710,7 @@ function listItin(){
     const g=all.filter(x=>x.day==d),dt=dayDate(d);
     if(dayF){
       const url=navUrl(d),title=(T.dayTitles||{})[d];
-      html+=`<div class=dhead><div><div class=dnum>${d}<span>/ ${N}</span></div><div class=mu style="margin-top:4px">${dt?md(dt)+' · '+WD[dt.getDay()]:''}</div>${(()=>{const mn=g.reduce((a,x)=>a+(+x.tmin||0)+(+x.twalk||0),0),co=g.reduce((a,x)=>a+(+x.tc>0?+x.tc*rate(x.tcu||T.base):0),0);return mn||co?`<div class=mu style="font-size:12px;margin-top:6px">交通合計 ${mn?'約 '+fmtMin(mn):''}${mn&&co?' · ':''}${co?'約 '+fmt(co)+' '+esc(T.base):''}</div>`:''})()}${g.length?`<div class=prog><i style="width:${Math.round(g.filter(x=>x.done).length/g.length*100)}%"></i></div><div class=mu style="font-size:12px;margin-top:2px">已完成 ${g.filter(x=>x.done).length} / ${g.length}</div>`:''}</div>
+      html+=`<div class=dhead><div><div class=dnum>${d}<span>/ ${N}</span></div><div class=mu style="margin-top:4px">${dt?md(dt)+' · '+WD[dt.getDay()]:''}</div>${(()=>{const mn=g.reduce((a,x)=>a+tsegMin(x),0),co=g.reduce((a,x)=>a+(+x.tc>0?+x.tc*rate(x.tcu||T.base):0),0);return mn||co?`<div class=mu style="font-size:12px;margin-top:6px">交通合計 ${mn?'約 '+fmtMin(mn):''}${mn&&co?' · ':''}${co?'約 '+fmt(co)+' '+esc(T.base):''}</div>`:''})()}${g.length?`<div class=prog><i style="width:${Math.round(g.filter(x=>x.done).length/g.length*100)}%"></i></div><div class=mu style="font-size:12px;margin-top:2px">已完成 ${g.filter(x=>x.done).length} / ${g.length}</div>`:''}</div>
       ${dayScene(d)}</div>
       <div class=dttl><div class=dt>${title?esc(title):'<span class=mu>(尚未命名)</span>'}</div>${isEd?'<button class="p g s" data-a=enterEdit>編輯行程</button>':''}</div>
       ${url?`<a class=navbtn href="${url}" target=_blank rel=noopener>開啟當天 Google 導航路線</a>`:'<div class="navbtn off">當天至少要有兩個已定位的地點,才能開啟導航</div>'}`;
@@ -898,8 +900,8 @@ const A={
     const data={day:Math.min(60,Math.max(1,Math.round(+$('#d').value)||1)),time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120),tag:$('#tg').value};
     {const gv=$('#gl').value.trim(),g=parseGMaps(gv);if(g){data.url=g.url.slice(0,500);if(g.lat!=null&&!selPlace)selPlace={name:g.name,lat:g.lat,lon:g.lon}}else if(!gv)data.url=''}
     {const xa=$('#xa');if(xa){const amt=+xa.value;if(amt>0){const who=[...document.querySelectorAll('.xw:checked')].map(v=>v.value);if(!who.length)return toast('請選擇分攤者');data.amt=amt;data.cur=$('#xu').value;data.payer=$('#xp').value;data.who=who;data.cat=$('#xc').value}else if(editId){data.amt=0;data.cur='';data.payer='';data.who=[];data.cat=''}}}
-    {const tm=$('#tm');if(tm){const tmin=Math.max(0,Math.min(1440,Math.round(+$('#tmin').value)||0)),twalk=Math.max(0,Math.min(600,Math.round(+$('#twalk').value)||0)),tc=Math.max(0,+$('#tc').value||0),tl=$('#tline').value.trim().slice(0,60),tf=$('#tfrom').value.trim().slice(0,40),tt=$('#tto').value.trim().slice(0,40);
-  if(tm.value||tl||tf||tt||tmin||twalk||tc){Object.assign(data,{tm:tm.value,tline:tl,tfrom:tf,tto:tt,tmin,twalk,tc,tcu:$('#tcu').value})}else if(editId){Object.assign(data,{tm:'',tline:'',tfrom:'',tto:'',tmin:0,twalk:0,tc:0,tcu:''})}}}
+    {const tsEl=$('#tsegs');if(tsEl){const segs=[...tsEl.querySelectorAll('.tsg')].map(r=>({m:r.querySelector('.tsm').value,ln:r.querySelector('.tsl').value.trim().slice(0,30),to:r.querySelector('.tst').value.trim().slice(0,30),min:Math.max(0,Math.min(1440,Math.round(+r.querySelector('.tsn').value)||0))})).filter(g=>g.ln||g.to||g.min),tc=Math.max(0,+$('#tc').value||0);
+      data.tsegs=segs;data.tc=tc;data.tcu=tc?$('#tcu').value:'';data.tm='';data.tline='';data.tfrom='';data.tto='';data.tmin=0;data.twalk=0}}
     if(!editId&&T.manual&&T.manual[data.day])data.ord=ordFor(data.day,data.time);
     if(selPlace){data.lat=selPlace.lat;data.lon=selPlace.lon;data.placeName=selPlace.name;if(selPlace.addr)data.addr=String(selPlace.addr).slice(0,200)}
     guard(async()=>{if(editId){await updateDoc(doc(db,'trips',T.id,'items',editId),data);editId=null}else await addItem('itin',data);selPlace=null;needFit=true;closeSheet();renderForm()})},
@@ -943,54 +945,11 @@ const A={
     guard(async()=>{await addItem('exp',{desc:d.slice(0,80),amt:a,cur:$('#ec').value,payer:$('#ep').value,who:w,cat:$('#ecat').value});$('#ed').value=$('#ea').value='';closeSheet()})},
   addRate(){const c=$('#nc').value.trim().toUpperCase().slice(0,6),r=+$('#nr').value;if(!c||!r)return;guard(()=>updateDoc(tripRef(),{['rates.'+c]:r}).then(renderForm))},
   addMemo(){const v=$('#mt').value.trim();if(!v)return;guard(async()=>{await addItem('memo',{text:v.slice(0,2000)});$('#mt').value='';closeSheet()})},
-  async estTransit(){const btn=document.querySelector('[data-a=estTransit]');
-    const y=editId?items.find(i=>i.id==editId):null,dest=selPlace||(y&&y.lat!=null?{lat:y.lat,lon:y.lon}:null);
-    if(!dest)return toast('請先在上面搜尋並選擇這個行程的地點');
-    const day=Math.round(+$('#d').value)||1,time=$('#t').value||'',list=sortItin(itemsOf('itin').filter(i=>i.day==day&&i.id!=editId&&i.lat!=null));
-    let prev=null;for(const i of list){if(!time||(i.time||'')<=time)prev=i}
-    if(!prev)return toast('找不到上一站:要在同一天、時間比這個行程早,而且已經定位');
-    const sel=$('#tm');if(!sel.value)sel.value='地鐵/電車';const mode=sel.value,tmode=mode=='步行'?'WALK':(mode=='計程車'||mode=='自駕/租車')?'DRIVE':'TRANSIT';
-    const old=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='估算中…'}
-    try{let dur=0,walk=0,fare=0,fcur='',lines=[],from='',to='',gotFare=false;
-      if(GR){
-        const dnm=(selPlace&&selPlace.name)||'',pnm=prev.placeName||'';
-        const wp=(nm,x)=>nm?{address:String(nm).split(/[,，]/)[0].trim()+(T.region?' '+T.region.replace(/^日本/,''):'')}:{location:{latLng:{latitude:x.lat,longitude:x.lon}}};
-        const callR=async(dep,byName)=>{const body={origin:byName&&pnm?wp(pnm,prev):{location:{latLng:{latitude:prev.lat,longitude:prev.lon}}},destination:byName&&dnm?wp(dnm,dest):{location:{latLng:{latitude:dest.lat,longitude:dest.lon}}},travelMode:tmode,languageCode:'zh-TW',units:'METRIC'};
-          if(tmode=='TRANSIT'&&dep)body.departureTime=dep.toISOString();
-          const rr=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':mapsKey,'X-Goog-FieldMask':'routes.duration,routes.distanceMeters,routes.legs.steps.travelMode,routes.legs.steps.staticDuration,routes.legs.steps.transitDetails,routes.travelAdvisory.transitFare'},body:JSON.stringify(body)});
-          const jj=await rr.json();if(jj.error)throw new Error((jj.error.status||'')+': '+(jj.error.message||''));return jj.routes&&jj.routes[0]};
-        const hm=(time||'10:00').split(':'),nowd=new Date();let dep=new Date();dep.setHours(+hm[0]||10,+hm[1]||0,0,0);if(dep<=new Date(nowd.getTime()+36e5))dep.setDate(dep.getDate()+1);
-        let r=await callR(dep,true);if(!r)r=await callR(dep,false);
-        if(!r&&tmode=='TRANSIT'){r=await callR(null,true)||await callR(null,false)}
-        if(!r&&tmode=='TRANSIT'){const d2=new Date(dep);do{d2.setDate(d2.getDate()+1)}while([0,6].includes(d2.getDay()));d2.setHours(10,0,0,0);r=await callR(d2,true)||await callR(d2,false)}
-        const sec=x=>x?parseInt(String(x),10)||0:0;
-        if(!r){const kk=km(prev,dest);dur=Math.round(kk/(tmode=='WALK'?4.5:tmode=='DRIVE'?35:22)*60+(tmode=='TRANSIT'?8:2));window.__rough=1}
-        else{dur=Math.round(sec(r.duration)/60);window.__dist=r.distanceMeters||0;
-          const trs=[];try{(r.legs||[]).forEach(l=>(l.steps||[]).forEach(st=>{const td=st.transitDetails;if(td){trs.push(((td.stopDetails||{}).arrivalStop||{}).name||'')}
-            if(td){const ln=td.transitLine||{},nm=ln.name||ln.nameShort||'';if(nm&&!lines.includes(nm))lines.push(nm);const sd=td.stopDetails||{};if(!from)from=(sd.departureStop&&sd.departureStop.name)||'';to=(sd.arrivalStop&&sd.arrivalStop.name)||to}
-            else if(st.travelMode=='WALK')walk+=sec(st.staticDuration)/60}))}catch(e){}
-          window.__xf=trs.slice(0,-1).filter(Boolean).map(x=>x.replace(/駅$|站$/,'')).join('、');
-          try{const tf=r.travelAdvisory&&r.travelAdvisory.transitFare;if(tf){fare=(+tf.units||0)+(+tf.nanos||0)/1e9;fcur=tf.currencyCode||'';gotFare=fare>0}}catch(e){}}
-      }else if(tmode!='TRANSIT'){
-        const prof=tmode=='WALK'?'routed-foot/route/v1/foot':'routed-car/route/v1/driving';
-        const r=await fetch(`https://routing.openstreetmap.de/${prof}/${prev.lon},${prev.lat};${dest.lon},${dest.lat}?overview=false`).then(x=>x.json());
-        if(!r.routes||!r.routes[0])throw new Error('找不到路線');dur=Math.round(r.routes[0].duration/60);
-      }else{dur=Math.round(km(prev,dest)/22*60+8);window.__rough=1}
-      walk=Math.round(walk);if(tmode=='TRANSIT'&&lines.length)$('#tline').value=(lines.join('+')+(window.__xf?`(${window.__xf}轉乘)`:'')).slice(0,40);window.__xf='';
-      if(from)$('#tfrom').value=from;else if(!$('#tfrom').value&&prev.placeName)$('#tfrom').value=tw(prev.placeName).slice(0,40);
-      if(to)$('#tto').value=to;else if(!$('#tto').value&&(selPlace&&selPlace.name))$('#tto').value=tw(selPlace.name).slice(0,40);
-      $('#tmin').value=Math.max(1,dur-walk);$('#twalk').value=walk||'';
-      if(gotFare){const cu=$('#tcu');if(![...cu.options].some(o=>o.value==fcur)){const o=document.createElement('option');o.value=fcur;o.textContent=curLbl(fcur);cu.appendChild(o)}cu.value=fcur;$('#tc').value=Math.round(fare*100)/100}
-      toast(window.__rough?(window.__rough=0,'Google 查不到這兩點之間的路線,先用距離估一個大概時間(僅供參考)。想看實際搭乘方式,請按時間軸上的「路線 ↗」;車資請自己填。'):gotFare?'已估算'+(window.__dist?` ${(window.__dist/1000).toFixed(1)} km、`:'')+'時間與車資(Google 預估,請自行確認)':(GR&&tmode=='TRANSIT'?'已估算'+(window.__dist?` ${(window.__dist/1000).toFixed(1)} km、`:'')+'時間;Google 沒有提供這段的車資,請手動填寫':'已估算時間;車資請手動填寫'))
-    }catch(e){let m=String((e&&e.message)||'');console.error('routes',e);
-      if(GR&&/PERMISSION_DENIED|403/i.test(m)){try{const rr=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':mapsKey,'X-Goog-FieldMask':'routes.duration'},body:JSON.stringify({origin:{location:{latLng:{latitude:prev.lat,longitude:prev.lon}}},destination:{location:{latLng:{latitude:dest.lat,longitude:dest.lon}}},travelMode:'DRIVE'})});const jj=await rr.json();
-        if(jj.error){const d=(jj.error.details||[]).find(x=>x.reason)||{};const why={SERVICE_DISABLED:'此專案沒有啟用 Routes API',API_KEY_SERVICE_BLOCKED:'金鑰的「API 限制」沒有勾 Routes API',API_KEY_HTTP_REFERRER_BLOCKED:'金鑰的網站限制擋住了這個網址',BILLING_DISABLED:'專案沒有綁定帳單',API_KEY_INVALID:'金鑰無效'}[d.reason];
-          toast('Google 回應:'+(why||d.reason||'')+' ｜ '+String(jj.error.message||'').slice(0,90));return}}catch(e2){}}
-      toast(/PERMISSION_DENIED|not enabled|403|API key/i.test(m)?'Google 拒絕了 Routes API:請到 Cloud Console 確認「Routes API」已啟用、金鑰的 API 限制有勾選它、專案已綁定帳單(詳見說明)':'估算失敗:'+(m||'請稍後再試').slice(0,80))}
-    finally{if(btn){btn.disabled=false;btn.textContent=old}}},
   editChk(e){const x=items.find(i=>i.id==e.dataset.id);if(!x)return;const t=prompt('物品名稱',x.title);if(t===null||!t.trim())return;const n=prompt('小敘述(例如:帶冰爪)',x.note||'');if(n===null)return;guard(()=>updateDoc(doc(db,'trips',T.id,'items',x.id),{title:t.trim().slice(0,80),note:n.trim().slice(0,80)}))},
   addChk(e){const k=e.dataset.k,v=$('#ci').value.trim();if(!v)return;const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn')&&$('#cn').value.trim())o.note=$('#cn').value.trim().slice(0,80);if(k=='tix'&&$('#cd').value)o.date=$('#cd').value;guard(async()=>{await addItem(k,o);$('#ci').value='';if($('#cn'))$('#cn').value='';closeSheet()})},
   addChk2(e){const k=e.dataset.k,v=($('#ci2').value||'').trim();if(!v)return toast('請輸入項目名稱');const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn2')&&$('#cn2').value.trim())o.note=$('#cn2').value.trim().slice(0,80);guard(async()=>{await addItem(k,o);if($('#ci2')){$('#ci2').value='';if($('#cn2'))$('#cn2').value='';$('#ci2').focus()}})},
+  addSeg(){const el=$('#tsegs');if(!el)return;const rows=el.querySelectorAll('.tsg'),last=rows.length?rows[rows.length-1].querySelector('.tsm').value:'';el.insertAdjacentHTML('beforeend',tsRow({m:last=='步行'?'地鐵/電車':'步行'}))},
+  delSeg(e){const r=e.closest('.tsg');if(r)r.remove()},
   preset(){guard(async()=>{const have=itemsOf('pack').map(x=>x.title);for(const t of PACK)if(!have.includes(t))await addItem('pack',{title:t,done:false});closeSheet()})},
   del(e){if(!confirm('確定刪除?'))return;guard(()=>deleteDoc(doc(db,'trips',T.id,'items',e.dataset.id)))}
 };
