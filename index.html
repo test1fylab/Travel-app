@@ -278,19 +278,7 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 .pk .x{font-size:16px;color:#a8a095;padding:6px}
 .pka{display:flex;gap:8px;padding:12px 0 6px;align-items:center}.pka input{flex:1;min-width:0;margin:0}.pka button{white-space:nowrap;width:auto!important;flex:none;padding:10px 18px}.pka input{width:auto!important;flex:1 1 90px!important}
 
-.cover{height:480px}
-.ctt{top:96px!important;font:700 78px/1 'Caveat','Cormorant Garamond',cursive!important;letter-spacing:.01em!important;transform:rotate(-4deg);transform-origin:left;white-space:nowrap}.ctt.sm{font-size:56px!important}
-.csub{top:182px!important}.cy{top:218px!important;font-size:46px!important}.cdr{top:278px!important}
-.cvt{top:200px!important}
-.ctt{font-size:68px!important}.ctt.sm{font-size:52px!important}
-.cgo{bottom:96px!important}
-.lmk{filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))}
-.cms{position:absolute;left:12px;bottom:78px;z-index:3}.cms svg{display:block}
-.cmb{position:absolute;left:62px;bottom:62px;background:#fff;color:#4a3426;font-size:12px;font-weight:600;padding:6px 10px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18)}.cmb::after{content:"";position:absolute;left:-5px;bottom:6px;border:6px solid transparent;border-right-color:#fff;border-left:0}
-.cms svg{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-4px)}}
-.cic{position:absolute;left:12px;right:12px;bottom:14px;z-index:3;display:flex;justify-content:space-around;background:rgba(255,255,255,.88);border-radius:18px;padding:8px 4px;box-shadow:0 4px 14px rgba(58,38,26,.18)}
-.cic div{display:flex;flex-direction:column;align-items:center;gap:2px;color:#4a3426;font-size:10.5px}.cic i{font-style:normal;font-size:20px}
-.cwv{display:none}
+.cgo{bottom:44px!important}.lmk{filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))}.cover{height:430px}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -663,11 +651,9 @@ function coverHTML(){const po=placeOf(),th0=themeOf(),th=po?{...(THEMES.find(t=>
   const mc={volcano:'#d9663f',sea:'#2aa6c8',snow:'#6f8fa8',temple:'#c0392b',onsen:'#c9962e',city:'#7e6bb5',gold:'#c9962e'}[th.k]||'#c9962e';
   return `<div class="cover ${T.cover?'photo':''}" data-theme=${th.k}>${bg}${sceneSVG(th.k,po&&po.lm)}<div class=csh></div>
   <a class=cbtn href="#/" style="left:14px" aria-label=返回>‹</a><button class=cbtn data-a=openShare style="right:14px" aria-label=分享與設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
-  <div class="ctt ${eng.length>7?'sm':''}">${esc(eng)}</div><div class=csub>${esc(title)} · ${N}天${Math.max(N-1,0)}夜 自由行</div>
+  <div class=ck>${esc(T.name||'')}</div><div class="ctt ${title.length>5?'sm':''}">${esc(title)}</div><div class=csub>${N}天${Math.max(N-1,0)}夜 自由行</div>
   ${st&&en?`<div class=cy>${st.getFullYear()}</div><div class=cdr>${MON[st.getMonth()]} ${pad2(st.getDate())} — ${MON[en.getMonth()]} ${pad2(en.getDate())}</div>`:'<div class=cdr>尚未設定日期</div>'}
-  <div class=cvt><span>${th.tag[0]}</span><span>${th.tag[1]}</span></div>
-  <button class=cgo data-a=goDay data-d=${ph.k}>查看${ph.p=='during'?'今日':''}行程 →</button>${MASCOT(mc,say)}
-  <div class=cic>${CICO.map(c=>`<div><i>${c[0]}</i><span>${c[1]}</span></div>`).join('')}</div>
+    <button class=cgo data-a=goDay data-d=${ph.k}>查看${ph.p=='during'?'今日':''}行程 →</button>
   <svg class=cwv viewBox="0 0 390 40" preserveAspectRatio="none" aria-hidden=true><path d="M0 22 Q60 2 130 16 T260 14 T390 10 V40 H0Z" fill="var(--bg)"/></svg></div>`}
 function todayCard(){const ph=tripPhase(),k=ph.k,all=sortItin(itemsOf('itin')),g=all.filter(x=>x.day==k),now=new Date(),hm=pad2(now.getHours())+':'+pad2(now.getMinutes());
   const row=(l,v)=>`<div class=prow><div class=pl>${l}</div><div class=pv>${v}</div></div>`;
@@ -803,7 +789,7 @@ async function initMap(){
   }
   if(!$('#map')||$('#map')!==el)return;
   map=L.map(el,{zoomControl:false}).setView([35.68,139.76],5);L.control.zoom({position:'topright'}).addTo(map);
-  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);addVectorBase(map,osm);
+  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
   layer=L.layerGroup().addTo(map);drawMap();
 }
 const itemLink=x=>{if(x.url&&/^https?:\/\//.test(x.url))return x.url;
@@ -981,14 +967,18 @@ const A={
         const prof=tmode=='WALK'?'routed-foot/route/v1/foot':'routed-car/route/v1/driving';
         const r=await fetch(`https://routing.openstreetmap.de/${prof}/${prev.lon},${prev.lat};${dest.lon},${dest.lat}?overview=false`).then(x=>x.json());
         if(!r.routes||!r.routes[0])throw new Error('找不到路線');dur=Math.round(r.routes[0].duration/60);
-      }else throw new Error('大眾運輸的估算需要設定 Google 金鑰(見 SETUP.md 第 8 節),目前請手動填寫');
+      }else{dur=Math.round(km(prev,dest)/22*60+8);window.__rough=1}
       walk=Math.round(walk);if(tmode=='TRANSIT'&&lines.length)$('#tline').value=lines.join('+');
       if(from)$('#tfrom').value=from;else if(!$('#tfrom').value&&prev.placeName)$('#tfrom').value=tw(prev.placeName).slice(0,40);
       if(to)$('#tto').value=to;else if(!$('#tto').value&&(selPlace&&selPlace.name))$('#tto').value=tw(selPlace.name).slice(0,40);
       $('#tmin').value=Math.max(1,dur-walk);$('#twalk').value=walk||'';
       if(gotFare){const cu=$('#tcu');if(![...cu.options].some(o=>o.value==fcur)){const o=document.createElement('option');o.value=fcur;o.textContent=curLbl(fcur);cu.appendChild(o)}cu.value=fcur;$('#tc').value=Math.round(fare*100)/100}
-      toast(gotFare?'已估算時間與車資(Google 預估,請自行確認)':(G&&tmode=='TRANSIT'?'已估算時間;Google 沒有提供這段的車資,請手動填寫':'已估算時間;車資請手動填寫'))
-    }catch(e){toast('估算失敗:'+((e&&e.message)||'請確認已啟用 Routes API,且金鑰允許它').slice(0,80))}
+      toast(window.__rough?(window.__rough=0,'大眾運輸為粗略估算(依直線距離),建議按「路線 ↗」到 Google 地圖確認;車資請手動填寫'):gotFare?'已估算時間與車資(Google 預估,請自行確認)':(G&&tmode=='TRANSIT'?'已估算時間;Google 沒有提供這段的車資,請手動填寫':'已估算時間;車資請手動填寫'))
+    }catch(e){let m=String((e&&e.message)||'');console.error('routes',e);
+      if(G&&/PERMISSION_DENIED|403/i.test(m)){try{const rr=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':mapsKey,'X-Goog-FieldMask':'routes.duration'},body:JSON.stringify({origin:{location:{latLng:{latitude:prev.lat,longitude:prev.lon}}},destination:{location:{latLng:{latitude:dest.lat,longitude:dest.lon}}},travelMode:'DRIVE'})});const jj=await rr.json();
+        if(jj.error){const d=(jj.error.details||[]).find(x=>x.reason)||{};const why={SERVICE_DISABLED:'此專案沒有啟用 Routes API',API_KEY_SERVICE_BLOCKED:'金鑰的「API 限制」沒有勾 Routes API',API_KEY_HTTP_REFERRER_BLOCKED:'金鑰的網站限制擋住了這個網址',BILLING_DISABLED:'專案沒有綁定帳單',API_KEY_INVALID:'金鑰無效'}[d.reason];
+          toast('Google 回應:'+(why||d.reason||'')+' ｜ '+String(jj.error.message||'').slice(0,90));return}}catch(e2){}}
+      toast(/PERMISSION_DENIED|not enabled|403|API key/i.test(m)?'Google 拒絕了 Routes API:請到 Cloud Console 確認「Routes API」已啟用、金鑰的 API 限制有勾選它、專案已綁定帳單(詳見說明)':'估算失敗:'+(m||'請稍後再試').slice(0,80))}
     finally{if(btn){btn.disabled=false;btn.textContent=old}}},
   editChk(e){const x=items.find(i=>i.id==e.dataset.id);if(!x)return;const t=prompt('物品名稱',x.title);if(t===null||!t.trim())return;const n=prompt('小敘述(例如:帶冰爪)',x.note||'');if(n===null)return;guard(()=>updateDoc(doc(db,'trips',T.id,'items',x.id),{title:t.trim().slice(0,80),note:n.trim().slice(0,80)}))},
   addChk(e){const k=e.dataset.k,v=$('#ci').value.trim();if(!v)return;const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn')&&$('#cn').value.trim())o.note=$('#cn').value.trim().slice(0,80);if(k=='tix'&&$('#cd').value)o.date=$('#cd').value;guard(async()=>{await addItem(k,o);$('#ci').value='';if($('#cn'))$('#cn').value='';closeSheet()})},
