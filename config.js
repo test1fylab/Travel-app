@@ -8,4 +8,4 @@ export const firebaseConfig = {
    messagingSenderId: "227357226165",
    appId: "1:227357226165:web:041e6a8be9bc2b16943afc"
 };
-export const mapsKey = "";
+export const mapsKey = "AIzaSyDEW2EmghTlp8PcuxHae3RrOo1gC_uZBSg";
