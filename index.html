@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="旅行帖"><meta name="format-detection" content="telephone=no">
 <title>旅行安排</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 :root{--bg:#f3ead8;--card:#f3ead8;--card2:#fbf6ea;--tx:#3a2a1e;--mu:#8c7b69;--ac:#b8892f;--ink:#4a3426;--on:#f3ead8;--bd:#e0d2b8;--hl:#f0d98c;--warn:#a3472a;color-scheme:light;
@@ -260,6 +260,37 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 .inst{display:flex;gap:12px;align-items:flex-start;background:var(--card2);border:1px solid var(--bd);border-radius:16px;padding:14px 16px;margin:12px 0}.inst .ie{font-size:26px}
 @media (display-mode:standalone){.inst{display:none}}
 @media (prefers-reduced-motion:reduce){.cld,.plane,.pet,.sun,.go svg,.dcl,.car,.car>g,.bird,#list.anim,.smoke,.smoke circle,.wv1,.boat,.steam path{animation:none!important}}
+
+.tli::before{background:linear-gradient(to bottom,var(--cp,var(--ink)) 0,var(--c,var(--ink)) 16px,var(--c,var(--ink)) 40%,var(--cn,var(--ink)) 100%)!important;opacity:1!important;width:3px;left:calc(50px + 10px + 5.5px)}
+.tli .tld{border-color:var(--c,var(--ink));background:var(--bg);box-shadow:0 0 0 3px color-mix(in srgb,var(--c,#999) 22%,transparent)}
+.tli.done .tld{background:var(--c,var(--ac))!important;border-color:var(--c,var(--ac))!important}
+.tli.hx>.tlx{border-left-color:var(--c)}
+.tag{font-weight:600}
+
+.pgc{margin-bottom:10px}.pgh{display:flex;justify-content:space-between;align-items:baseline;font-size:15px}.pgh span{color:var(--ac);font-weight:700}
+.pgb{height:8px;background:rgba(138,90,43,.15);border-radius:99px;overflow:hidden;margin-top:10px}.pgb i{display:block;height:100%;background:linear-gradient(90deg,#C9962E,#D9663F);border-radius:99px;transition:width .4s ease}
+.pk{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--bd)}
+.pkc{position:relative;flex:none;width:26px;height:26px;margin:0}.pkc input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.pkb{display:block;width:26px;height:26px;border-radius:8px;border:2px solid #cbb89a;background:#fff;transition:.15s;position:relative}
+.pkc input:checked+.pkb{background:var(--ac);border-color:var(--ac)}.pkc input:checked+.pkb::after{content:"";position:absolute;left:8px;top:3px;width:6px;height:12px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.pkt{flex:1;min-width:0}.pkn{font-size:16px;word-break:break-word}.pks{font-size:13px;color:var(--mu);margin-top:2px}
+.pk.dn .pkn{color:#a8a095;text-decoration:line-through}.pk.dn .pks{color:#bdb6aa;text-decoration:line-through}
+.pk .x{font-size:16px;color:#a8a095;padding:6px}
+.pka{display:flex;gap:8px;padding:12px 0 6px;align-items:center}.pka input{flex:1;min-width:0;margin:0}.pka button{white-space:nowrap;width:auto!important;flex:none;padding:10px 18px}.pka input{width:auto!important;flex:1 1 90px!important}
+
+.cover{height:480px}
+.ctt{top:96px!important;font:700 78px/1 'Caveat','Cormorant Garamond',cursive!important;letter-spacing:.01em!important;transform:rotate(-4deg);transform-origin:left;white-space:nowrap}.ctt.sm{font-size:56px!important}
+.csub{top:182px!important}.cy{top:218px!important;font-size:46px!important}.cdr{top:278px!important}
+.cvt{top:200px!important}
+.ctt{font-size:68px!important}.ctt.sm{font-size:52px!important}
+.cgo{bottom:96px!important}
+.lmk{filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))}
+.cms{position:absolute;left:12px;bottom:78px;z-index:3}.cms svg{display:block}
+.cmb{position:absolute;left:62px;bottom:62px;background:#fff;color:#4a3426;font-size:12px;font-weight:600;padding:6px 10px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18)}.cmb::after{content:"";position:absolute;left:-5px;bottom:6px;border:6px solid transparent;border-right-color:#fff;border-left:0}
+.cms svg{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-4px)}}
+.cic{position:absolute;left:12px;right:12px;bottom:14px;z-index:3;display:flex;justify-content:space-around;background:rgba(255,255,255,.88);border-radius:18px;padding:8px 4px;box-shadow:0 4px 14px rgba(58,38,26,.18)}
+.cic div{display:flex;flex-direction:column;align-items:center;gap:2px;color:#4a3426;font-size:10.5px}.cic i{font-style:normal;font-size:20px}
+.cwv{display:none}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -445,7 +476,7 @@ function renderForm(){
   f.innerHTML=[
   `<div class=card><div class=row><input id=d type=number inputmode=numeric min=1 placeholder="第幾天" value="${x?x.day:(dayF||1)}"><input id=t type=time value="${x?esc(x.time||''):''}"></div>
   <div class=row><input id=placeq placeholder="搜尋地點(可選),例如:淺草寺" value="${esc(tw(x?.placeName||''))}"><button class="p g" data-a=searchPlace style="flex:0 0 72px;margin-bottom:8px">搜尋</button></div>
-  <input id=gl inputmode=url placeholder="貼上 Google 地圖連結(選填)" value="${x?esc(x.url||''):''}"><div id=resbox></div><div id=selp class=mu></div>
+  <input id=gl inputmode=url placeholder="搜尋不到?貼上 Google 地圖連結來定位(選填)" value="${x?esc(x.url||''):''}"><div id=resbox></div><div id=selp class=mu></div>
   <select id=tg>${['',...TAGS].map(t=>`<option value="${t}" ${(x&&x.tag==t)||(!x&&t==(tab==6?'餐廳':''))?'selected':''}>${t||'類別(選填)'}</option>`).join('')}</select><input id=ti placeholder="行程名稱" value="${x?esc(x.title):''}"><input id=no placeholder="備註(選填)" value="${x?esc(x.note||''):''}">
   <details ${x&&(x.tm||x.tline||+x.tmin||+x.tc)?'open':''} style="margin:4px 0 10px"><summary>交通:從上一站怎麼過來(選填)</summary>
   <select id=tm style="margin-top:6px">${['',...TMODES.map(m=>m[0])].map(m=>`<option value="${m}" ${x&&x.tm==m?'selected':''}>${m||'交通方式'}</option>`).join('')}</select>
@@ -492,13 +523,16 @@ function renderList(){
 const sortItin=a=>{const man=(T&&T.manual)||{},tc=(x,y)=>(x.time||'').localeCompare(y.time||'');return [...a].sort((x,y)=>x.day-y.day||(man[x.day]?((x.ord??1e12)-(y.ord??1e12)||tc(x,y)):tc(x,y)))};
 function ordFor(day,time){const a=sortItin(itemsOf('itin')).filter(x=>x.day==day);if(!a.length)return 1000;let i=a.length;if(time)for(let k=0;k<a.length;k++)if(a[k].time&&a[k].time>time){i=k;break}
   const po=i>0?(a[i-1].ord??i*1000):0,no=i<a.length?(a[i].ord??po+2000):po+2000;return (po+no)/2}
-function parseGMaps(u){u=String(u||'').trim();if(!/^https?:\/\//i.test(u))return null;
-  const m=u.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)||u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||u.match(/[?&](?:q|query|ll|destination)=(-?\d+\.\d+)(?:,|%2C)(-?\d+\.\d+)/);
-  let name='';const p=u.match(/\/place\/([^\/@?]+)/);if(p){try{name=decodeURIComponent(p[1].replace(/\+/g,' '))}catch(e){name=p[1]}}
-  return {url:u,lat:m?+m[1]:null,lon:m?+m[2]:null,name,short:/(maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(u)}}
-function applyGL(v){const g=parseGMaps(v);if(!g){if(String(v).trim())toast('請貼上以 https 開頭的連結');return}
-  if(g.lat!=null){selPlace={name:g.name||(selPlace&&selPlace.name)||'',lat:g.lat,lon:g.lon};if(!$('#ti').value.trim()&&g.name)$('#ti').value=g.name;showSel();toast('已帶入地標與位置')}
-  else toast(g.short?'短連結已保留,但無法自動取得位置,請確認名稱並用搜尋選擇位置':'連結已保留,但沒有讀到座標')}
+function parseGMaps(u){u=String(u||'').trim();const um=u.match(/https?:\/\/\S+/i);if(!um)return null;u=um[0];
+  let d=u;try{d=decodeURIComponent(u)}catch(e){}
+  const m=d.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)||d.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/)||d.match(/[?&](?:q|query|ll|destination|center|daddr|saddr)=\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/)||d.match(/\/(?:place|search|dir)\/(-?\d+\.\d+),\s*\+?(-?\d+\.\d+)/);
+  let name='';const p=d.match(/\/place\/([^\/@?]+)/);if(p&&!/^-?\d+\.\d+,/.test(p[1]))name=p[1].replace(/\+/g,' ').trim();
+  if(!name){const q=d.match(/[?&](?:q|query|destination)=([^&]+)/);if(q&&!/^-?\d+\.\d+\s*,/.test(q[1]))name=q[1].replace(/\+/g,' ').trim()}
+  return {url:u,lat:m?+m[1]:null,lon:m?+m[2]:null,name,short:/(maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/kgs|share\.google)/i.test(u)}}
+async function applyGL(v){const g=parseGMaps(v);if(!g){if(String(v).trim())toast('請貼上 Google 地圖的完整連結');return}
+  if(g.lat!=null){selPlace={name:g.name||(selPlace&&selPlace.name)||'',lat:g.lat,lon:g.lon};if(!$('#ti').value.trim()&&g.name)$('#ti').value=g.name;showSel();toast('已用連結定位');return}
+  if(g.name){toast('由連結名稱定位中…');try{const r=await geocode(g.name+(T&&T.region?' '+T.region:''));if(r&&r.length){const p=r[0];selPlace={name:g.name,lat:p.lat,lon:p.lon,addr:p.full||''};if(!$('#ti').value.trim())$('#ti').value=g.name;showSel();toast('已依連結名稱定位');return}}catch(e){}}
+  toast(g.short?'短連結無法在瀏覽器內解析,請在 Google 地圖開啟後複製網址列的完整連結':'連結中沒有座標,請改貼「地點頁」的完整網址')}
 const exitEdit_=()=>A.exitEdit();
 function editView(){
   const d=editDay,g=sortItin(itemsOf('itin')).filter(x=>x.day==d),ttl=(T.dayTitles||{})[d]||'';
@@ -513,7 +547,10 @@ function editView(){
   <button class="p r" data-a=delDay style="margin-top:8px">刪除 Day ${d}</button>`}
 async function saveOrder(ids){const day=editDay;await guard(async()=>{const b=writeBatch(db);ids.forEach((id,i)=>b.update(doc(db,'trips',T.id,'items',id),{ord:(i+1)*1000}));b.update(tripRef(),{['manual.'+day]:true});await b.commit()})}
 const WD=['SUN','MON','TUE','WED','THU','FRI','SAT'];
-const TAGC={景點:['#7a5410','rgba(184,137,47,.22)'],餐廳:['#9a4a2a','rgba(200,110,70,.18)'],交通:['#5a4a3a','rgba(110,90,70,.18)'],住宿:['#5d5a2f','rgba(120,115,60,.2)'],購物:['#8a4a55','rgba(150,80,90,.16)'],其他:['#7a6f62','rgba(125,115,100,.2)']};
+const TAGC={景點:['#7a5410','rgba(201,150,46,.2)'],餐廳:['#a2441f','rgba(217,102,63,.16)'],交通:['#3f6179','rgba(111,143,168,.2)'],住宿:['#4f5f2c','rgba(126,143,90,.22)'],購物:['#8a3350','rgba(181,86,110,.16)'],其他:['#6b6155','rgba(154,143,130,.22)']};
+const TAGCOL={景點:'#C9962E',餐廳:'#D9663F',交通:'#6F8FA8',住宿:'#7E8F5A',購物:'#B5566E',其他:'#9A8F82'};
+const TAGI={景點:'⛩️',餐廳:'🍜',交通:'🚃',住宿:'🏨',購物:'🛍️',其他:'📌'};
+const tcol=x=>TAGCOL[x&&x.tag]||TAGCOL.其他;
 const dayDate=d=>{if(!T.startDate)return null;const t=new Date(T.startDate+'T00:00:00');if(isNaN(t))return null;t.setDate(t.getDate()+d-1);return t};
 const md=t=>t?`${t.getMonth()+1}/${t.getDate()}`:'';
 const km=(a,b)=>{const r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lon-a.lon)*r,h=Math.sin(dl/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)**2;return 12742*Math.asin(Math.sqrt(h))};
@@ -542,16 +579,17 @@ function navUrl(day){
 function timeline(g){
   if(!g.length)return '<p class=mu style="margin:10px 0 20px">這天還沒有行程。</p>';
   let prev=null;
-  return `<div class=tl>`+g.map(x=>{
+  return `<div class=tl>`+g.map((x,ix)=>{
+    const cc=tcol(x),cp=ix?tcol(g[ix-1]):cc,cn=ix<g.length-1?tcol(g[ix+1]):cc;
     const has=x.lat!=null,pv=prev,d=has&&prev?km(prev,x):null;if(has)prev=x;
     let cx='';if(x.tm||x.tline||x.tfrom||x.tto||+x.tmin>0||+x.twalk>0||+x.tc>0){const md_=TMODES.find(m=>m[0]==x.tm)||['','➡️','transit'];
       const route_=has&&pv?`https://www.google.com/maps/dir/?api=1&origin=${pv.lat},${pv.lon}&destination=${x.lat},${x.lon}&travelmode=${md_[2]}`:'';
       const l3=[+x.tmin>0?`約 ${fmtMin(+x.tmin)}`:'',+x.tc>0?`${fmt(+x.tc)} ${esc(x.tcu||T.base)}`:''].filter(Boolean).join(' · ')+(+x.twalk>0?`${+x.tmin>0?' ':''}＋ 步行 ${x.twalk} 分`:'');
       cx=`<div class=tlx><div class=xl1>${md_[1]} ${esc(x.tline||x.tm||'移動')}</div>${x.tfrom||x.tto?`<div class=xl2>${esc(x.tfrom||'')} → ${esc(x.tto||'')}</div>`:''}${l3||route_?`<div class=xl3>${l3}${route_?` <a class=xl href="${route_}" target=_blank rel=noopener>路線 ↗</a>`:''}</div>`:''}</div>`}
-    const tg=x.tag&&TAGC[x.tag]?`<span class=tag style="color:${TAGC[x.tag][0]};background:${TAGC[x.tag][1]}">${esc(x.tag)}</span>`:'';
+    const tg=x.tag&&TAGC[x.tag]?`<span class=tag style="color:${TAGC[x.tag][0]};background:${TAGC[x.tag][1]}">${TAGI[x.tag]} ${esc(x.tag)}</span>`:'';
     const link=itemLink(x);
-    return `<div class="tli ${selId==x.id?'sel':''} ${x.done?'done':''} ${cx?'hx':''}" id="i_${x.id}">${cx}<div class=tlt>${esc(x.time||'')}</div><div class=tld data-a=toggleDone data-id="${x.id}" title="標記完成"></div>
-    <div class=tlc data-a=focus data-id="${x.id}" style="cursor:pointer">${isEd?`<div class=tca><button class=x data-a=edit data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button></div>`:''}
+    return `<div class="tli ${selId==x.id?'sel':''} ${x.done?'done':''} ${cx?'hx':''}" id="i_${x.id}" style="--c:${cc};--cp:${cp};--cn:${cn}">${cx}<div class=tlt>${esc(x.time||'')}</div><div class=tld data-a=toggleDone data-id="${x.id}" title="標記完成"></div>
+    <div class=tlc data-a=focus data-id="${x.id}" style="cursor:pointer;border-left:4px solid ${cc}">${isEd?`<div class=tca><button class=x data-a=edit data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button></div>`:''}
     ${tg}${has?'':'<span class=mu>(未定位)</span>'}<div class=tct style="${isEd?'padding-right:64px':''}">${esc(x.title)}</div>
     ${x.placeName?`<div class=tcs>${esc(tw(x.placeName))}</div>`:''}${x.note?`<div class=tcs>${esc(x.note)}</div>`:''}${+x.amt>0?`<div class=tcs style="color:var(--ink);font-weight:600">${esc(x.cat||'')} ${fmt(x.amt)} ${esc(x.cur||T.base)} · ${esc(x.payer||'')} 付</div>`:''}
     <div class=tcs>${d!=null?`距上一站約 ${d<1?Math.round(d*1000)+' m':d.toFixed(1)+' km'} · `:''}<a href="${link}" target=_blank rel=noopener>在 Google 地圖開啟</a></div></div></div>`}).join('')+`</div>`;
@@ -568,7 +606,7 @@ const THEMES=[
 function themeOf(){const txt=[T.region,T.name,...Object.values(T.dayTitles||{})].join(' ');return THEMES.find(t=>t.re.test(txt))||{k:'gold',tag:['次の景色へ、','さあ、出発!']}}
 const CLD='<g class=cld fill="#fff" opacity=".85"><ellipse cx=0 cy=96 rx=42 ry=11 /><ellipse cx=24 cy=88 rx=26 ry=10 /></g><g class="cld b" fill="#fff" opacity=".7"><ellipse cx=0 cy=170 rx=34 ry=9 /></g>';
 const PET=n=>'<g fill="#f6c6c0">'+Array.from({length:n},(_,i)=>`<ellipse class=pet cx=${(i*53+20)%390} cy=0 rx=4 ry=2.6 style="animation-delay:-${(i*1.7)%9}s" />`).join('')+'</g>';
-function sceneSVG(k){const sk=(a,b)=>`<defs><linearGradient id=sk${k} x1=0 y1=0 x2=0 y2=1><stop offset=0 stop-color="${a}"/><stop offset=1 stop-color="${b}"/></linearGradient></defs><rect width=390 height=420 fill="url(#sk${k})"/>`;let b='';
+function sceneSVG(k,lm){const sk=(a,b)=>`<defs><linearGradient id=sk${k} x1=0 y1=0 x2=0 y2=1><stop offset=0 stop-color="${a}"/><stop offset=1 stop-color="${b}"/></linearGradient></defs><rect width=390 height=420 fill="url(#sk${k})"/>`;let b='';
  if(k=='volcano')b=sk('#3f9be0','#dff1fb')+CLD+'<path d="M-10 300 L110 235 L190 255 L260 215 L400 290 V420 H-10Z" fill="#7f9db3" opacity=".8"/><path d="M-20 420 L40 330 L150 262 L215 246 L255 262 L380 330 L420 420Z" fill="#5f8f3f"/><path d="M150 262 L215 246 L255 262 L215 272Z" fill="#6b4a36"/><g class=smoke fill="#fff" opacity=".92"><circle cx=215 cy=236 r=15 /><circle cx=226 cy=214 r=21 /><circle cx=213 cy=186 r=26 /></g><path d="M-10 385 Q100 345 200 375 T400 362 V420 H-10Z" fill="#3f7a35"/>';
  else if(k=='sea')b=sk('#69c6ea','#ffeec8')+CLD+'<circle class=sun cx=300 cy=205 r=34 fill="#fff3c4"/><rect y=262 width=390 height=160 fill="#2aa6c8"/><path d="M60 262 Q100 214 150 262Z" fill="#3f7a5a"/><g class=wv1 fill=none stroke="#fff" stroke-width=2 opacity=".55"><path d="M-60 290 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0"/><path d="M-40 330 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0"/></g><g class=boat><path d="M200 280 h50 l-8 12 h-34z" fill="#8a5a2b"/><path d="M225 232 V280 L252 280Z" fill="#fff"/><path d="M221 244 V280 L204 280Z" fill="#fdf2d8"/></g><path d="M-10 410 Q120 372 260 402 T400 390 V420 H-10Z" fill="#f7e6b8"/>';
  else if(k=='snow')b=sk('#a9c9ea','#f4f8fc')+CLD+'<path d="M-10 310 L90 190 L150 255 L230 160 L330 275 L400 235 V420 H-10Z" fill="#e6f0fa"/><path d="M230 160 L330 275 L270 270 L240 215Z" fill="#c4d9ec"/><path d="M90 190 L110 214 L90 205 L72 214Z M230 160 L252 190 L232 180 L210 192Z" fill="#fff"/><g fill="#2f5a4a"><path d="M20 400 L50 330 L80 400Z"/><path d="M60 410 L96 320 L132 410Z"/><path d="M300 410 L340 330 L380 410Z"/></g><path d="M-10 395 Q120 365 240 392 T400 380 V420 H-10Z" fill="#fdfeff"/><g fill="#fff">'+Array.from({length:16},(_,i)=>`<circle class=pet cx=${(i*47+10)%390} cy=0 r=${2+(i%3)} style="animation-delay:-${(i*0.9)%8}s;animation-duration:${7+(i%4)}s"/>`).join('')+'</g>';
@@ -576,7 +614,28 @@ function sceneSVG(k){const sk=(a,b)=>`<defs><linearGradient id=sk${k} x1=0 y1=0 
  else if(k=='onsen')b=sk('#efc08e','#f8e8cc')+'<circle class=sun cx=95 cy=150 r=30 fill="#fff1cf" opacity=".9"/>'+CLD+'<path d="M-10 300 Q80 230 180 290 T400 260 V420 H-10Z" fill="#3a6b5b"/><path d="M-10 350 Q120 300 240 345 T400 330 V420 H-10Z" fill="#274f43"/><g fill="#3a2a1e"><path d="M250 345 V300 H340 V345Z"/><path d="M240 302 L295 268 L350 302Z"/></g><g class=sun fill="#ffd27a"><circle cx=262 cy=325 r=4 /><circle cx=330 cy=325 r=4 /></g><g class=steam fill=none stroke="#fff" stroke-width=7 stroke-linecap=round opacity=".7"><path d="M120 360 q-14 -26 0 -50 t0 -50"/><path d="M160 366 q-14 -26 0 -50 t0 -50" style="animation-delay:-2s"/><path d="M90 370 q-14 -26 0 -50 t0 -50" style="animation-delay:-4s"/></g><path d="M-10 405 Q120 380 250 402 T400 392 V420 H-10Z" fill="#1f3d34"/>';
  else if(k=='city')b=sk('#f4a56e','#6f9ad6')+'<circle class=sun cx=95 cy=210 r=36 fill="#fff0c8" opacity=".9"/>'+CLD+'<g fill="#27344f">'+[[0,300,46],[40,270,52],[88,310,40],[128,250,48],[250,285,50],[296,255,44],[336,300,56]].map(([x,y,w])=>`<rect x=${x} y=${y} width=${w} height=${420-y} />`).join('')+'</g><path d="M198 420 L212 250 L226 420Z" fill="#d6492f"/><path d="M205 330 H219 M208 295 H216" stroke="#fff" stroke-width=3 /><g fill="#ffd27a" class=sun>'+Array.from({length:26},(_,i)=>`<rect x=${[8,22,48,60,96,134,150,258,274,300,314,344,360][i%13]+(i>12?0:0)} y=${[320,340,300,330,340,280,300,310,332,282,304,326,310][(i*5)%13]+(i>12?24:0)} width=4 height=5 />`).join('')+'</g><path d="M-10 410 H400 V420 H-10Z" fill="#1c2840"/>';
  else b=sk('#f7e4b0','#e9b95f')+'<circle class=sun cx=300 cy=190 r=36 fill="#fff6d8"/>'+CLD+'<path d="M-10 330 L120 250 L190 295 L260 225 L400 320 V420 H-10Z" fill="#c99a52" opacity=".85"/><path d="M130 345 L250 215 L370 345Z" fill="#8a5a2b"/><path d="M-10 385 Q100 350 200 380 T400 366 V420 H-10Z" fill="#4a3426"/>';
- return `<svg class=scene viewBox="0 0 390 420" preserveAspectRatio="xMidYMid slice" aria-hidden=true>${b}</svg>`}
+ return `<svg class=scene viewBox="0 0 390 420" preserveAspectRatio="xMidYMid slice" aria-hidden=true>${b}${lm&&LMK[lm]?`<g class=lmk>${LMK[lm]}</g>`:''}</svg>`}
+
+/* ---------- 首頁插畫:地標 + 原創吉祥物(純向量,非照片) ---------- */
+const PLACES=[
+ [/熊本|阿蘇/,'Kumamoto','volcano','castle'],[/東京|晴空塔/,'Tokyo','city','tokyo'],[/大阪/,'Osaka','city','castle'],[/名古屋/,'Nagoya','city','castle'],[/姬路|松本|松山|彥根/,'Castle Town','temple','castle'],
+ [/京都/,'Kyoto','temple','pagoda'],[/奈良/,'Nara','temple','pagoda'],[/富士|河口湖/,'Mt. Fuji','volcano','fuji'],[/沖繩|那霸/,'Okinawa','sea','shuri'],
+ [/台北/,'Taipei','city','t101'],[/首爾/,'Seoul','city','seoul'],[/廣島|宮島/,'Hiroshima','sea','torii'],[/福岡/,'Fukuoka','city',''],[/札幌/,'Sapporo','snow',''],[/北海道/,'Hokkaido','snow',''],
+ [/箱根/,'Hakone','onsen','fuji'],[/別府|由布院/,'Beppu','onsen',''],[/鹿兒島/,'Kagoshima','volcano',''],[/金澤/,'Kanazawa','temple',''],[/長崎/,'Nagasaki','city',''],[/神戶/,'Kobe','city',''],[/橫濱/,'Yokohama','city',''],
+ [/山形|藏王/,'Yamagata','snow',''],[/輕井澤/,'Karuizawa','snow',''],[/日光/,'Nikko','temple','pagoda'],[/鎌倉/,'Kamakura','temple',''],[/九州/,'Kyushu','volcano','castle'],
+ [/香港/,'Hong Kong','city',''],[/曼谷/,'Bangkok','temple',''],[/新加坡/,'Singapore','city','']];
+function placeOf(){const txt=[T.region,T.name].join(' ');const p=PLACES.find(x=>x[0].test(txt));return p?{en:p[1],k:p[2],lm:p[3]}:null}
+const LMK={
+ castle:'<g><path d="M150 392 L166 332 H284 L300 392Z" fill="#7b756b"/><path d="M160 360 H292 M156 346 H288" stroke="#5f5a52" stroke-width="1.5"/><rect x=176 y=296 width=98 height=36 fill="#f6f1e6"/><path d="M158 300 Q225 280 292 300 L284 292 Q225 274 166 292Z" fill="#2f3a4a"/><path d="M158 300 L192 284 H258 L292 300Z" fill="#2f3a4a"/><rect x=190 y=256 width=70 height=28 fill="#f6f1e6"/><path d="M178 260 L206 240 H244 L272 260Z" fill="#2f3a4a"/><rect x=204 y=222 width=42 height=18 fill="#f6f1e6"/><path d="M192 226 L214 204 H236 L258 226Z" fill="#2f3a4a"/><path d="M225 204 V192" stroke="#d4a53a" stroke-width=3 /><g fill="#4a3426"><rect x=190 y=308 width=8 height=11 /><rect x=214 y=308 width=8 height=11 /><rect x=238 y=308 width=8 height=11 /><rect x=216 y=265 width=8 height=11 /><rect x=219 y=227 width=6 height=8 /></g></g>',
+ tokyo:'<g><path d="M213 392 L221 236 H229 L237 392Z" fill="#dfe6f1"/><ellipse cx=225 cy=262 rx=13 ry=5 fill="#b9c6dc"/><ellipse cx=225 cy=238 rx=9 ry=4 fill="#b9c6dc"/><rect x=224 y=150 width=2 height=88 fill="#cfd8e6"/></g><g><path d="M268 392 L284 280 L300 392Z" fill="#e9573b"/><path d="M272 360 H296 M276 330 H292 M279 305 H289" stroke="#fff" stroke-width=2 /><rect x=283 y=246 width=2 height=36 fill="#e9573b"/></g>',
+ pagoda:'<g>'+[0,1,2,3,4].map(i=>{const w=92-i*13,y=388-i*38;return `<rect x=${225-w/2+8} y=${y-26} width=${w-16} height=26 fill="#b53a2a"/><path d="M${225-w/2-8} ${y-24} Q225 ${y-40} ${225+w/2+8} ${y-24} L${225+w/2} ${y-18} H${225-w/2}Z" fill="#3a2a22"/>`}).join('')+'<path d="M225 196 V166" stroke="#d4a53a" stroke-width=3 /></g>',
+ fuji:'<g><path d="M92 392 L192 236 Q225 220 258 236 L358 392Z" fill="#6f84b8"/><path d="M192 236 Q225 220 258 236 L246 262 L234 250 L224 268 L212 252 L200 264Z" fill="#fff"/></g>',
+ shuri:'<g><path d="M146 392 V352 Q225 338 304 352 V392Z" fill="#8c867a"/><rect x=174 y=306 width=102 height=46 fill="#c0392b"/><path d="M162 310 L194 276 H256 L288 310Z" fill="#a82d28"/><path d="M162 310 H288" stroke="#e0b24a" stroke-width=3 /><path d="M188 278 L206 254 H244 L262 278Z" fill="#a82d28"/><path d="M188 278 H262" stroke="#e0b24a" stroke-width=3 /><rect x=212 y=322 width=26 height=30 fill="#6a1f1a"/><circle cx=225 cy=266 r=5 fill="#e0b24a"/></g>',
+ t101:'<g>'+[0,1,2,3,4,5,6,7].map(i=>{const y=388-i*24,w=40-(i>5?(i-5)*5:0)+(i==0?-4:0),sk=i%2?3:0;return `<path d="M${225-w/2} ${y} L${225-w/2-4-sk} ${y-24} H${225+w/2+4+sk} L${225+w/2} ${y}Z" fill="#4f9a76"/><path d="M${225-w/2-2} ${y-12} H${225+w/2+2}" stroke="#2f6a4d" stroke-width=1.5 />`}).join('')+'<path d="M225 196 L222 150 L228 150Z" fill="#4f9a76"/><rect x=210 y=190 width=30 height=6 fill="#3d8a66"/></g>',
+ seoul:'<g><path d="M120 392 Q225 300 330 392Z" fill="#4a7a52"/><path d="M221 340 L224 280 H226 L229 340Z" fill="#e8ecf2"/><ellipse cx=225 cy=272 rx=17 ry=8 fill="#f2f5f9"/><rect x=216 y=262 width=18 height=6 fill="#cfd8e6"/><rect x=224 y=206 width=2 height=58 fill="#e8ecf2"/></g>',
+ torii:'<g><rect x=186 y=268 width=10 height=124 fill="#d1402b"/><rect x=254 y=268 width=10 height=124 fill="#d1402b"/><path d="M160 266 Q225 244 290 266 L284 280 Q225 262 166 280Z" fill="#b8321f"/><rect x=190 y=294 width=70 height=9 fill="#d1402b"/><rect x=220 y=270 width=10 height=26 fill="#b8321f"/></g>'};
+const MASCOT=(col,say)=>`<div class=cms><div class=cmb>${esc(say)}</div><svg viewBox="0 0 90 96" width=84 height=90 aria-hidden=true><ellipse cx=45 cy=90 rx=28 ry=4 fill="rgba(0,0,0,.14)"/><path d="M45 14 C45 4 54 2 60 6 C56 10 52 12 45 14Z" fill="#6aa563"/><path d="M45 14 C45 6 38 3 32 7 C36 11 40 13 45 14Z" fill="#86bb7c"/><path d="M14 56 C14 28 30 14 45 14 C60 14 76 28 76 56 C76 76 62 86 45 86 C28 86 14 76 14 56Z" fill="#fff8ea" stroke="#e6d4b0" stroke-width=2 /><path d="M24 66 Q45 76 66 66 L68 74 Q45 86 22 74Z" fill="${col}"/><circle cx=34 cy=50 r=4 fill="#3a2a22"/><circle cx=56 cy=50 r=4 fill="#3a2a22"/><circle cx=35.5 cy=48.5 r=1.3 fill="#fff"/><circle cx=57.5 cy=48.5 r=1.3 fill="#fff"/><ellipse cx=27 cy=58 rx=5 ry=3.2 fill="#f6b3a6" opacity=".8"/><ellipse cx=63 cy=58 rx=5 ry=3.2 fill="#f6b3a6" opacity=".8"/><path d="M40 58 Q45 63 50 58" fill=none stroke="#3a2a22" stroke-width=2 stroke-linecap=round /></svg></div>`;
+const CICO=[['🗻','自然·絕景'],['⛩️','歷史·文化'],['♨️','溫泉'],['🍜','美食'],['🚗','自駕']];
 /* 維基百科圖片/簡介(免金鑰;失敗就用插畫) */
 const WKP={};
 function wikiGet(q,strict){q=String(q||'').trim().slice(0,60);if(!q)return Promise.resolve(null);const key='wk4:'+(strict?'s:':'')+q;
@@ -596,16 +655,19 @@ function hydrate(){
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],pad2=n=>String(n).padStart(2,'0');
 function tripPhase(){const N=dayCount();if(!T.startDate)return {p:'none',k:dayList()[0]||1,N};const st=new Date(T.startDate+'T00:00:00'),nw=new Date();nw.setHours(0,0,0,0);const k=Math.round((nw-st)/864e5)+1;
   return k<1?{p:'before',k:1,N,days:1-k}:k>N?{p:'after',k:N,N}:{p:'during',k,N}}
-function coverHTML(){const th=themeOf(),ph=tripPhase(),N=ph.N,st=T.startDate?new Date(T.startDate+'T00:00:00'):null;let en=null;if(st&&!isNaN(st)){en=new Date(st);en.setDate(en.getDate()+Math.max(N,1)-1)}
-  const rg=String(T.region||'').replace(/^日本/,'').trim(),title=rg||T.name||'旅行',small=title.length>5;
-  const wq=T.cover?'':(String(T.region||T.name||'').replace(/(自由行|之旅|旅行|聖誕)/g,'').trim());
-  const bg=T.cover?`<div class="cbg has" style="background-image:url('${esc(T.cover).replace(/'/g,'%27')}')"></div>`:`<div class=cbg data-wk="${esc(wq)}"></div>`;
-  return `<div class="cover ${T.cover?'photo':''}" data-theme=${th.k}>${bg}${sceneSVG(th.k)}<div class=csh></div>
-  <a class=cbtn href="#/" style="left:14px" aria-label=返回>‹</a><button class=cbtn data-a=openShare style="right:14px" aria-label=分享與設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button><div class=ck>${esc(T.name||'')}<br><span>TRAVEL JOURNAL</span></div>
-  <div class="ctt ${small?'sm':''}">${esc(title)}</div><div class=csub>${N}天${Math.max(N-1,0)}夜 自由行</div>
+function coverHTML(){const po=placeOf(),th0=themeOf(),th=po?{...(THEMES.find(t=>t.k==po.k)||th0),k:po.k}:th0,ph=tripPhase(),N=ph.N,st=T.startDate?new Date(T.startDate+'T00:00:00'):null;let en=null;if(st&&!isNaN(st)){en=new Date(st);en.setDate(en.getDate()+Math.max(N,1)-1)}
+  const rg=String(T.region||'').replace(/^日本/,'').trim(),title=rg||T.name||'旅行';
+  let eng=po?po.en:(/^[\x20-\x7e]+$/.test(rg)&&rg?rg:'Journey');
+  const bg=T.cover?`<div class="cbg has" style="background-image:url('${esc(T.cover).replace(/'/g,'%27')}')"></div>`:'';
+  const say=rg&&rg.length<=5?`さあ、${rg}へ!`:'さあ、出発!';
+  const mc={volcano:'#d9663f',sea:'#2aa6c8',snow:'#6f8fa8',temple:'#c0392b',onsen:'#c9962e',city:'#7e6bb5',gold:'#c9962e'}[th.k]||'#c9962e';
+  return `<div class="cover ${T.cover?'photo':''}" data-theme=${th.k}>${bg}${sceneSVG(th.k,po&&po.lm)}<div class=csh></div>
+  <a class=cbtn href="#/" style="left:14px" aria-label=返回>‹</a><button class=cbtn data-a=openShare style="right:14px" aria-label=分享與設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
+  <div class="ctt ${eng.length>7?'sm':''}">${esc(eng)}</div><div class=csub>${esc(title)} · ${N}天${Math.max(N-1,0)}夜 自由行</div>
   ${st&&en?`<div class=cy>${st.getFullYear()}</div><div class=cdr>${MON[st.getMonth()]} ${pad2(st.getDate())} — ${MON[en.getMonth()]} ${pad2(en.getDate())}</div>`:'<div class=cdr>尚未設定日期</div>'}
   <div class=cvt><span>${th.tag[0]}</span><span>${th.tag[1]}</span></div>
-  <button class=cgo data-a=goDay data-d=${ph.k}>查看${ph.p=='during'?'今日':''}行程 →</button><div class=ccr>${T.cover?'':''}</div>
+  <button class=cgo data-a=goDay data-d=${ph.k}>查看${ph.p=='during'?'今日':''}行程 →</button>${MASCOT(mc,say)}
+  <div class=cic>${CICO.map(c=>`<div><i>${c[0]}</i><span>${c[1]}</span></div>`).join('')}</div>
   <svg class=cwv viewBox="0 0 390 40" preserveAspectRatio="none" aria-hidden=true><path d="M0 22 Q60 2 130 16 T260 14 T390 10 V40 H0Z" fill="var(--bg)"/></svg></div>`}
 function todayCard(){const ph=tripPhase(),k=ph.k,all=sortItin(itemsOf('itin')),g=all.filter(x=>x.day==k),now=new Date(),hm=pad2(now.getHours())+':'+pad2(now.getMinutes());
   const row=(l,v)=>`<div class=prow><div class=pl>${l}</div><div class=pv>${v}</div></div>`;
@@ -700,7 +762,11 @@ function listMates(){const ms=T.members||[],me=myMember();
 async function loadEditors(){const b=$('#edbox');if(!b||!user||!T||T.ownerUid!==user.uid)return;let eds=[];try{const q=await getDocs(collection(db,'trips',T.id,'editors'));eds=q.docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
   const b2=$('#edbox');if(b2)b2.innerHTML=eds.map(e=>`<div class=it><div>${esc((T.mlink||{})[e.id]||e.name||e.id)} <span class=chip style="margin:0 0 0 6px;font-size:11px;padding:0 10px">${e.role=='owner'?'建立者':'已加入 · 可共編'}</span></div>${e.role=='owner'?'':`<button class=x data-a=rmEd data-id="${esc(e.id)}" style="font-size:12px">移除</button>`}</div>`).join('')||'<span class=mu>沒有資料</span>'}
 function listMemo(){return itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div></div>`).join('')||'<div class=card><span class=mu>還沒有備忘</span></div>'}
-function listChk(k){const a=itemsOf(k);return `<div class=card><div class=mu>已完成 ${a.filter(x=>x.done).length} / ${a.length}</div>${a.map(x=>`<div class=it><input type=checkbox style="width:auto;margin-top:5px" data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><div>${esc(x.title)}${x.note?`<div class=mu>${esc(x.note)}</div>`:''}${x.date?`<div class=mu>${esc(x.date)}</div>`:''}</div>${isEd?`${k=='pack'?`<button class=x data-a=editChk data-id="${x.id}">✎</button>`:''}<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div>`).join('')||'<span class=mu>還沒有項目</span>'}</div>`}
+function listChk(k){const a=itemsOf(k),n=a.filter(x=>x.done).length,pc=a.length?Math.round(n/a.length*100):0;
+  const lab=k=='pack'?'準備進度':'票券進度';
+  return `<div class="card pgc"><div class=pgh><b>${lab}:${n}／${a.length} 項</b><span>${pc}%</span></div><div class=pgb><i style="width:${pc}%"></i></div></div>
+  <div class=card style="padding:6px 14px">${a.map(x=>`<div class="pk ${x.done?'dn':''}"><label class=pkc><input type=checkbox data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><span class=pkb></span></label><div class=pkt><div class=pkn>${esc(x.title)}</div>${x.note?`<div class=pks>${esc(x.note)}</div>`:''}${x.date?`<div class=pks>${esc(x.date)}</div>`:''}</div>${isEd?`${k=='pack'?`<button class=x data-a=editChk data-id="${x.id}">✎</button>`:''}<button class=x data-a=del data-id="${x.id}">✕</button>`:''}</div>`).join('')||'<div class=mu style="padding:12px 0">還沒有項目</div>'}
+  ${isEd?`<div class=pka><input id=ci2 placeholder="新增項目" maxlength=80 data-k="${k}">${k=='pack'?'<input id=cn2 placeholder="小敘述(選填)" maxlength=80 style="max-width:38%">':''}<button class=p data-a=addChk2 data-k="${k}">新增</button></div>`:''}</div>`}
 
 /* ---------- 地圖(有 Google 金鑰用 Google 地圖,否則用 OpenStreetMap) ---------- */
 let GL=null;
@@ -838,9 +904,9 @@ const A={
   edit(e){editId=e.dataset.id;selPlace=null;openSheet()},
   cancelEdit(){editId=null;selPlace=null;closeSheet();renderForm()},
   async searchPlace(){const q=$('#placeq').value.trim();if(!q)return;const box=$('#resbox');box.innerHTML='<div class=mu>搜尋中…</div>';
-    try{const r=await geocode(q+(T.region?' '+T.region:''));if(!r.length){box.innerHTML='<div class=mu>找不到,換個關鍵字試試</div>';return}
+    try{const r=await geocode(q+(T.region?' '+T.region:''));if(!r.length){box.innerHTML='<div class=mu>找不到 → 請到 Google 地圖找到該地點,複製連結貼到下方「Google 地圖連結」欄,即可定位</div>';return}
       window.__res=r;box.innerHTML='<div class=res>'+r.map((p,i)=>`<div data-a=pickPlace data-i=${i}>${esc(p.full)}</div>`).join('')+'</div>'}
-    catch(e){box.innerHTML='<div class=mu>搜尋失敗'+''+',請稍後再試</div>'}},
+    catch(e){box.innerHTML='<div class=mu>搜尋失敗 → 可改貼下方「Google 地圖連結」來定位</div>'}},
   pickPlace(e){const p=(window.__res||[])[+e.dataset.i];if(!p)return;selPlace={name:p.name,lat:p.lat,lon:p.lon,addr:p.full||''};$('#resbox').innerHTML='';if(!$('#ti').value.trim())$('#ti').value=selPlace.name;showSel()},
   saveItin(){const ti=$('#ti').value.trim();if(!ti)return toast('請輸入行程名稱');
     const data={day:Math.min(60,Math.max(1,Math.round(+$('#d').value)||1)),time:$('#t').value,title:ti.slice(0,80),note:$('#no').value.trim().slice(0,120),tag:$('#tg').value};
@@ -926,6 +992,7 @@ const A={
     finally{if(btn){btn.disabled=false;btn.textContent=old}}},
   editChk(e){const x=items.find(i=>i.id==e.dataset.id);if(!x)return;const t=prompt('物品名稱',x.title);if(t===null||!t.trim())return;const n=prompt('小敘述(例如:帶冰爪)',x.note||'');if(n===null)return;guard(()=>updateDoc(doc(db,'trips',T.id,'items',x.id),{title:t.trim().slice(0,80),note:n.trim().slice(0,80)}))},
   addChk(e){const k=e.dataset.k,v=$('#ci').value.trim();if(!v)return;const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn')&&$('#cn').value.trim())o.note=$('#cn').value.trim().slice(0,80);if(k=='tix'&&$('#cd').value)o.date=$('#cd').value;guard(async()=>{await addItem(k,o);$('#ci').value='';if($('#cn'))$('#cn').value='';closeSheet()})},
+  addChk2(e){const k=e.dataset.k,v=($('#ci2').value||'').trim();if(!v)return toast('請輸入項目名稱');const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn2')&&$('#cn2').value.trim())o.note=$('#cn2').value.trim().slice(0,80);guard(async()=>{await addItem(k,o);if($('#ci2')){$('#ci2').value='';if($('#cn2'))$('#cn2').value='';$('#ci2').focus()}})},
   preset(){guard(async()=>{const have=itemsOf('pack').map(x=>x.title);for(const t of PACK)if(!have.includes(t))await addItem('pack',{title:t,done:false});closeSheet()})},
   del(e){if(!confirm('確定刪除?'))return;guard(()=>deleteDoc(doc(db,'trips',T.id,'items',e.dataset.id)))}
 };
@@ -983,6 +1050,8 @@ document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closes
 document.addEventListener('click',e=>{if(Date.now()<suppressClick)return;const t=e.target.closest('[data-tab],[data-a]');if(!t)return;
   if(t.dataset.tab!==undefined){animNext='up';tab=+t.dataset.tab;editId=null;selPlace=null;closeSheet();renderNav();renderForm();renderList();window.scrollTo(0,0)}
   else if(A[t.dataset.a]){if(t.tagName=='A'&&t.getAttribute('href')=='#')e.preventDefault();A[t.dataset.a](t)}});
+document.addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target&&(e.target.id=='ci2'||e.target.id=='cn2')){e.preventDefault();const b=document.querySelector('[data-a=addChk2]');if(b)A.addChk2(b)}});
+document.addEventListener('paste',e=>{const t=e.target;if(t&&t.id=='gl')setTimeout(()=>applyGL(t.value),50)});
 document.addEventListener('change',e=>{const t=e.target;if(!T||!route.tid)return;
   if(t.id=='tswsel'){if(t.value&&t.value!=T.id)location.hash='#/t/'+t.value;return}
   if(t.id=='tname'){guard(()=>updateDoc(tripRef(),{name:t.value.trim()||'未命名'}))}
