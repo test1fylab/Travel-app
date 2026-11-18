@@ -325,6 +325,7 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 #form .fld{margin-bottom:12px}#form .fld input:not([type=checkbox]),#form .fld select,#form .fld textarea{margin:0}#form .row{align-items:flex-start}#form .row>button.p{margin-top:30px;margin-bottom:12px;min-height:48px}#form .row[style*="margin-top:6px"]>button.p{margin-top:0}
 .sech{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px}.sech h3{margin:0}.sech .p{width:auto;flex:none;padding:8px 16px;min-height:0}
 .btns{display:flex;gap:10px;margin-top:8px}.btns button{flex:1;width:auto!important;margin:0}
+.tmp{display:flex;gap:6px}.tmp select{margin:0!important;flex:1 1 0;min-width:0;padding:0 8px!important;height:48px}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -514,7 +515,7 @@ function renderForm(){
   const ft=tab==6?0:(tab==5&&mateSub=='exp')?1:tab;
   f.innerHTML=[
   `<div class=card><div class=sh>${x?'編輯行程':'新增行程'}</div>
-  <div class=row>${fld('第幾天',`<input id=d type=number inputmode=numeric min=1 value="${x?x.day:(dayF||1)}">`,'天')}${fld('時間',`<input id=t type=time value="${x?esc(x.time||''):''}">`)}</div>
+  <div class=row>${fld('第幾天',`<input id=d type=number inputmode=numeric min=1 value="${x?x.day:(dayF||1)}">`,'天')}${fld('時間',`${tmSel('t',x?esc(x.time||''):'')}`)}</div>
   ${fld('分類',`<select id=tg>${['',...TAGS].map(t=>`<option value="${t}" ${(x&&x.tag==t)||(!x&&t==(tab==6?'餐廳':''))?'selected':''}>${t||'(不分類)'}</option>`).join('')}</select>`)}
   <div class=row>${fld('搜尋地點',`<input id=placeq placeholder="例如:淺草寺" value="${esc(tw(x?.placeName||''))}">`)}<button class="p g" data-a=searchPlace style="flex:0 0 72px;margin-bottom:12px">搜尋</button></div>
   ${fld('Google Maps 連結(搜尋不到時用,選填)',`<input id=gl inputmode=url placeholder="貼上地圖連結" value="${x?esc(x.url||''):''}">`)}<div id=resbox></div><div id=selp class=mu style="margin:-4px 0 12px"></div>
@@ -543,17 +544,22 @@ function packForm(){if(packMode=='memo'){const x=memoEditId?items.find(i=>i.id==
     return `<div class=card><div class=sh>${x?'編輯備忘':'新增備忘'}</div>${fld('內容',`<textarea id=mt rows=5 maxlength=2000 placeholder="寫點備忘…">${x?esc(x.text||''):''}</textarea>`)}<div class=btns><button class="p g" data-a=closeSheet>取消</button><button class=p data-a=saveMemo>${x?'完成':'新增'}</button></div></div>`}
   const x=packEditId?items.find(i=>i.id==packEditId):null;
   return `<div class=card><div class=sh>${x?'編輯行李物品':'新增行李物品'}</div>${fld('物品',`<input id=ci placeholder="例如:靴子" maxlength=80 value="${x?esc(x.title||''):''}">`)}${fld('小敘述(選填)',`<input id=cn placeholder="例如:帶冰爪" maxlength=80 value="${x?esc(x.note||''):''}">`)}<div class=btns><button class="p g" data-a=closeSheet>取消</button><button class=p data-a=savePack>${x?'完成':'新增'}</button></div>${x?'':'<details style="margin-top:10px"><summary>載入常用行李清單</summary><button class="p g" data-a=preset style="margin-top:6px">加入常用 12 項</button></details>'}</div>`}
+function tmSel(id,v){v=String(v||'');const m=/^(\d{1,2}):(\d{2})/.exec(v);let H=m?+m[1]:null,M=m?m[2]:'',pm=H!=null&&H>=12,h12=H==null?'':(H%12||12);
+  const hs=[12,1,2,3,4,5,6,7,8,9,10,11],ms=['00','05','10','15','20','25','30','35','40','45','50','55'];if(M&&!ms.includes(M))ms.push(M),ms.sort();
+  return `<div class=tmp><input type=hidden id=${id} value="${esc(v)}"><select data-tm=ap><option value="">--</option><option value=am ${m&&!pm?'selected':''}>上午</option><option value=pm ${pm?'selected':''}>下午</option></select><select data-tm=h><option value="">時</option>${hs.map(x=>`<option ${x==h12?'selected':''}>${x}</option>`).join('')}</select><select data-tm=m><option value="">分</option>${ms.map(x=>`<option ${x==M?'selected':''}>${x}</option>`).join('')}</select></div>`}
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.tm)return;const w=t.closest('.tmp'),g=k=>w.querySelector('[data-tm='+k+']').value,ap=g('ap'),h=g('h'),mi=g('m'),o=w.querySelector('input');
+  if(!h&&!mi&&!ap){o.value='';return}let H=(+h||12)%12+(ap=='pm'?12:0);if(!ap&&h)H=+h%12;o.value=String(H).padStart(2,'0')+':'+(mi||'00')});
 function tixForm(){const x=tixEditId?items.find(i=>i.id==tixEditId):null,k=x?(x.kind||'spot'):tixKind,v=f=>x?esc(x[f]||''):'';
   const K=[['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點門票']];
   const pills=`<div class=kpills>${K.filter(([a])=>!x||a==k).map(([a,l])=>`<button type=button class="kp ${a==k?'on':''}" data-a=tixKind data-k=${a}>${l}</button>`).join('')}</div>`;
   const dt=fld('日期',`<input id=tx_date type=date value="${v('date')}">`),note=`<input id=tx_note placeholder="備註(選填),例如:48 小時前線上報到" maxlength=120 value="${v('note')}">`;
   let b='';
   if(k=='flight')b=`<input id=tx_ti placeholder="航空公司,例如:星宇航空" maxlength=40 value="${v('title')}"><div class=row>${fld('類型',`<select id=tx_leg>${['去程','回程','其他'].map(o=>`<option ${x&&x.leg==o?'selected':''}>${o}</option>`).join('')}</select>`)}${fld('航班號',`<input id=tx_no placeholder="JX890" maxlength=12 value="${v('no')}">`)}</div>${dt}
-   <div class=mu style="margin:2px 0 6px">出發(當地時間)</div><div class=row>${fld('機場代碼',`<input id=tx_fc placeholder="TPE" maxlength=4 value="${v('fromc')}">`)}${fld('機場名稱',`<input id=tx_fn placeholder="桃園" maxlength=20 value="${v('from')}">`)}</div>${fld('起飛時間',`<input id=tx_t1 type=time value="${v('t1')}">`)}
-   <div class=mu style="margin:2px 0 6px">抵達(當地時間)</div><div class=row>${fld('機場代碼',`<input id=tx_tc placeholder="SHI" maxlength=4 value="${v('toc')}">`)}${fld('機場名稱',`<input id=tx_tn placeholder="下地島" maxlength=20 value="${v('to')}">`)}</div>${fld('抵達時間',`<input id=tx_t2 type=time value="${v('t2')}">`)}${note}`;
+   <div class=mu style="margin:2px 0 6px">出發(當地時間)</div><div class=row>${fld('機場代碼',`<input id=tx_fc placeholder="TPE" maxlength=4 value="${v('fromc')}">`)}${fld('機場名稱',`<input id=tx_fn placeholder="桃園" maxlength=20 value="${v('from')}">`)}</div>${fld('起飛時間',`${tmSel('tx_t1',v('t1'))}`)}
+   <div class=mu style="margin:2px 0 6px">抵達(當地時間)</div><div class=row>${fld('機場代碼',`<input id=tx_tc placeholder="SHI" maxlength=4 value="${v('toc')}">`)}${fld('機場名稱',`<input id=tx_tn placeholder="下地島" maxlength=20 value="${v('to')}">`)}</div>${fld('抵達時間',`${tmSel('tx_t2',v('t2'))}`)}${note}`;
   else if(k=='train')b=`<input id=tx_ti placeholder="車種/車次,例如:新幹線 のぞみ 12 號" maxlength=40 value="${v('title')}"><div class=row>${dt}${fld('座位/車廂(選填)',`<input id=tx_seat placeholder="7 車 12A" maxlength=20 value="${v('seat')}">`)}</div>
-   <div class=row>${fld('出發站',`<input id=tx_fn placeholder="東京" maxlength=20 value="${v('from')}">`)}${fld('出發時間',`<input id=tx_t1 type=time value="${v('t1')}">`)}</div><div class=row>${fld('抵達站',`<input id=tx_tn placeholder="新大阪" maxlength=20 value="${v('to')}">`)}${fld('抵達時間',`<input id=tx_t2 type=time value="${v('t2')}">`)}</div>${note}`;
-  else b=`<input id=tx_ti placeholder="票券名稱,例如:teamLab 門票" maxlength=40 value="${v('title')}"><div class=row>${dt}${fld('入場時間(選填)',`<input id=tx_t1 type=time value="${v('t1')}">`)}</div><div class=row>${fld('張數',`<input id=tx_qty type=number inputmode=numeric min=1 value="${x&&+x.qty>0?x.qty:1}">`,'張')}</div><input id=tx_note placeholder="預約編號/備註(選填)" maxlength=120 value="${v('note')}">`;
+   <div class=row>${fld('出發站',`<input id=tx_fn placeholder="東京" maxlength=20 value="${v('from')}">`)}${fld('出發時間',`${tmSel('tx_t1',v('t1'))}`)}</div><div class=row>${fld('抵達站',`<input id=tx_tn placeholder="新大阪" maxlength=20 value="${v('to')}">`)}${fld('抵達時間',`${tmSel('tx_t2',v('t2'))}`)}</div>${note}`;
+  else b=`<input id=tx_ti placeholder="票券名稱,例如:teamLab 門票" maxlength=40 value="${v('title')}"><div class=row>${dt}${fld('入場時間(選填)',`${tmSel('tx_t1',v('t1'))}`)}</div><div class=row>${fld('張數',`<input id=tx_qty type=number inputmode=numeric min=1 value="${x&&+x.qty>0?x.qty:1}">`,'張')}</div><input id=tx_note placeholder="預約編號/備註(選填)" maxlength=120 value="${v('note')}">`;
   return `<div class=card>${pills}${b}<button class=p data-a=saveTix>${x?'儲存修改':'新增'}</button></div>`}
 const tixDate=d=>{if(!d)return '';const t=new Date(d+'T00:00:00');return isNaN(t)?esc(d):`${t.getMonth()+1}/${t.getDate()}(${'日一二三四五六'[t.getDay()]})`};
 function tixCard(x){const k=x.kind||'spot',ed=isEd?`<div class=tka><button class=x data-a=editTix data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">✕</button></div>`:'',
@@ -572,7 +578,7 @@ function markNow(){document.querySelectorAll('.tli.now').forEach(e=>{e.classList
 setInterval(markNow,30000);
 function listTix(){const all=itemsOf('tix'),kk=x=>x.kind||'spot',n=all.filter(x=>x.done).length,pc=all.length?Math.round(n/all.length*100):0;
   const T3=[['all','全部'],['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點門票']];
-  const a=all.filter(x=>tixTab=='all'||kk(x)==tixTab).sort((p,q)=>(p.date||'9').localeCompare(q.date||'9')||(p.t1||'').localeCompare(q.t1||''));
+  const a=all.filter(x=>tixTab=='all'||kk(x)==tixTab).sort((p,q)=>({flight:0,train:1,spot:2}[kk(p)]-{flight:0,train:1,spot:2}[kk(q)])||(p.date||'9').localeCompare(q.date||'9')||(p.t1||'').localeCompare(q.t1||''));
   return `<div class="card pgc"><div class=pgh><b>票券準備進度:${n}／${all.length} 張</b><span>${pc}%</span></div><div class=pgb><i style="width:${pc}%"></i></div></div>
   <div class=kpills>${T3.map(([k,l])=>`<button type=button class="kp ${tixTab==k?'on':''}" data-a=tixTabGo data-k=${k}>${l} ${k=='all'?all.length:all.filter(x=>kk(x)==k).length}</button>`).join('')}</div>
   ${a.map(tixCard).join('')||'<div class=card><span class=mu>還沒有票券。'+(isEd?'按右下角 ＋ 新增。':'')+'</span></div>'}`}
