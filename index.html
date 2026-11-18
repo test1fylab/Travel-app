@@ -381,6 +381,20 @@ input,select,textarea{font-size:16px;letter-spacing:.02em}
 .tkw i{border-top-color:var(--ac)!important}.tkw span{color:var(--ac);display:inline-flex;align-items:center}.tkw .tki{width:16px;height:16px;vertical-align:0}
 .kpills{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;margin-right:-20px;padding-right:20px}.kpills::-webkit-scrollbar{display:none}.kp{white-space:nowrap;flex:none;padding:8px 12px!important}
 .tothd{display:flex;justify-content:space-between;align-items:center;gap:10px}.tgc{flex:none;border:1px solid var(--bd);background:#fffaf0;color:var(--ink);border-radius:99px;padding:6px 14px;font:600 13px var(--sans);letter-spacing:.04em;min-height:0;width:auto}.tgc.on{background:var(--ink);color:#f3ead8;border-color:var(--ink)}
+.dttl{display:flex;align-items:flex-start;gap:12px}.dttl .dt{flex:1;min-width:0}.dttl .p{flex:none;width:auto!important;white-space:nowrap;padding:8px 14px;min-height:0}
+.dhead .dscene{max-width:112px}
+.pill{width:76px!important;height:62px!important;border-radius:16px!important;margin-right:8px;gap:3px;line-height:1.2}
+.pill b{font:700 15px/1.1 var(--sans)!important;letter-spacing:.03em}
+.pill span{font:400 11px/1.2 var(--sans)!important;letter-spacing:.02em}
+.pill.add b{font-size:20px!important;font-weight:400!important}
+/* ===== 統一版面 ===== */
+:root{--r-card:18px;--r-btn:14px}
+#list .card,.pcard,.fcard,.tkc,.tcard,.mbar,.pgc,.cvbox{border-radius:var(--r-card)!important}
+button.p{border-radius:var(--r-btn)!important}button.p.s{border-radius:12px!important}
+.card>h3,.card>.kick+h3{border-left:0!important;padding-left:0!important}
+.ix{width:18px;height:18px;display:block;margin:auto}
+button.x{color:#9a8a76;display:inline-flex;align-items:center;justify-content:center}button.x:active{color:var(--ink)}
+.tca .x,.tka .x{min-width:34px;min-height:34px}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -412,7 +426,7 @@ const fld=(lb,h,u)=>`<label class=fld><span>${lb}</span><div class=uf>${h}${u?`<
 let tixKind='flight',tixEditId=null,tixTab='all';
 const tsegsOf=x=>{if(Array.isArray(x.tsegs)&&x.tsegs.length)return x.tsegs;const o=[];if(x.tline||x.tto||+x.tmin>0)o.push({m:x.tm||'地鐵/電車',ln:x.tline||'',to:x.tto||'',min:+x.tmin||0});if(+x.twalk>0)o.push({m:'步行',ln:'',to:'',min:+x.twalk});return o};
 const tsegMin=x=>tsegsOf(x).reduce((a,g)=>a+(+g.min||0),0);
-const tsRow=g=>`<div class="tsg ${g&&g.m=='步行'?'w':''}"><div class=row><select class=tsm>${TMODES.map(m=>`<option ${g&&g.m==m[0]?'selected':''}>${m[0]}</option>`).join('')}</select><input class=tsl placeholder="路線/車種(選填)" maxlength=30 value="${g?esc(g.ln||''):''}"></div><div class=row><div class="tst fl1"><input class=tst2 placeholder="到哪裡(站名)" maxlength=30 value="${g?esc(g.to||''):''}"></div><div class=tsd>${fld('距離',`<input class=tsd2 type=number inputmode=numeric min=0 value="${g&&+g.dist>0?g.dist:''}">`,'公尺')}</div>${fld('時間',`<input class=tsn type=number inputmode=numeric min=0 value="${g&&+g.min>0?g.min:''}">`,'分鐘')}<button class=x type=button data-a=delSeg aria-label=刪除>✕</button></div></div>`;
+const tsRow=g=>`<div class="tsg ${g&&g.m=='步行'?'w':''}"><div class=row><select class=tsm>${TMODES.map(m=>`<option ${g&&g.m==m[0]?'selected':''}>${m[0]}</option>`).join('')}</select><input class=tsl placeholder="路線/車種(選填)" maxlength=30 value="${g?esc(g.ln||''):''}"></div><div class=row><div class="tst fl1"><input class=tst2 placeholder="到哪裡(站名)" maxlength=30 value="${g?esc(g.to||''):''}"></div><div class=tsd>${fld('距離',`<input class=tsd2 type=number inputmode=numeric min=0 value="${g&&+g.dist>0?g.dist:''}">`,'公尺')}</div>${fld('時間',`<input class=tsn type=number inputmode=numeric min=0 value="${g&&+g.min>0?g.min:''}">`,'分鐘')}<button class=x type=button data-a=delSeg aria-label=刪除>${IC_DEL}</button></div></div>`;
 const fmtMin=m=>m>=60?`${Math.floor(m/60)} 小時${m%60?' '+m%60+' 分':''}`:`${m} 分`;
 const TAGS=['景點','活動','餐廳','交通','住宿','購物','其他'];
 const CATS=['門票','餐費','交通','住宿','購物','其他'],TAG2CAT={活動:'門票',景點:'門票',餐廳:'餐費',交通:'交通',住宿:'住宿',購物:'購物',其他:'其他'};
@@ -475,7 +489,7 @@ function home(){
   showNew=false;
   if(!user){app.innerHTML=topbar()+heroHTML()+`<div class=card><p>登入後可以建立旅程、分享給旅伴一起編輯。</p><p class=mu>沒有登入也能預覽別人分享給你的連結。</p><button class="p go" data-a=login>用 Google 登入</button></div>`;return}
   const draw=homeDraw=()=>{app.innerHTML=topbar()+heroHTML()+`${installCard()}<button class="p go" data-a=showNew>前去探索！<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>${showNew?`<div id=nveil data-a=hideNew></div><div id=nbox><div class=cr><h3 style="margin-top:0">建立新旅程</h3><input id=nn placeholder="旅程名稱,例如:東京+山形 聖誕之旅"><input id=nr2 placeholder="地點,例如:日本東京"><div class=row><div><label>出發日</label><input type=date id=nd1></div><div><label>回程日</label><input type=date id=nd2></div></div><button class=p data-a=newTrip style="margin-top:6px">建立旅程</button><button class="p g" data-a=newTrip data-share=1 style="margin-top:6px">建立並邀請旅伴一起編輯</button></div><button class="p g" data-a=hideNew style="margin-top:6px">取消</button></div>`:''}
-  <h3>我的旅程</h3>${mine.map((m,i)=>`<div class=tcard><a href="#/t/${esc(m.id)}"><div class=tcv>${coverSVG(m.id,i)}</div><div class=tcb><div class=tcn>${esc(m.name||'未命名')}</div><div class=tcm>${tripMeta(m)||'<i>尚未設定日期</i>'}</div></div></a><button class="x tcx" title="從清單移除" data-a=unlist data-id="${esc(m.id)}" aria-label="從清單移除">✕</button></div>`).join('')||'<div class=empty>還沒有旅程<br>按上面的「前去探索！」開始第一趟</div>'}`};
+  <h3>我的旅程</h3>${mine.map((m,i)=>`<div class=tcard><a href="#/t/${esc(m.id)}"><div class=tcv>${coverSVG(m.id,i)}</div><div class=tcb><div class=tcn>${esc(m.name||'未命名')}</div><div class=tcm>${tripMeta(m)||'<i>尚未設定日期</i>'}</div></div></a><button class="x tcx" title="從清單移除" data-a=unlist data-id="${esc(m.id)}" aria-label="從清單移除">${IC_X}</button></div>`).join('')||'<div class=empty>還沒有旅程<br>按上面的「前去探索！」開始第一趟</div>'}`};
   draw();
   unsubs.push(onSnapshot(myTripsCol(),s=>{mine=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0));if(!route.tid)draw()},()=>{}));
 }
@@ -545,6 +559,7 @@ async function renderShare(){
   if(T.ownerUid===user.uid)html+=`<button class="p r s" data-a=delTrip style="margin-top:14px">刪除整個旅程</button>`;
   box.innerHTML=html;
 }
+const IC_ED='<svg class=ix viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',IC_DEL='<svg class=ix viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',IC_X='<svg class=ix viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const ICON=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const ICONS=[
  ICON('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
@@ -617,7 +632,7 @@ function tixForm(){const x=tixEditId?items.find(i=>i.id==tixEditId):null,k=x?(x.
   return `<div class=card>${pills}${b}<button class=p data-a=saveTix>${x?'儲存修改':'新增'}</button></div>`}
 const tixDate=d=>{if(!d)return '';const t=new Date(d+'T00:00:00');return isNaN(t)?esc(d):`${t.getMonth()+1}/${t.getDate()}(${'日一二三四五六'[t.getDay()]})`};
 const TKI={flight:'<svg class=tki viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/><path d="M10 13 21 3"/></svg>',train:'<svg class=tki viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M9 21l2-4M15 21l-2-4"/></svg>',spot:'<svg class=tki viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2.5 2.5 0 0 0 0-5z"/><path d="M14 5v3M14 11v2M14 16v3"/></svg>'};
-function tixCard(x){const k=x.kind||'spot',ed=isEd?`<div class=tka><button class=x data-a=editTix data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">✕</button></div>`:'',
+function tixCard(x){const k=x.kind||'spot',ed=isEd?`<div class=tka><button class=x data-a=editTix data-id="${x.id}">${IC_ED}</button><button class=x data-a=del data-id="${x.id}">${IC_DEL}</button></div>`:'',
   ck=`<label class=pkc style="width:22px;height:22px"><input type=checkbox data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><span class=pkb style="width:22px;height:22px"></span></label>`;
   if(k=='flight'||k=='train'){const ic=TKI[k],ln=(c,n)=>`${esc(c||'')} ${esc(n||'')}`.trim();
     return `<div class="tkc ${x.done?'dn':''}"><div class=tkt0>${ck}<span class=tkti>${ic} ${esc(x.title||'')}</span>${ed}</div>
@@ -648,7 +663,7 @@ function renderList(){
   else if(tab==0){renderDayF();l.innerHTML=listItin();drawMap()}
   else if(tab==1)l.innerHTML=listExp();
   else if(tab==2)l.innerHTML=listMemo();
-  else if(false)l.innerHTML=itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div></div>`).join('')||'<p class=mu>還沒有備忘</p>';
+  else if(false)l.innerHTML=itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">${IC_DEL}</button>`:''}</div></div>`).join('')||'<p class=mu>還沒有備忘</p>';
   else if(tab==5){l.innerHTML=mateSub=='exp'?`<div class=xp><button type=button class=mback data-a=moreHub><i>‹</i>更多</button><div class=xph>分帳與匯率</div>`+listExp()+`</div>`:moreHub()}
   else if(tab==7)l.innerHTML=listHome();
   else if(tab==6)l.innerHTML=listFood();
@@ -705,7 +720,7 @@ function renderDayF(){
   const ds=dayList();
   if(!dayInit&&ds.length){dayF=ds[0];if(T.startDate){const t0=new Date(T.startDate+'T00:00:00'),nw=new Date();nw.setHours(0,0,0,0);const k=Math.round((nw-t0)/864e5)+1;if(ds.includes(k))dayF=k}dayInit=true;needFit=true}
   if(dayF&&!ds.includes(dayF))dayF=0;
-  const dEl=$('#dayf');dEl.innerHTML=(ds.length?`<div class="pill ${!dayF?'on':''}" data-a=day data-d=0><b>全部</b><span>${ds.length} 天</span></div>`+ds.map(d=>`<div class="pill ${dayF==d?'on':''}" data-a=day data-d=${d}><b>D${d}</b><span>${dayDate(d)?md(dayDate(d)):'&nbsp;'}</span><span>${dayDate(d)?'週'+'日一二三四五六'[dayDate(d).getDay()]:'&nbsp;'}</span></div>`).join(''):'')+(isEd?'<div class="pill add" data-a=addDay><b>＋</b><span>新增天</span></div>':'');
+  const dEl=$('#dayf');dEl.innerHTML=(ds.length?`<div class="pill ${!dayF?'on':''}" data-a=day data-d=0><b>全部</b><span>${ds.length} 天</span></div>`+ds.map(d=>`<div class="pill ${dayF==d?'on':''}" data-a=day data-d=${d}><b>Day ${d}</b><span>${dayDate(d)?md(dayDate(d))+' 週'+'日一二三四五六'[dayDate(d).getDay()]:'&nbsp;'}</span></div>`).join(''):'')+(isEd?'<div class="pill add" data-a=addDay><b>＋</b><span>新增天</span></div>':'');
   const on=dEl.querySelector('.pill.on');if(on)dEl.scrollLeft=on.offsetLeft-(dEl.clientWidth-on.offsetWidth)/2;
 }
 function navUrl(day){
@@ -727,7 +742,7 @@ function timeline(g){
     const tg=x.tag&&TAGC[x.tag]?`<span class=tag style="color:${TAGC[x.tag][0]};background:${TAGC[x.tag][1]}">${esc(x.tag)}</span>`:'';
     const link=itemLink(x);
     return `<div class="tli ${selId==x.id?'sel':''} ${x.done?'done':''} ${cx?'hx':''}" id="i_${x.id}" data-day="${x.day}" data-time="${esc(x.time||'')}" style="--c:${cc};--cp:${cp};--cn:${cn}">${cx}<div class=tlt>${esc(x.time||'')}</div><div class=tld data-a=toggleDone data-id="${x.id}" title="標記完成"></div>
-    <div class=tlc data-a=focus data-id="${x.id}" style="cursor:pointer;border-left:4px solid ${cc}">${isEd?`<div class=tca><button class=x data-a=edit data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button></div>`:''}
+    <div class=tlc data-a=focus data-id="${x.id}" style="cursor:pointer;border-left:4px solid ${cc}">${isEd?`<div class=tca><button class=x data-a=edit data-id="${x.id}">${IC_ED}</button><button class=x data-a=del data-id="${x.id}">${IC_DEL}</button></div>`:''}
     ${tg}${has?'':'<span class=mu>(未定位)</span>'}<div class=tct style="${isEd?'padding-right:64px':''}">${esc(x.title)}</div>
     ${x.sub?`<div class=tsub>${esc(x.sub)}</div>`:''}${phThumb(x)}${x.placeName&&!x.sub?`<div class=tcs>${esc(tw(x.placeName))}</div>`:''}${x.hours?`<div class=thr>🕒 ${esc(x.hours)}</div>`:''}${x.note?`<div class=tnote>💡 <span>${esc(x.note)}</span></div>`:''}${+x.amt>0?`<div class=tcs style="color:var(--ink);font-weight:600">${esc(x.cat||'')} ${fmt(x.amt)} ${esc(x.cur||T.base)} · ${esc(x.payer||'')} 付</div>`:''}
     <div class=tcs><a href="${link}" target=_blank rel=noopener>在 Google 地圖開啟</a></div></div></div>`}).join('')+`</div>`;
@@ -809,7 +824,7 @@ const phThumb=x=>x.photo?`<div class=tph data-a=zoom data-id="${x.id}" role=butt
 function phBox(x){const u=x&&x.photo||'',c=x&&x.photoC||'';return `<div class=cvbox style="margin:0"><input type=hidden id=phu value="${esc(u)}"><input type=hidden id=phc value="${esc(c)}">
   <div id=phprev>${phPrev(u,c)}</div>
   <div class=cvrow2 style="margin-top:0"><button type=button class="p g" data-a=phSearch>搜尋實景</button><label class="p g cvup">上傳照片<input id=phf type=file accept="image/*" hidden></label></div><div id=phres></div></div>`}
-function phPrev(u,c){return u?`<div class=phpv><img src="${esc(u)}" alt=""><button type=button class=x data-a=phClear aria-label=移除照片>✕</button></div>${c?`<div class=mu style="font-size:11px;margin:4px 0 8px">出處:${esc(c)}</div>`:''}`:''}
+function phPrev(u,c){return u?`<div class=phpv><img src="${esc(u)}" alt=""><button type=button class=x data-a=phClear aria-label=移除照片>${IC_X}</button></div>${c?`<div class=mu style="font-size:11px;margin:4px 0 8px">出處:${esc(c)}</div>`:''}`:''}
 function phSet(u,c){const a=$('#phu'),b=$('#phc'),p=$('#phprev');if(!a)return;a.value=u;b.value=c;p.innerHTML=phPrev(u,c);const r=$('#phres');if(r)r.innerHTML=''}
 async function commonsFind(q){const u='https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=24&gsrsearch='+encodeURIComponent(q+' filetype:bitmap')+'&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=1000';
   const j=await fetch(u).then(r=>r.json());return Object.values((j.query&&j.query.pages)||{}).sort((a,b)=>a.index-b.index).map(p=>{const i=(p.imageinfo||[])[0];if(!i||!i.thumburl)return null;const m=i.extmetadata||{};return {u:i.thumburl,w:i.width,h:i.height,c:[cvStrip(m.Artist&&m.Artist.value),cvStrip(m.LicenseShortName&&m.LicenseShortName.value),'Wikimedia Commons'].filter(Boolean).join(' / ')}}).filter(x=>x&&x.w>=800)}
@@ -823,7 +838,7 @@ let lbList=[],lbI=0;
 function lbOpen(id){lbList=sortItin(itemsOf('itin')).filter(x=>x.photo);lbI=Math.max(0,lbList.findIndex(x=>x.id==id));let e=$('#lb');if(!e){e=document.createElement('div');e.id='lb';document.body.appendChild(e);
   let sx=0;e.addEventListener('touchstart',ev=>{sx=ev.touches[0].clientX},{passive:true});e.addEventListener('touchend',ev=>{const dx=ev.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)lbGo(dx<0?1:-1)},{passive:true})}
   lbDraw();e.classList.add('on');document.body.style.overflow='hidden'}
-function lbDraw(){const e=$('#lb'),x=lbList[lbI];if(!e||!x)return lbClose();e.innerHTML=`<button class=lbx data-a=lbClose aria-label=關閉>✕</button><div class=lbm data-a=lbClose><img src="${esc(x.photo)}" alt="${esc(x.title||'')}" onclick="event.stopPropagation()"></div><div class=lbc><b>${esc(x.title||'')}</b>${x.photoC?`<span>${esc(x.photoC)}</span>`:''}<small>${lbI+1} / ${lbList.length}</small></div>${lbList.length>1?'<button class="lbn l" data-a=lbPrev aria-label=上一張>‹</button><button class="lbn r" data-a=lbNext aria-label=下一張>›</button>':''}`}
+function lbDraw(){const e=$('#lb'),x=lbList[lbI];if(!e||!x)return lbClose();e.innerHTML=`<button class=lbx data-a=lbClose aria-label=關閉>${IC_X}</button><div class=lbm data-a=lbClose><img src="${esc(x.photo)}" alt="${esc(x.title||'')}" onclick="event.stopPropagation()"></div><div class=lbc><b>${esc(x.title||'')}</b>${x.photoC?`<span>${esc(x.photoC)}</span>`:''}<small>${lbI+1} / ${lbList.length}</small></div>${lbList.length>1?'<button class="lbn l" data-a=lbPrev aria-label=上一張>‹</button><button class="lbn r" data-a=lbNext aria-label=下一張>›</button>':''}`}
 function lbGo(d){if(lbList.length<2)return;lbI=(lbI+d+lbList.length)%lbList.length;lbDraw()}
 function lbClose(){const e=$('#lb');if(e)e.classList.remove('on');document.body.style.overflow=''}
 document.addEventListener('keydown',e=>{const l=$('#lb');if(!l||!l.classList.contains('on'))return;if(e.key=='Escape')lbClose();if(e.key=='ArrowLeft')lbGo(-1);if(e.key=='ArrowRight')lbGo(1)});
@@ -874,7 +889,7 @@ function listFood(){const fs=sortItin(itemsOf('itin')).filter(x=>x.tag=='餐廳'
     <div class=row2><span class=kick>DAY ${x.day}${x.time?' · '+esc(x.time):''}</span><span class=mu>${dt?md(dt):''}</span></div><div class=dctt>${esc(x.title)}</div>
     ${x.addr?`<div class=fad>📍 ${esc(tw(x.addr))}</div>`:has?`<div class=fad>📍 <span data-addr="${x.lat},${x.lon}">${esc(nm)}</span></div>`:''}
     ${x.sub?`<div class=tsub>${esc(x.sub)}</div>`:''}${x.hours?`<div class=thr>🕒 ${esc(x.hours)}</div>`:''}${x.note?`<div class=tnote>💡 <span>${esc(x.note)}</span></div>`:''}
-    <div class=fbt>${nav?`<a class=fb1 href="${nav}" target=_blank rel=noopener>導航</a>`:''}<a class=fb2 href="${link}" target=_blank rel=noopener>在 Google 地圖查看 ↗</a>${isEd?`<button class=x data-a=edit data-id="${x.id}">✎</button>`:''}</div></div></div>`}).join('')}
+    <div class=fbt>${nav?`<a class=fb1 href="${nav}" target=_blank rel=noopener>導航</a>`:''}<a class=fb2 href="${link}" target=_blank rel=noopener>在 Google 地圖查看 ↗</a>${isEd?`<button class=x data-a=edit data-id="${x.id}">${IC_ED}</button>`:''}</div></div></div>`}).join('')}
 function dayScene(d){const th=[['#f7e4b0','#f2cf86','#c99a52','#8a5a2b'],['#f6d3a6','#eaa86b','#b9714a','#7a3f2a'],['#e9dfc2','#d3c08f','#a58a5a','#5f4430']][(d-1)%3];
   return `<svg class=dscene viewBox="0 0 150 84" preserveAspectRatio="xMidYMid slice" aria-hidden=true><defs><clipPath id=dsc${d}><rect width=150 height=84 rx=16 /></clipPath><linearGradient id=dsg${d} x1=0 y1=0 x2=0 y2=1><stop offset=0 stop-color="${th[0]}"/><stop offset=1 stop-color="${th[1]}"/></linearGradient></defs><g clip-path="url(#dsc${d})">
   <rect width=150 height=84 fill="url(#dsg${d})"/><circle class=sun cx=116 cy=22 r=11 fill="#fff6d8"/>
@@ -891,7 +906,7 @@ function listItin(){
   const all=sortItin(itemsOf('itin')),ds=dayList(),N=ds.length?Math.max(...ds):0;
   if(!ds.length)return '<p class=mu style="margin-top:18px">還沒有行程。點右下角「＋」新增。</p>';
   let html='';
-  if(isEd&&ds.length>1)html+='<div class=mu style="margin-top:2px">長按 D1、D2… 方塊可左右拖曳,調整天數順序。</div>';
+  if(isEd&&ds.length>1)html+='<div class=mu style="margin-top:2px">長按 Day 1、Day 2… 方塊可左右拖曳,調整天數順序。</div>';
   if(!T.startDate&&isEd)html+='<div class=mu style="margin-top:4px">按名稱旁的分享圖示,填入出發日,就會顯示每天的日期。</div>';
   if(T.startDate){const t0=new Date(T.startDate+'T00:00:00'),now=new Date();now.setHours(0,0,0,0);const k=Math.round((now-t0)/864e5)+1;
     if(k>=1&&k<=N&&ds.includes(k))html+=`<div class=today data-a=day data-d=${k}>今天是 Day ${k} · ${dayF==k?'今日行程':'前往今日行程'}</div>`}
@@ -932,7 +947,7 @@ function listExp(){const s=settle(),rates=T.rates||{},all=expAll().sort((a,b)=>(
   ${ppl?`<div class=pgrid>${ppl}</div>`:`<div class=card><div class=mu>還沒有旅伴,請先到「更多 → 旅伴」新增,才能分帳。</div></div>`}
   <h3>建議還款</h3><div class=card>${s.pairs.map(p=>`<div class=it><div><span style="font-weight:500">${esc(p.f)} → ${esc(p.t)}</span><div class=mu>${fmt(p.a)} ${esc(T.base)}</div></div>${isEd?`<button class="p g s" data-a=repaid data-f="${esc(p.f)}" data-t="${esc(p.t)}" data-m="${p.a}">記錄已還款</button>`:''}</div>`).join('')||'<span class=mu>目前沒有需要轉帳的款項</span>'}</div>
   <h3>各類別花費</h3><div class=card>${Object.entries(cats).sort((p,q)=>q[1]-p[1]).map(([k,v])=>`<span class=chip>${esc(k)} ${fmt(v)}</span>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
-  <h3>花費明細</h3><div class=card>${all.map(e=>`<div class=it><div>${e.cat?`<span class=chip style="padding:0 10px;margin:0 6px 0 0;font-size:12px">${esc(e.cat)}</span>`:''}${esc(e.desc)} <b>${fmt(e.amt)} ${esc(e.cur)}</b>${e.cur!=T.base?` <span class=mu>≈ ${fmt(e.amt*rate(e.cur))} ${esc(T.base)}</span>`:''}<div class=mu>${esc(e.payer)} 先付 · ${(e.who||[]).length} 人分:${(e.who||[]).map(esc).join('、')}${e.linked?` · Day ${e.day} 行程`:''}</div></div>${isEd?(e.linked?`<button class=x data-a=editLinked data-id="${e.id}">✎</button>`:`<button class=x data-a=del data-id="${e.id}">🗑</button>`):''}</div>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
+  <h3>花費明細</h3><div class=card>${all.map(e=>`<div class=it><div>${e.cat?`<span class=chip style="padding:0 10px;margin:0 6px 0 0;font-size:12px">${esc(e.cat)}</span>`:''}${esc(e.desc)} <b>${fmt(e.amt)} ${esc(e.cur)}</b>${e.cur!=T.base?` <span class=mu>≈ ${fmt(e.amt*rate(e.cur))} ${esc(T.base)}</span>`:''}<div class=mu>${esc(e.payer)} 先付 · ${(e.who||[]).length} 人分:${(e.who||[]).map(esc).join('、')}${e.linked?` · Day ${e.day} 行程`:''}</div></div>${isEd?(e.linked?`<button class=x data-a=editLinked data-id="${e.id}">${IC_ED}</button>`:`<button class=x data-a=del data-id="${e.id}">${IC_DEL}</button>`):''}</div>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
   <h3>幣別與匯率</h3><div class=card>${(()=>{const dc=destCur(),has=dc&&dc!==T.base&&CNAME[dc];
     const fc=Object.keys(rates).filter(c=>c!==T.base);if(!fc.includes(rateSel))rateSel=fc[0]||'';const free=Object.keys(CNAME).filter(c=>c!==T.base&&!(c in rates));
     const at=T.rateAt?'即時匯率同步於 '+new Date(T.rateAt).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'尚未同步即時匯率,目前是手動設定的數值';
@@ -970,11 +985,11 @@ function listMates(){const ms=T.members||[],me=myMember();
   <h3>可以編輯的人</h3><div class=card id=edbox><span class=mu>${T.ownerUid===(user&&user.uid)?'載入中…':'只有建立者可以看到編輯者名單。'}</span></div>`}
 async function loadEditors(){const b=$('#edbox');if(!b||!user||!T||T.ownerUid!==user.uid)return;let eds=[];try{const q=await getDocs(collection(db,'trips',T.id,'editors'));eds=q.docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
   const b2=$('#edbox');if(b2)b2.innerHTML=eds.map(e=>`<div class=it><div>${esc((T.mlink||{})[e.id]||e.name||e.id)} <span class=chip style="margin:0 0 0 6px;font-size:11px;padding:0 10px">${e.role=='owner'?'建立者':'已加入 · 可共編'}</span></div>${e.role=='owner'?'':`<button class=x data-a=rmEd data-id="${esc(e.id)}" style="font-size:12px">移除</button>`}</div>`).join('')||'<span class=mu>沒有資料</span>'}
-function listMemo(){return itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=editMemo data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div></div>`).join('')||'<div class=card><span class=mu>還沒有備忘</span></div>'}
+function listMemo(){return itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=editMemo data-id="${x.id}">${IC_ED}</button><button class=x data-a=del data-id="${x.id}">${IC_DEL}</button>`:''}</div></div>`).join('')||'<div class=card><span class=mu>還沒有備忘</span></div>'}
 function listChk(k){const a=itemsOf(k),n=a.filter(x=>x.done).length,pc=a.length?Math.round(n/a.length*100):0;
   const lab=k=='pack'?'準備進度':'票券進度';
   return `<div class="card pgc"><div class=pgh><b>${lab}:${n}／${a.length} 項</b><span>${pc}%</span></div><div class=pgb><i style="width:${pc}%"></i></div></div>
-  <div class=card style="padding:6px 14px">${a.map(x=>`<div class="pk ${x.done?'dn':''}"><label class=pkc><input type=checkbox data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><span class=pkb></span></label><div class=pkt><div class=pkn>${esc(x.title)}</div>${x.note?`<div class=pks>${esc(x.note)}</div>`:''}${x.date?`<div class=pks>${esc(x.date)}</div>`:''}</div>${isEd?`${k=='pack'?`<button class=x data-a=editChk data-id="${x.id}">✎</button>`:''}<button class=x data-a=del data-id="${x.id}">✕</button>`:''}</div>`).join('')||'<div class=mu style="padding:12px 0">還沒有項目</div>'}
+  <div class=card style="padding:6px 14px">${a.map(x=>`<div class="pk ${x.done?'dn':''}"><label class=pkc><input type=checkbox data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><span class=pkb></span></label><div class=pkt><div class=pkn>${esc(x.title)}</div>${x.note?`<div class=pks>${esc(x.note)}</div>`:''}${x.date?`<div class=pks>${esc(x.date)}</div>`:''}</div>${isEd?`${k=='pack'?`<button class=x data-a=editChk data-id="${x.id}">${IC_ED}</button>`:''}<button class=x data-a=del data-id="${x.id}">${IC_DEL}</button>`:''}</div>`).join('')||'<div class=mu style="padding:12px 0">還沒有項目</div>'}
 </div>`}
 
 /* ---------- 地圖(有 Google 金鑰用 Google 地圖,否則用 OpenStreetMap) ---------- */
