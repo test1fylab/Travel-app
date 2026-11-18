@@ -380,6 +380,7 @@ input,select,textarea{font-size:16px;letter-spacing:.02em}
 .tkp{background:rgba(201,150,46,.2)!important;color:#7a5a1c!important}
 .tkw i{border-top-color:var(--ac)!important}.tkw span{color:var(--ac);display:inline-flex;align-items:center}.tkw .tki{width:16px;height:16px;vertical-align:0}
 .kpills{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;margin-right:-20px;padding-right:20px}.kpills::-webkit-scrollbar{display:none}.kp{white-space:nowrap;flex:none;padding:8px 12px!important}
+.tothd{display:flex;justify-content:space-between;align-items:center;gap:10px}.tgc{flex:none;border:1px solid var(--bd);background:#fffaf0;color:var(--ink);border-radius:99px;padding:6px 14px;font:600 13px var(--sans);letter-spacing:.04em;min-height:0;width:auto}.tgc.on{background:var(--ink);color:#f3ead8;border-color:var(--ink)}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -920,20 +921,27 @@ async function fetchRates(base,codes){const out={},get=async u=>{try{const r=awa
   if(codes.some(c=>!out[c])){const k=await get('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/'+base.toLowerCase()+'.json'),t=k&&k[base.toLowerCase()];
     if(t)codes.forEach(c=>{if(out[c])return;const v=+t[c.toLowerCase()];if(v>0)out[c]=+(1/v).toPrecision(6)})}
   return out}
+const DESTC=[[/韓國|首爾|釜山|濟州/,'KRW'],[/泰國|曼谷|清邁|普吉/,'THB'],[/香港/,'HKD'],[/新加坡/,'SGD'],[/台灣|臺灣|台北|台中|高雄|台南/,'TWD'],[/中國|北京|上海|廣州|深圳|成都/,'CNY'],[/馬來西亞|吉隆坡/,'MYR'],[/越南|河內|胡志明|峴港/,'VND'],[/美國|紐約|洛杉磯|舊金山|夏威夷|關島/,'USD'],[/英國|倫敦/,'GBP'],[/澳洲|雪梨|墨爾本|布里斯本/,'AUD'],[/加拿大|溫哥華|多倫多/,'CAD'],[/歐洲|法國|巴黎|德國|柏林|義大利|羅馬|西班牙|荷蘭|奧地利|瑞士|希臘/,'EUR'],[/日本|沖繩|北海道|九州|四國|東北/,'JPY']];
+function destCur(){const t=tw([T.region,T.name].join(' '));const h=DESTC.find(x=>x[0].test(t));if(h)return h[1];if(placeOf())return 'JPY';return ''}
+let totDest=false;
 function listExp(){const s=settle(),rates=T.rates||{},all=expAll().sort((a,b)=>(b.ts||0)-(a.ts||0)),cats={};
   all.forEach(e=>{if(e.cat=='還款')return;const k=e.cat||'其他';cats[k]=(cats[k]||0)+e.amt*rate(e.cur)});
   const ppl=(T.members||[]).map(m=>{const v=s.net[m]||0,k=v>.5?'pos':v<-.5?'neg':'';return `<div class=pcard><div class=av>${esc([...m][0]||'?')}</div><div class=pn2>${esc(m)}</div><div class=mu>${v>.5?'應收':v<-.5?'應付':'已結清'}</div><div class="pamt ${k}">${fmt(Math.abs(v))}</div></div>`}).join('');
-  return `<div class=card><div class=mu>${esc(T.base)} 總花費</div><div class=big>${fmt(s.tot)}</div><div class=mu>含行程內記帳;外幣已依匯率換算,原始金額保留在明細。</div></div>
+  const dc=destCur(),canD=dc&&dc!==T.base&&CNAME[dc],showD=totDest&&canD&&+(T.rates||{})[dc]>0,cc=showD?dc:T.base,tv=showD?s.tot/rate(dc):s.tot;
+  return `<div class=card><div class=tothd><div class=mu>${esc(cc)} 總花費</div>${canD?`<button type=button class="tgc ${showD?'on':''}" data-a=totToggle>${showD?'顯示 '+esc(T.base):'換算成 '+esc(CNAME[dc])}</button>`:''}</div><div class=big>${fmt(tv)}</div><div class=mu>${showD?`依 1 ${esc(dc)} = ${fmt(rate(dc))} ${esc(T.base)} 換算。`:'含行程內記帳;外幣已依匯率換算,原始金額保留在明細。'}</div></div>
   ${ppl?`<div class=pgrid>${ppl}</div>`:`<div class=card><div class=mu>還沒有旅伴,請先到「更多 → 旅伴」新增,才能分帳。</div></div>`}
   <h3>建議還款</h3><div class=card>${s.pairs.map(p=>`<div class=it><div><span style="font-weight:500">${esc(p.f)} → ${esc(p.t)}</span><div class=mu>${fmt(p.a)} ${esc(T.base)}</div></div>${isEd?`<button class="p g s" data-a=repaid data-f="${esc(p.f)}" data-t="${esc(p.t)}" data-m="${p.a}">記錄已還款</button>`:''}</div>`).join('')||'<span class=mu>目前沒有需要轉帳的款項</span>'}</div>
   <h3>各類別花費</h3><div class=card>${Object.entries(cats).sort((p,q)=>q[1]-p[1]).map(([k,v])=>`<span class=chip>${esc(k)} ${fmt(v)}</span>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
   <h3>花費明細</h3><div class=card>${all.map(e=>`<div class=it><div>${e.cat?`<span class=chip style="padding:0 10px;margin:0 6px 0 0;font-size:12px">${esc(e.cat)}</span>`:''}${esc(e.desc)} <b>${fmt(e.amt)} ${esc(e.cur)}</b>${e.cur!=T.base?` <span class=mu>≈ ${fmt(e.amt*rate(e.cur))} ${esc(T.base)}</span>`:''}<div class=mu>${esc(e.payer)} 先付 · ${(e.who||[]).length} 人分:${(e.who||[]).map(esc).join('、')}${e.linked?` · Day ${e.day} 行程`:''}</div></div>${isEd?(e.linked?`<button class=x data-a=editLinked data-id="${e.id}">✎</button>`:`<button class=x data-a=del data-id="${e.id}">🗑</button>`):''}</div>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
-  <h3>幣別與匯率</h3><div class=card>${(()=>{const fc=Object.keys(rates).filter(c=>c!==T.base);if(!fc.includes(rateSel))rateSel=fc[0]||'';const free=Object.keys(CNAME).filter(c=>c!==T.base&&!(c in rates));
-    return `${fld('基準幣別(帳目總計用的幣別)',isEd?`<select id=base>${curList().map(c=>curOpt(c,c==T.base)).join('')}</select>`:`<input value="${esc(curLbl(T.base))}" readonly>`)}
+  <h3>幣別與匯率</h3><div class=card>${(()=>{const dc=destCur(),has=dc&&dc!==T.base&&CNAME[dc];
+    const fc=Object.keys(rates).filter(c=>c!==T.base);if(!fc.includes(rateSel))rateSel=fc[0]||'';const free=Object.keys(CNAME).filter(c=>c!==T.base&&!(c in rates));
+    const at=T.rateAt?'即時匯率同步於 '+new Date(T.rateAt).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'尚未同步即時匯率,目前是手動設定的數值';
+    const main=has?`${fld('旅行地貨幣',`<input value="${esc(curLbl(dc))}" readonly>`)}${fld('匯率:1 '+esc(CNAME[dc]||dc)+' =',`<input id=drval type=number inputmode=decimal step=any value="${+rates[dc]>0?rates[dc]:''}" placeholder="按下方同步" ${isEd?'':'readonly'}>`,esc(T.base))}<div class=mu style="margin:-2px 0 10px;font-size:12.5px">${at}</div>${isEd?`<button class=p data-a=syncRates>同步即時匯率</button>`:''}`:`<div class=mu>${dc&&dc===T.base?'旅行地貨幣和基準幣別相同,不需要匯率。':'尚未辨識出旅行地的貨幣,請到旅程設定填寫地點,或在下方「其他幣別」手動新增。'}</div>`;
+    const other=`<details style="margin-top:14px" ${has?'':'open'}><summary class=mu>基準幣別與其他幣別</summary>
+    ${fld('基準幣別(帳目總計用的幣別)',isEd?`<select id=base>${curList().map(c=>curOpt(c,c==T.base)).join('')}</select>`:`<input value="${esc(curLbl(T.base))}" readonly>`)}
     <div class=row>${fld('外幣',`<select id=rsel>${fc.map(c=>curOpt(c,c==rateSel)).join('')||'<option>尚未新增外幣</option>'}</select>`)}${fld('1 外幣 =',`<input id=rval type=number inputmode=decimal step=any value="${rateSel?rate(rateSel):''}" ${isEd&&rateSel?'':'readonly'}>`,esc(T.base))}</div>
-    <div class=mu style="margin:-2px 0 10px;font-size:12.5px">${T.rateAt?'即時匯率同步於 '+new Date(T.rateAt).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'尚未同步即時匯率,目前是手動設定的數值'}</div>
-    ${isEd?`<button class="p g" data-a=syncRates>同步即時匯率</button>
-    <div class=row style="margin-top:14px">${fld('新增幣別',`<select id=ncs>${free.map(c=>`<option value="${c}">${esc(curLbl(c))}</option>`).join('')||'<option value="">已全部加入</option>'}</select>`)}<button class=p data-a=addRate style="flex:0 0 76px">新增</button></div>`:''}`})()}</div>`}
+    ${isEd?`<button class="p g" data-a=syncRates>同步所有匯率</button><div class=row style="margin-top:14px">${fld('新增幣別',`<select id=ncs>${free.map(c=>`<option value="${c}">${esc(curLbl(c))}</option>`).join('')||'<option value="">已全部加入</option>'}</select>`)}<button class=p data-a=addRate style="flex:0 0 76px">新增</button></div>`:''}</details>`;
+    return main+other})()}</div>`}
 const myMember=()=>{const n=user&&(T.mlink||{})[user.uid];return n&&(T.members||[]).includes(n)?n:''};
 const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join('');
 const maskMail=e=>{const p=String(e).split('@');return (p[0]||'').slice(0,2)+'***@'+(p[1]||'')};
@@ -1170,7 +1178,8 @@ const A={
     const up={members:(T.members||[]).filter(m=>m!=n),memail:(T.memail||[]).filter(x=>x.n!==n)};Object.keys(T.mlink||{}).forEach(u=>{if(T.mlink[u]===n)up['mlink.'+u]=''});guard(()=>updateDoc(tripRef(),up).then(()=>{renderForm();renderList()}))}},
   addExp(){const d=$('#ed').value.trim(),a=+$('#ea').value,w=[...document.querySelectorAll('.ew:checked')].map(x=>x.value);if(!d||!a||!w.length)return toast('請填項目、金額與分攤者');
     guard(async()=>{await addItem('exp',{desc:d.slice(0,80),amt:a,cur:$('#ec').value,payer:$('#ep').value,who:w,cat:$('#ecat').value});$('#ed').value=$('#ea').value='';closeSheet()})},
-  syncRates(){const codes=Object.keys(T.rates||{}).filter(c=>c!==T.base);if(!codes.length)return toast('請先新增外幣');toast('同步中…');
+  totToggle(){const dc=destCur();if(!totDest&&dc&&dc!==T.base&&!(+(T.rates||{})[dc]>0)){toast('取得匯率中…');fetchRates(T.base,[dc]).then(o=>{const v=o[dc]||DEFRATES[dc];if(!v){return toast('抓不到匯率,請到下方「幣別與匯率」手動輸入')}guard(()=>updateDoc(tripRef(),{['rates.'+dc]:v,rateAt:o[dc]?Date.now():(T.rateAt||0)}).then(()=>{totDest=true;renderList()}))});return}totDest=!totDest;renderList()},
+  syncRates(){const dc=destCur(),codes=[...new Set([...Object.keys(T.rates||{}),...(dc?[dc]:[])])].filter(c=>c!==T.base&&CNAME[c]);if(!codes.length)return toast('請先新增外幣');toast('同步中…');
     fetchRates(T.base,codes).then(o=>{if(!Object.keys(o).length)return toast('抓不到即時匯率,請稍後再試或手動輸入');guard(()=>updateDoc(tripRef(),{rates:{...T.rates,...o},rateAt:Date.now()}).then(()=>toast('已同步 '+Object.keys(o).length+' 種幣別')))})},
   addRate(){const c=($('#ncs')||{}).value;if(!c)return;fetchRates(T.base,[c]).then(o=>{guard(()=>updateDoc(tripRef(),{['rates.'+c]:o[c]||1}).then(()=>{rateSel=c;toast(o[c]?'已加入並套用即時匯率':'已加入,請手動輸入匯率')}))})},
   addMemo(){const v=$('#mt').value.trim();if(!v)return;guard(async()=>{await addItem('memo',{text:v.slice(0,2000)});$('#mt').value='';closeSheet()})},
@@ -1271,6 +1280,7 @@ document.addEventListener('change',e=>{const t=e.target;if(t&&t.classList&&t.cla
     const mx=Math.max(0,...itemsOf('itin').map(x=>+x.day||0));if(n<mx)return toast('第 '+mx+' 天還有行程,請先到編輯頁移除或移動');guard(()=>updateDoc(tripRef(),{dayCount:n}).then(renderShare))}
   else if(t.id=='base'){guard(()=>updateDoc(tripRef(),{base:t.value}).then(()=>{renderForm();renderList()}))}
   else if(t.id=='rsel'){rateSel=t.value;const iv=$('#rval');if(iv)iv.value=rate(t.value)}
+  else if(t.id=='drval'){const v=+t.value,dc=destCur();if(v>0&&dc)guard(()=>updateDoc(tripRef(),{['rates.'+dc]:v}))}
   else if(t.id=='rval'){const v=+t.value;if(v>0&&rateSel)guard(()=>updateDoc(tripRef(),{['rates.'+rateSel]:v}))}
   else if(t.dataset.r){guard(()=>updateDoc(tripRef(),{['rates.'+t.dataset.r]:+t.value||1}))}
   else if(t.id=='region'){A.region(t)}
