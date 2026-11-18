@@ -395,6 +395,14 @@ button.p{border-radius:var(--r-btn)!important}button.p.s{border-radius:12px!impo
 .ix{width:18px;height:18px;display:block;margin:auto}
 button.x{color:#9a8a76;display:inline-flex;align-items:center;justify-content:center}button.x:active{color:var(--ink)}
 .tca .x,.tka .x{min-width:34px;min-height:34px}
+.hhome{display:block;position:relative;height:230px;margin:0 -20px 18px;background-size:cover;background-position:center;color:#fff;text-decoration:none;overflow:hidden}
+.hhome .hk{position:absolute;left:20px;top:22px;font:500 11px 'Jost',var(--sans);letter-spacing:.28em;opacity:.92}
+.hhome .hn{position:absolute;left:20px;top:44px;right:20px;font:700 34px/1.2 var(--serif);letter-spacing:.05em;text-shadow:0 2px 12px rgba(0,0,0,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hhome .hm{position:absolute;left:20px;bottom:46px;font:500 14px var(--sans);letter-spacing:.06em;text-shadow:0 1px 6px rgba(0,0,0,.4)}
+.hhome .hwv{position:absolute;left:0;bottom:-1px;width:100%;height:34px}
+.htxt{padding:26px 0 18px;margin-bottom:6px;border-bottom:1px solid var(--bd)}
+.hk2{font:500 11px 'Jost',var(--sans);letter-spacing:.28em;color:var(--ac)}.hh{font:700 36px/1.2 var(--serif);letter-spacing:.06em;margin:6px 0 2px}.hs{font-size:14px;color:var(--mu)}
+.hcd{display:inline-flex;gap:8px;align-items:center;margin-top:14px;background:var(--card2);border:1px solid var(--bd);border-radius:99px;padding:8px 16px;font-size:14px;color:var(--tx);text-decoration:none}.hcd b{color:var(--ac);font-weight:700}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -481,15 +489,19 @@ const isStandalone=()=>{try{return matchMedia('(display-mode: standalone)').matc
 function installCard(){let off=false;try{off=localStorage.getItem('noInstallHint')=='1'}catch(e){}if(off||isStandalone())return '';
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
   return `<div class="card inst"><div class=ie>📲</div><div style="flex:1;min-width:0"><div style="font-weight:500">像 App 一樣全螢幕使用</div><div class=mu style="font-size:13px">${ios?'用 Safari 開啟,點下方「分享」→「加入主畫面」,之後從主畫面圖示開啟,就沒有網址列。':'點瀏覽器選單 ⋮ →「安裝應用程式」或「加到主畫面」,之後從主畫面圖示開啟,就沒有網址列。'}</div><div style="margin-top:8px;display:flex;gap:8px">${deferredInstall?'<button class="p s" data-a=installApp style="flex:0 0 auto">立即安裝</button>':''}<button class="p g s" data-a=hideInstall style="flex:0 0 auto">知道了</button></div></div></div>`}
-function heroHTML(){let t='TRAVEL JOURNAL';const nw=new Date();nw.setHours(0,0,0,0);
-  const up=mine.filter(m=>m.startDate&&new Date(m.startDate+'T00:00:00')>=nw).sort((a,b)=>a.startDate<b.startDate?-1:1)[0];
-  if(up){const n=Math.round((new Date(up.startDate+'T00:00:00')-nw)/864e5);t=n?`「${esc((up.name||'').slice(0,12))}」還有 ${n} 天出發`:`「${esc((up.name||'').slice(0,12))}」今天出發!`}
-  return HERO.replace('@@CD@@',t)}
+function heroHTML(){const nw=new Date();nw.setHours(0,0,0,0);const D=m=>new Date(m.startDate+'T00:00:00'),end=m=>{const e=D(m);e.setDate(e.getDate()+Math.max(+m.dayCount||1,1)-1);return e};
+  const dated=mine.filter(m=>m.startDate);let pick=dated.filter(m=>end(m)>=nw).sort((a,b)=>D(a)-D(b))[0]||null,tag='NEXT TRIP';
+  if(pick&&D(pick)<=nw)tag='NOW TRAVELING';
+  if(!pick&&mine.length){pick=mine[0];tag='LATEST TRIP'}
+  let cd='';if(pick&&pick.startDate){const n=Math.round((D(pick)-nw)/864e5);cd=n>0?`${n} 天後出發`:end(pick)>=nw?(n==0?'今天出發':`旅程進行中 · Day ${1-n}`):'已結束'}
+  const rg=pick&&pick.startDate?`${D(pick).getMonth()+1}/${D(pick).getDate()} — ${end(pick).getMonth()+1}/${end(pick).getDate()}`:'';
+  if(pick&&pick.photo)return `<a class=hhome href="#/t/${esc(pick.id)}" style="background-image:linear-gradient(180deg,rgba(40,25,10,.45),rgba(40,25,10,0) 45%,rgba(40,25,10,.5)),url('${esc(pick.photo).replace(/'/g,'%27')}')"><div class=hk>${tag}</div><div class=hn>${esc(pick.name||'未命名')}</div><div class=hm>${rg}${rg&&cd?' · ':''}${cd}</div><svg class=hwv viewBox="0 0 390 40" preserveAspectRatio="none" aria-hidden=true><path d="M0 22 Q60 2 130 16 T260 14 T390 10 V40 H0Z" fill="var(--bg)"/></svg></a>`;
+  return `<div class=htxt><div class=hk2>TRAVEL JOURNAL</div><div class=hh>旅行帖</div><div class=hs>把每趟旅程收在一起</div>${pick&&cd?`<a class=hcd href="#/t/${esc(pick.id)}">${tag=='LATEST TRIP'?'最近':'下一趟'} <b>${esc((pick.name||'').slice(0,12))}</b> · ${cd}</a>`:''}</div>`}
 function home(){
   showNew=false;
   if(!user){app.innerHTML=topbar()+heroHTML()+`<div class=card><p>登入後可以建立旅程、分享給旅伴一起編輯。</p><p class=mu>沒有登入也能預覽別人分享給你的連結。</p><button class="p go" data-a=login>用 Google 登入</button></div>`;return}
   const draw=homeDraw=()=>{app.innerHTML=topbar()+heroHTML()+`${installCard()}<button class="p go" data-a=showNew>前去探索！<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>${showNew?`<div id=nveil data-a=hideNew></div><div id=nbox><div class=cr><h3 style="margin-top:0">建立新旅程</h3><input id=nn placeholder="旅程名稱,例如:東京+山形 聖誕之旅"><input id=nr2 placeholder="地點,例如:日本東京"><div class=row><div><label>出發日</label><input type=date id=nd1></div><div><label>回程日</label><input type=date id=nd2></div></div><button class=p data-a=newTrip style="margin-top:6px">建立旅程</button><button class="p g" data-a=newTrip data-share=1 style="margin-top:6px">建立並邀請旅伴一起編輯</button></div><button class="p g" data-a=hideNew style="margin-top:6px">取消</button></div>`:''}
-  <h3>我的旅程</h3>${mine.map((m,i)=>`<div class=tcard><a href="#/t/${esc(m.id)}"><div class=tcv>${coverSVG(m.id,i)}</div><div class=tcb><div class=tcn>${esc(m.name||'未命名')}</div><div class=tcm>${tripMeta(m)||'<i>尚未設定日期</i>'}</div></div></a><button class="x tcx" title="從清單移除" data-a=unlist data-id="${esc(m.id)}" aria-label="從清單移除">${IC_X}</button></div>`).join('')||'<div class=empty>還沒有旅程<br>按上面的「前去探索！」開始第一趟</div>'}`};
+  <h3>我的旅程</h3>${mine.map((m,i)=>`<div class=tcard><a href="#/t/${esc(m.id)}"><div class=tcv>${m.photo?`<div style="width:100%;height:100%;border-radius:inherit;background:url('${esc(m.photo).replace(/'/g,'%27')}') center/cover"></div>`:coverSVG(m.id,i)}</div><div class=tcb><div class=tcn>${esc(m.name||'未命名')}</div><div class=tcm>${tripMeta(m)||'<i>尚未設定日期</i>'}</div></div></a><button class="x tcx" title="從清單移除" data-a=unlist data-id="${esc(m.id)}" aria-label="從清單移除">${IC_X}</button></div>`).join('')||'<div class=empty>還沒有旅程<br>按上面的「前去探索！」開始第一趟</div>'}`};
   draw();
   unsubs.push(onSnapshot(myTripsCol(),s=>{mine=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0));if(!route.tid)draw()},()=>{}));
 }
@@ -523,7 +535,8 @@ async function tryJoin(){
   }catch(e){toast('邀請碼無效或已被更換,目前只能預覽')}
   history.replaceState(null,'','#/t/'+route.tid);route.join=null;
 }
-async function recordMine(){if(!user||!T)return;const key=[T.id,T.name,T.region,T.startDate,dayCount()].join('|');if(tripIdOpen===key)return;tripIdOpen=key;try{await setDoc(doc(db,'users',user.uid,'trips',T.id),{name:T.name||'',region:T.region||'',startDate:T.startDate||'',dayCount:dayCount(),ts:Date.now()})}catch(e){}}
+const thumbOf=u=>new Promise(r=>{const im=new Image();im.onload=()=>{const W=520,sc=Math.min(1,W/im.width),c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext('2d').drawImage(im,0,0,c.width,c.height);try{r(c.toDataURL('image/jpeg',.6))}catch(e){r('')}};im.onerror=()=>r('');im.src=u});
+async function recordMine(){if(!user||!T)return;const cv=T.cover||'',key=[T.id,T.name,T.region,T.startDate,dayCount(),cv.slice(0,80)+cv.length].join('|');if(tripIdOpen===key)return;tripIdOpen=key;try{let ph='';if(/^https?:/.test(cv))ph=cv;else if(/^data:image/.test(cv))ph=await thumbOf(cv);await setDoc(doc(db,'users',user.uid,'trips',T.id),{name:T.name||'',region:T.region||'',startDate:T.startDate||'',dayCount:dayCount(),ts:Date.now(),photo:ph.length<60000?ph:''})}catch(e){}}
 
 function renderSwitch(){const e=$('#tsw');if(!e||!T)return;const l=[...mine];if(!l.find(m=>m.id==T.id))l.unshift({id:T.id,name:T.name});
   if(!user||l.length<2){e.innerHTML='';return}
