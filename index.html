@@ -340,6 +340,17 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 .mav{display:flex}.mav i{width:34px;height:34px;border-radius:50%;background:#efd48c;border:2px solid #faf4e6;margin-left:-8px;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:14px}.mav i:first-child{margin-left:0}
 .mtx{flex:1;display:flex;flex-direction:column}.mtx small{font-size:12px;color:var(--mu,#8a7561)}.mgo{font-size:22px;opacity:.5}
 .mback{border:0;background:none;color:var(--ac);font-size:15px;padding:4px 0 10px;width:auto}
+.cover{margin:0 -20px 16px!important;border-radius:0!important;box-shadow:none!important;height:460px!important}
+.cover .cbtn{top:calc(16px + env(safe-area-inset-top,0px))}.cover .cmt{top:calc(16px + env(safe-area-inset-top,0px))}
+.ccr{left:auto!important;right:8px!important;bottom:4px!important;font-size:8px!important;opacity:.7!important;color:#8a7561;text-shadow:none!important;letter-spacing:.02em;max-width:60%;text-align:right;z-index:4!important}
+.mback{display:inline-flex;align-items:center;gap:8px;margin:2px 0 16px;padding:10px 18px 10px 12px;border:1px solid var(--bd);border-radius:99px;background:#faf4e6;color:var(--ink);font:600 15px var(--sans);letter-spacing:.1em;box-shadow:0 3px 10px rgba(80,50,20,.1);width:auto}
+.mback i{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#faf4e6;align-items:center;justify-content:center;font-style:normal;font-size:17px;line-height:1;padding-bottom:2px}
+.xp h3{font-family:var(--sans);font-weight:700;letter-spacing:.12em;font-size:16px}
+.xp .big{font:700 34px/1.2 var(--sans);letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.xp .pamt{font:700 20px var(--sans);font-variant-numeric:tabular-nums}.xp .av{font-family:var(--sans);font-weight:700}.xp .pn2{font-family:var(--sans);font-weight:600}
+.xp .pgrid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.xp .mu{font-family:var(--sans)}.xp .chip{font-family:var(--sans)}
+.xph{font:700 22px var(--sans);letter-spacing:.1em;margin:0 0 4px}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -441,7 +452,7 @@ function home(){
 
 /* ---------- 旅程頁 ---------- */
 function shell(){
-  app.innerHTML=`<div id=hero><div id=map></div><div class=hshade></div><div class=htop><a href="#/" class=hb aria-label=返回>‹</a><span class=tsw id=tsw></span><span class=hr id=hr></span></div><div class=htitle><div class=hreg id=hreg></div><div class=ttl><input id=tname placeholder="旅程名稱" readonly><button class=shb data-a=openShare aria-label=分享與設定 title=分享與設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></div><div class=hmeta id=hmeta></div><div class=hcd id=hcd style="display:none"></div></div><div class=wave></div></div><div id=hd></div><div id=dayf></div><div id=list></div><nav id=nav></nav><button id=fab data-a=openSheet aria-label=新增>＋</button><div id=veil data-a=closeSheet></div><div id=sheet><div class=grab data-a=closeSheet></div><div id=form></div></div>`;
+  app.innerHTML=`<div id=hero><div id=map></div><div class=hshade></div><div class=htop><a href="#/" class=hb aria-label=返回>‹</a><span class=tsw id=tsw></span><span class=hr id=hr></span></div><div class=htitle><div class=hreg id=hreg></div><div class=ttl><input id=tname placeholder="旅程名稱" readonly><button class=shb data-a=openShare aria-label=旅程設定 title=分享與設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button></div><div class=hmeta id=hmeta></div><div class=hcd id=hcd style="display:none"></div></div><div class=wave></div></div><div id=hd></div><div id=dayf></div><div id=list></div><nav id=nav></nav><button id=fab data-a=openSheet aria-label=新增>＋</button><div id=veil data-a=closeSheet></div><div id=sheet><div class=grab data-a=closeSheet></div><div id=form></div></div>`;
   initMap().catch(()=>{});
 }
 function openTrip(){
@@ -607,7 +618,7 @@ function renderList(){
   else if(tab==1)l.innerHTML=listExp();
   else if(tab==2)l.innerHTML=listMemo();
   else if(false)l.innerHTML=itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div></div>`).join('')||'<p class=mu>還沒有備忘</p>';
-  else if(tab==5){l.innerHTML=mateSub=='exp'?`<button type=button class=mback data-a=moreHub>‹ 更多</button>`+listExp():moreHub()}
+  else if(tab==5){l.innerHTML=mateSub=='exp'?`<div class=xp><button type=button class=mback data-a=moreHub><i>‹</i>更多</button><div class=xph>分帳與匯率</div>`+listExp()+`</div>`:moreHub()}
   else if(tab==7)l.innerHTML=listHome();
   else if(tab==6)l.innerHTML=listFood();
   else if(tab==4)l.innerHTML=`<div class=sech><h3 style="margin-top:6px">行李清單</h3>${isEd?'<button class="p g s" data-a=openPack>＋ 新增</button>':''}</div>`+listChk('pack')+`<div class=sech><h3>備忘錄</h3>${isEd?'<button class="p g s" data-a=openMemo>＋ 新增</button>':''}</div>`+listMemo();
@@ -799,7 +810,7 @@ function coverHTML(){const po=placeOf(),th0=themeOf(),th=po?{...(THEMES.find(t=>
   const say=rg&&rg.length<=5?`さあ、${rg}へ!`:'さあ、出発!';
   const mc={volcano:'#d9663f',sea:'#2aa6c8',snow:'#6f8fa8',temple:'#c0392b',onsen:'#c9962e',city:'#7e6bb5',gold:'#c9962e'}[th.k]||'#c9962e';
   return `<div class="cover ${T.cover?'photo':''}" data-theme=${th.k}>${bg}${sceneSVG(th.k,po&&po.lm)}<div class=csh></div>
-  <a class=cbtn href="#/" style="left:14px" aria-label=返回>‹</a><button class="cbtn cmt" data-a=openMates aria-label=旅伴>👥 旅伴</button><button class=cbtn data-a=openShare style="right:14px" aria-label=分享與設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
+  <a class=cbtn href="#/" style="left:14px" aria-label=返回>‹</a><button class="cbtn cmt" data-a=openMates aria-label=旅伴>👥 旅伴</button><button class=cbtn data-a=openShare style="right:14px" aria-label=旅程設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
   <div class=ck>${esc(T.name||'')}</div>${po?`<div class="ctt en ${po.en.length>13?'l':po.en.length>9?'m':''}">${esc(po.en)}</div><div class=csub>${esc(title)} · ${N}天${Math.max(N-1,0)}夜</div>`:`<div class="ctt ${title.length>5?'sm':''}">${esc(title)}</div><div class=csub>${N}天${Math.max(N-1,0)}夜 自由行</div>`}
   ${st&&en?`<div class=cy>${st.getFullYear()}</div><div class=cdr>${MON[st.getMonth()]} ${pad2(st.getDate())} — ${MON[en.getMonth()]} ${pad2(en.getDate())}</div>`:'<div class=cdr>尚未設定日期</div>'}
     ${T.cover&&T.coverCredit?`<div class=ccr>圖片:${esc(T.coverCredit)}</div>`:''}<button class=cgo data-a=goDay data-d=${ph.k}>查看${ph.p=='during'?'今日':''}行程 →</button>
