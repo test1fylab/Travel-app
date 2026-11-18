@@ -351,6 +351,28 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 .xp .pgrid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 .xp .mu{font-family:var(--sans)}.xp .chip{font-family:var(--sans)}
 .xph{font:700 22px var(--sans);letter-spacing:.1em;margin:0 0 4px}
+/* ===== 字體系統(統一) =====
+ 標題/地名/日期大字:襯線(Noto Serif TC + Cormorant) 其餘內文、數字、金額、時間、表單:無襯線(Noto Sans TC + Jost) 英文小標:Jost 大寫加寬字距 */
+*{font-feature-settings:'lnum' 1!important;font-variant-numeric:lining-nums!important}
+body{font-size:15px;line-height:1.7;letter-spacing:.03em;font-weight:400}
+h3,.xp h3{font-family:var(--serif);font-weight:600;font-size:18px;letter-spacing:.08em;line-height:1.4}
+#form .sh,.sh{font-family:var(--serif);font-weight:600;font-size:21px;letter-spacing:.06em}
+.tct,.tcn,.tctt,.dctt,.dt,.et,.xph{font-family:var(--serif);font-weight:700;letter-spacing:.05em}
+.xph{font-size:24px;line-height:1.3;margin:0 0 10px}
+.kick,.kp small{font-family:'Jost',var(--sans);font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--ac)}
+.big,.pamt,.xp .big,.xp .pamt{font-family:var(--sans);font-weight:700;letter-spacing:.01em;font-variant-numeric:lining-nums tabular-nums!important}
+.big{font-size:34px}.pamt{font-size:20px}
+.av,.xp .av,.pn2,.xp .pn2{font-family:var(--sans);font-weight:600}
+.tlt,.tkm,.thr,.pn span{font-family:var(--sans);font-variant-numeric:lining-nums tabular-nums!important}
+.mu,.xp .mu{font-family:var(--sans);font-size:13.5px;line-height:1.6;color:var(--mu)}
+button,input,select,textarea{font-family:var(--sans)}
+input,select,textarea{font-size:16px;letter-spacing:.02em}
+.tsub{font-size:14px;color:var(--mu)}.tnote{font-size:14px}
+.chip{font-family:var(--sans);font-size:13px;font-weight:500}
+.brand{font-family:var(--serif);font-weight:600;font-size:16px}
+.ck{font-family:var(--sans);font-weight:500}
+.csub,.cdr{font-family:var(--sans);font-weight:500}
+.cy{font-weight:600}.ctt{font-weight:700}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
