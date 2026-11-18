@@ -326,6 +326,7 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 .sech{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px}.sech h3{margin:0}.sech .p{width:auto;flex:none;padding:8px 16px;min-height:0}
 .btns{display:flex;gap:10px;margin-top:8px}.btns button{flex:1;width:auto!important;margin:0}
 .tmp{display:flex;gap:6px}.tmp select{margin:0!important;flex:1 1 0;min-width:0;padding:0 8px!important;height:48px}
+.cvbox{background:#fffaf0;border:1px solid var(--bd);border-radius:16px;padding:12px;margin:6px 0 12px}.cvrow{display:flex;gap:8px}.cvrow input{flex:1;min-width:0;margin:0!important}.cvrow .p{width:auto;flex:none;padding:0 14px;min-height:0}.cvrow2{display:flex;gap:8px;margin-top:10px}.cvrow2 .p{flex:1;width:auto;text-align:center;display:block}.cvup{cursor:pointer;line-height:44px;padding:0!important}.cvg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.cvp{padding:0;border:0;border-radius:12px;overflow:hidden;aspect-ratio:16/10;background:#e6d8bc}.cvp img{width:100%;height:100%;object-fit:cover;display:block}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -483,7 +484,7 @@ async function renderShare(){
       const ej=base+'?join='+token;
       html+=`<div class=mu style="margin-top:14px">編輯連結(拿到的人登入後可以編輯,請只給信任的人):</div><input readonly value="${esc(ej)}" data-a=sel>${shBtn(ej,'分享 / 複製編輯連結')}<button class="p g s" data-a=regen style="margin-top:6px">更換編輯連結(舊的失效)</button>`;
     }else html+='<div class=mu style="margin-top:10px">只有建立者可以看到編輯連結與管理編輯者。</div>';
-    html+=`<h3>旅程設定</h3><div class=mu>地點</div><input id=region value="${esc(T.region||'')}" placeholder="例如:日本東京(自動定位時會一起搜尋)"><div class=mu>封面圖片網址(選填,留空會自動用地區主題)</div><input id=cover inputmode=url value="${esc(T.cover||'')}" placeholder="貼上圖片連結 https://…"><div class=row><div><div class=mu>出發日</div><input type=date id=startd value="${esc(d1)}"></div><div><div class=mu>回程日</div><input type=date id=endd value="${esc(d2)}"></div></div>`;
+    html+=`<h3>旅程設定</h3><div class=mu>地點</div><input id=region value="${esc(T.region||'')}" placeholder="例如:日本東京(自動定位時會一起搜尋)"><div class=mu>封面圖片</div><div class=cvbox><div class=cvrow><input id=cvq value="${esc(cvQ||String(T.region||'').replace(/^日本/,'')||T.name||'')}" placeholder="輸入地點,例如:銀山溫泉"><button class=p data-a=cvSearch>搜尋實景</button></div><div id=cvres>${cvGrid()}</div><div class=cvrow2><label class="p g cvup">上傳我的照片<input id=cvf type=file accept="image/*" hidden></label>${T.cover?'<button class="p g" data-a=cvClear>移除封面</button>':''}</div>${T.coverCredit?`<div class=mu style="margin-top:6px">目前封面出處:${esc(T.coverCredit)}</div>`:''}<details style="margin-top:8px"><summary class=mu>或貼上圖片網址</summary><input id=cover inputmode=url value="${/^https?:/.test(T.cover||'')?esc(T.cover):''}" placeholder="https://…"></details></div><div class=row><div><div class=mu>出發日</div><input type=date id=startd value="${esc(d1)}"></div><div><div class=mu>回程日</div><input type=date id=endd value="${esc(d2)}"></div></div>`;
     if(T.ownerUid===user.uid){
       let eds=[];try{const s=await getDocs(collection(db,'trips',T.id,'editors'));eds=s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
       html+=`<h3>編輯者</h3>${eds.map(e=>`<div class=it><div>${esc(e.name||e.id)} <span class=mu>${e.role=='owner'?'建立者':''}</span></div>${e.role=='owner'?'':`<button class=x data-a=rmEd data-id="${esc(e.id)}">移除</button>`}</div>`).join('')}<button class="p r s" data-a=delTrip style="margin-top:14px">刪除整個旅程</button>`;
@@ -738,6 +739,16 @@ function hydrate(){
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],pad2=n=>String(n).padStart(2,'0');
 function tripPhase(){const N=dayCount();if(!T.startDate)return {p:'none',k:dayList()[0]||1,N};const st=new Date(T.startDate+'T00:00:00'),nw=new Date();nw.setHours(0,0,0,0);const k=Math.round((nw-st)/864e5)+1;
   return k<1?{p:'before',k:1,N,days:1-k}:k>N?{p:'after',k:N,N}:{p:'during',k,N}}
+let cvQ='',cvList=[],cvMsg='';
+const cvStrip=h=>String(h||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim().slice(0,60);
+function cvGrid(){if(cvMsg&&!cvList.length)return `<div class=mu style="margin:8px 0">${esc(cvMsg)}</div>`;return cvList.length?`<div class=cvg>${cvList.map((x,i)=>`<button type=button class=cvp data-a=cvPick data-i=${i} aria-label="選這張"><img src="${esc(x.u)}" loading=lazy alt=""></button>`).join('')}</div><div class=mu style="font-size:11px;margin-bottom:6px">來源:維基共享資源,點選即套用,出處會顯示在封面。</div>`:''}
+async function cvSearch(){const q=($('#cvq')||{}).value||'';cvQ=q.trim();if(!cvQ)return toast('請輸入地點');cvList=[];cvMsg='搜尋中…';renderShare();
+  try{const u='https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=24&gsrsearch='+encodeURIComponent(cvQ+' filetype:bitmap')+'&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=1000';
+    const j=await fetch(u).then(r=>r.json());const pg=Object.values((j.query&&j.query.pages)||{}).sort((a,b)=>a.index-b.index);
+    cvList=pg.map(p=>{const i=(p.imageinfo||[])[0];if(!i||!i.thumburl)return null;const m=i.extmetadata||{};return {u:i.thumburl,w:i.width,h:i.height,c:[cvStrip(m.Artist&&m.Artist.value),cvStrip(m.LicenseShortName&&m.LicenseShortName.value),'Wikimedia Commons'].filter(Boolean).join(' / ')}}).filter(x=>x&&x.w>=1000&&x.w>=x.h*1.1);
+    cvMsg=cvList.length?'':'找不到合適的橫向照片,換個關鍵字試試(例如加上英文名)'}catch(e){cvMsg='搜尋失敗,請確認網路後再試'}renderShare()}
+function cvUpload(f){const im=new Image(),url=URL.createObjectURL(f);im.onload=()=>{const W=1100,sc=Math.min(1,W/im.width),c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);
+  let d=c.toDataURL('image/jpeg',.78);if(d.length>700000)d=c.toDataURL('image/jpeg',.55);if(d.length>900000)return toast('照片太大,請換一張');guard(()=>updateDoc(tripRef(),{cover:d,coverCredit:'我的照片'}).then(()=>toast('封面已更新')))};im.onerror=()=>toast('無法讀取這張照片');im.src=url}
 function coverHTML(){const po=placeOf(),th0=themeOf(),th=po?{...(THEMES.find(t=>t.k==po.k)||th0),k:po.k}:th0,ph=tripPhase(),N=ph.N,st=T.startDate?new Date(T.startDate+'T00:00:00'):null;let en=null;if(st&&!isNaN(st)){en=new Date(st);en.setDate(en.getDate()+Math.max(N,1)-1)}
   const rg=String(T.region||'').replace(/^日本/,'').trim(),title=rg||T.name||'旅行';
   let eng=po?po.en:(/^[\x20-\x7e]+$/.test(rg)&&rg?rg:'Journey');
@@ -748,7 +759,7 @@ function coverHTML(){const po=placeOf(),th0=themeOf(),th=po?{...(THEMES.find(t=>
   <a class=cbtn href="#/" style="left:14px" aria-label=返回>‹</a><button class=cbtn data-a=openShare style="right:14px" aria-label=分享與設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
   <div class=ck>${esc(T.name||'')}</div><div class="ctt ${title.length>5?'sm':''}">${esc(title)}</div><div class=csub>${N}天${Math.max(N-1,0)}夜 自由行</div>
   ${st&&en?`<div class=cy>${st.getFullYear()}</div><div class=cdr>${MON[st.getMonth()]} ${pad2(st.getDate())} — ${MON[en.getMonth()]} ${pad2(en.getDate())}</div>`:'<div class=cdr>尚未設定日期</div>'}
-    <button class=cgo data-a=goDay data-d=${ph.k}>查看${ph.p=='during'?'今日':''}行程 →</button>
+    ${T.cover&&T.coverCredit?`<div class=ccr>圖片:${esc(T.coverCredit)}</div>`:''}<button class=cgo data-a=goDay data-d=${ph.k}>查看${ph.p=='during'?'今日':''}行程 →</button>
   <svg class=cwv viewBox="0 0 390 40" preserveAspectRatio="none" aria-hidden=true><path d="M0 22 Q60 2 130 16 T260 14 T390 10 V40 H0Z" fill="var(--bg)"/></svg></div>`}
 function todayCard(){const ph=tripPhase(),k=ph.k,all=sortItin(itemsOf('itin')),g=all.filter(x=>x.day==k),now=new Date(),hm=pad2(now.getHours())+':'+pad2(now.getMinutes());
   const row=(l,v)=>`<div class=prow><div class=pl>${l}</div><div class=pv>${v}</div></div>`;
@@ -985,6 +996,9 @@ const A={
       await setDoc(doc(db,'users',user.uid,'trips',id),{name:n,region:rg,startDate:d1||'',dayCount:dc||0,ts:Date.now()});
       openShareNext=!!(btn&&btn.dataset&&btn.dataset.share);showNew=false;
       location.hash='#/t/'+id}catch(e){toast('建立失敗,請確認 Firestore 規則已發佈')}},
+  cvSearch(){cvSearch()},
+  cvPick(e){const x=cvList[+e.dataset.i];if(x)guard(()=>updateDoc(tripRef(),{cover:x.u,coverCredit:x.c}).then(()=>toast('封面已套用')))},
+  cvClear(){guard(()=>updateDoc(tripRef(),{cover:'',coverCredit:''}))},
   openShare(){shareMode=true;$('#sheet').classList.add('open');$('#veil').classList.add('open');renderShare()},
   async shareLink(e){const u=e.dataset.u,t=e.dataset.t||'旅行行程';try{if(navigator.share){await navigator.share({title:t,text:t,url:u});return}}catch(x){if(x&&x.name=='AbortError')return}
     try{await navigator.clipboard.writeText(u);toast('已複製連結')}catch(x){const i=e.parentNode.querySelector('input');if(i){i.select();toast('請長按複製')}}},
@@ -1154,7 +1168,8 @@ document.addEventListener('change',e=>{const t=e.target;if(t&&t.classList&&t.cla
   else if(t.id=='daytitle'){guard(()=>updateDoc(tripRef(),{['dayTitles.'+editDay]:t.value.trim().slice(0,40)}))}
   else if(t.id=='gl'){applyGL(t.value)}
   else if(t.id=='tg'){const c=TAG2CAT[t.value],xc=$('#xc'),xa=$('#xa');if(c&&xc&&!(xa&&+xa.value>0))xc.value=c}
-  else if(t.id=='cover'){guard(()=>updateDoc(tripRef(),{cover:t.value.trim().slice(0,500)}))}
+  else if(t.id=='cover'){const v=t.value.trim().slice(0,500);if(!v&&/^data:/.test(T.cover||''))return;guard(()=>updateDoc(tripRef(),{cover:v,coverCredit:''}))}
+  else if(t.id=='cvf'){const f=t.files&&t.files[0];if(f)cvUpload(f);t.value=''}
   else if(t.id=='startd'){const N=dayCount(),old=T.startDate;let up={startDate:t.value||''};const e=$('#endd');if(t.value&&e&&e.value){const n=Math.round((new Date(e.value+'T00:00:00')-new Date(t.value+'T00:00:00'))/864e5)+1;if(n>=1&&n<=60)up.dayCount=n}guard(()=>updateDoc(tripRef(),up).then(renderShare))}
   else if(t.id=='endd'){if(!T.startDate){toast('請先設定出發日');t.value='';return}const n=Math.round((new Date(t.value+'T00:00:00')-new Date(T.startDate+'T00:00:00'))/864e5)+1;if(!(n>=1))return toast('回程日不能早於出發日');if(n>60)return toast('最多 60 天');
     const mx=Math.max(0,...itemsOf('itin').map(x=>+x.day||0));if(n<mx)return toast('第 '+mx+' 天還有行程,請先到編輯頁移除或移動');guard(()=>updateDoc(tripRef(),{dayCount:n}).then(renderShare))}
