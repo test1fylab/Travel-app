@@ -323,6 +323,8 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 #form .row>button.p{flex:0 0 auto}
 #form .row>select{width:auto;flex:0 0 112px}#form .row>input:not([type=checkbox]){flex:1 1 0}
 #form .fld{margin-bottom:12px}#form .fld input:not([type=checkbox]),#form .fld select,#form .fld textarea{margin:0}#form .row{align-items:flex-start}#form .row>button.p{margin-top:30px;margin-bottom:12px;min-height:48px}#form .row[style*="margin-top:6px"]>button.p{margin-top:0}
+.sech{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px}.sech h3{margin:0}.sech .p{width:auto;flex:none;padding:8px 16px;min-height:0}
+.btns{display:flex;gap:10px;margin-top:8px}.btns button{flex:1;width:auto!important;margin:0}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -343,7 +345,7 @@ if(!firebaseConfig||String(firebaseConfig.apiKey||'').startsWith('YOUR')){
   throw new Error('firebase not configured');
 }
 const fapp=initializeApp(firebaseConfig),auth=getAuth(fapp),db=getFirestore(fapp);
-const TABS=['行程','分帳','備忘','票券','備忘','旅伴與分帳','旅程餐廳','首頁'],NAV=[7,0,3,4,5];let mateSub='mates',rateSel='';
+const TABS=['行程','分帳','備忘','票券','備忘','旅伴與分帳','旅程餐廳','首頁'],NAV=[7,0,3,4,5];let mateSub='mates',rateSel='',packMode='pack',packEditId=null,memoEditId=null;
 const PACK=['護照','簽證/入境文件','機票/登機證','錢包與外幣','手機與充電器','行動電源','轉接頭','網卡/漫遊','盥洗用品','常備藥品','換洗衣物','雨具'];
 const COLORS=['#8a5a2b','#b8892f','#7a4a3a','#5f6b3a','#a0522d','#6b4a32','#9a7b3c'];
 const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
@@ -502,10 +504,10 @@ function renderNav(){$('#nav').innerHTML=NAV.map(i=>`<button class="${i==tab?'on
 
 /* ---------- 表單 ---------- */
 function openSheet(){if(!isEd)return;shareMode=false;renderForm();$('#sheet').classList.add('open');$('#veil').classList.add('open')}
-function closeSheet(){tixEditId=null;const was=shareMode;shareMode=false;if(was)renderForm();editId=null;selPlace=null;const a=$('#sheet'),b=$('#veil');if(a)a.classList.remove('open');if(b)b.classList.remove('open')}
+function closeSheet(){tixEditId=null;packEditId=null;memoEditId=null;const was=shareMode;shareMode=false;if(was)renderForm();editId=null;selPlace=null;const a=$('#sheet'),b=$('#veil');if(a)a.classList.remove('open');if(b)b.classList.remove('open')}
 function renderForm(){
   const f=$('#form');if(!f||!T)return;
-  const fab=$('#fab');if(fab)fab.style.display=isEd&&tab!=7?'flex':'none';
+  const fab=$('#fab');if(fab)fab.style.display=isEd&&tab!=7&&tab!=4?'flex':'none';
   if(shareMode)return;
   if(!isEd){f.innerHTML='';closeSheet();return}
   const x=editId?items.find(i=>i.id==editId):null;
@@ -533,10 +535,14 @@ function renderForm(){
   <div class=mu>誰先付的錢:</div><select id=ep>${T.members.map(m=>`<option>${esc(m)}</option>`).join('')}</select><div class=mu>誰要分攤:</div><div>${T.members.map(m=>`<label class=chk><input type=checkbox class=ew value="${esc(m)}" checked>${esc(m)}</label>`).join('')}</div><button class=p data-a=addExp style="margin-top:6px">新增花費</button></div>`:`<div class=card><p class=mu>要記花費,請先到「旅伴」頁加入旅伴。</p><button class=p data-a=closeSheet>知道了</button></div>`,
   `<div class=card><textarea id=mt rows=3 placeholder="寫點備忘…"></textarea><button class=p data-a=addMemo>新增備忘</button></div>`,
   tixForm(),
-  `<div class=card><div class=mu>新增行李物品</div><input id=ci placeholder="物品,例如:靴子"><input id=cn placeholder="小敘述(選填),例如:帶冰爪"><button class=p data-a=addChk data-k=pack>新增</button><details><summary>載入常用行李清單</summary><button class=p data-a=preset style="margin-top:6px">加入常用 12 項</button></details></div><div class=card><div class=mu>新增備忘</div><textarea id=mt rows=3 placeholder="寫點備忘…"></textarea><button class=p data-a=addMemo>新增備忘</button></div>`,
+  packForm(),
   `<div class=card><div class=mu>新增旅伴</div><input id=mn placeholder="旅伴名字"><button class=p data-a=addMem>加入</button></div>`][ft]||'';
   if(ft==0)showSel();
 }
+function packForm(){if(packMode=='memo'){const x=memoEditId?items.find(i=>i.id==memoEditId):null;
+    return `<div class=card><div class=sh>${x?'編輯備忘':'新增備忘'}</div>${fld('內容',`<textarea id=mt rows=5 maxlength=2000 placeholder="寫點備忘…">${x?esc(x.text||''):''}</textarea>`)}<div class=btns><button class="p g" data-a=closeSheet>取消</button><button class=p data-a=saveMemo>${x?'完成':'新增'}</button></div></div>`}
+  const x=packEditId?items.find(i=>i.id==packEditId):null;
+  return `<div class=card><div class=sh>${x?'編輯行李物品':'新增行李物品'}</div>${fld('物品',`<input id=ci placeholder="例如:靴子" maxlength=80 value="${x?esc(x.title||''):''}">`)}${fld('小敘述(選填)',`<input id=cn placeholder="例如:帶冰爪" maxlength=80 value="${x?esc(x.note||''):''}">`)}<div class=btns><button class="p g" data-a=closeSheet>取消</button><button class=p data-a=savePack>${x?'完成':'新增'}</button></div>${x?'':'<details style="margin-top:10px"><summary>載入常用行李清單</summary><button class="p g" data-a=preset style="margin-top:6px">加入常用 12 項</button></details>'}</div>`}
 function tixForm(){const x=tixEditId?items.find(i=>i.id==tixEditId):null,k=x?(x.kind||'spot'):tixKind,v=f=>x?esc(x[f]||''):'';
   const K=[['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點門票']];
   const pills=`<div class=kpills>${K.filter(([a])=>!x||a==k).map(([a,l])=>`<button type=button class="kp ${a==k?'on':''}" data-a=tixKind data-k=${a}>${l}</button>`).join('')}</div>`;
@@ -585,7 +591,7 @@ function renderList(){
   else if(tab==5){l.innerHTML=`<div class=kpills style="margin-top:6px"><button type=button class="kp ${mateSub=='mates'?'on':''}" data-a=mateSubGo data-k=mates>旅伴</button><button type=button class="kp ${mateSub=='exp'?'on':''}" data-a=mateSubGo data-k=exp>分帳</button></div>`+(mateSub=='exp'?listExp():listMates());if(mateSub!='exp')loadEditors()}
   else if(tab==7)l.innerHTML=listHome();
   else if(tab==6)l.innerHTML=listFood();
-  else if(tab==4)l.innerHTML='<h3 style="margin-top:6px">行李清單</h3>'+listChk('pack')+'<h3>備忘錄</h3>'+listMemo();
+  else if(tab==4)l.innerHTML=`<div class=sech><h3 style="margin-top:6px">行李清單</h3>${isEd?'<button class="p g s" data-a=openPack>＋ 新增</button>':''}</div>`+listChk('pack')+`<div class=sech><h3>備忘錄</h3>${isEd?'<button class="p g s" data-a=openMemo>＋ 新增</button>':''}</div>`+listMemo();
   else l.innerHTML=listTix();
   hydrate();markNow();
   if(animNext){const c=animNext;animNext='';l.classList.remove('anim','sl','sr','up');void l.offsetWidth;l.classList.add('anim',c);setTimeout(()=>l.classList.remove('anim','sl','sr','up'),450)}
@@ -847,12 +853,12 @@ function listMates(){const ms=T.members||[],me=myMember();
   <h3>可以編輯的人</h3><div class=card id=edbox><span class=mu>${T.ownerUid===(user&&user.uid)?'載入中…':'只有建立者可以看到編輯者名單。'}</span></div>`}
 async function loadEditors(){const b=$('#edbox');if(!b||!user||!T||T.ownerUid!==user.uid)return;let eds=[];try{const q=await getDocs(collection(db,'trips',T.id,'editors'));eds=q.docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
   const b2=$('#edbox');if(b2)b2.innerHTML=eds.map(e=>`<div class=it><div>${esc((T.mlink||{})[e.id]||e.name||e.id)} <span class=chip style="margin:0 0 0 6px;font-size:11px;padding:0 10px">${e.role=='owner'?'建立者':'已加入 · 可共編'}</span></div>${e.role=='owner'?'':`<button class=x data-a=rmEd data-id="${esc(e.id)}" style="font-size:12px">移除</button>`}</div>`).join('')||'<span class=mu>沒有資料</span>'}
-function listMemo(){return itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div></div>`).join('')||'<div class=card><span class=mu>還沒有備忘</span></div>'}
+function listMemo(){return itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=editMemo data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div></div>`).join('')||'<div class=card><span class=mu>還沒有備忘</span></div>'}
 function listChk(k){const a=itemsOf(k),n=a.filter(x=>x.done).length,pc=a.length?Math.round(n/a.length*100):0;
   const lab=k=='pack'?'準備進度':'票券進度';
   return `<div class="card pgc"><div class=pgh><b>${lab}:${n}／${a.length} 項</b><span>${pc}%</span></div><div class=pgb><i style="width:${pc}%"></i></div></div>
   <div class=card style="padding:6px 14px">${a.map(x=>`<div class="pk ${x.done?'dn':''}"><label class=pkc><input type=checkbox data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><span class=pkb></span></label><div class=pkt><div class=pkn>${esc(x.title)}</div>${x.note?`<div class=pks>${esc(x.note)}</div>`:''}${x.date?`<div class=pks>${esc(x.date)}</div>`:''}</div>${isEd?`${k=='pack'?`<button class=x data-a=editChk data-id="${x.id}">✎</button>`:''}<button class=x data-a=del data-id="${x.id}">✕</button>`:''}</div>`).join('')||'<div class=mu style="padding:12px 0">還沒有項目</div>'}
-  ${isEd?`<div class=pka><input id=ci2 placeholder="新增項目" maxlength=80 data-k="${k}">${k=='pack'?'<input id=cn2 placeholder="小敘述(選填)" maxlength=80 style="max-width:38%">':''}<button class=p data-a=addChk2 data-k="${k}">新增</button></div>`:''}</div>`}
+</div>`}
 
 /* ---------- 地圖(有 Google 金鑰用 Google 地圖,否則用 OpenStreetMap) ---------- */
 let GL=null;
@@ -1054,7 +1060,13 @@ const A={
     fetchRates(T.base,codes).then(o=>{if(!Object.keys(o).length)return toast('抓不到即時匯率,請稍後再試或手動輸入');guard(()=>updateDoc(tripRef(),{rates:{...T.rates,...o},rateAt:Date.now()}).then(()=>toast('已同步 '+Object.keys(o).length+' 種幣別')))})},
   addRate(){const c=($('#ncs')||{}).value;if(!c)return;fetchRates(T.base,[c]).then(o=>{guard(()=>updateDoc(tripRef(),{['rates.'+c]:o[c]||1}).then(()=>{rateSel=c;toast(o[c]?'已加入並套用即時匯率':'已加入,請手動輸入匯率')}))})},
   addMemo(){const v=$('#mt').value.trim();if(!v)return;guard(async()=>{await addItem('memo',{text:v.slice(0,2000)});$('#mt').value='';closeSheet()})},
-  editChk(e){const x=items.find(i=>i.id==e.dataset.id);if(!x)return;const t=prompt('物品名稱',x.title);if(t===null||!t.trim())return;const n=prompt('小敘述(例如:帶冰爪)',x.note||'');if(n===null)return;guard(()=>updateDoc(doc(db,'trips',T.id,'items',x.id),{title:t.trim().slice(0,80),note:n.trim().slice(0,80)}))},
+  openPack(){packMode='pack';packEditId=null;openSheet()},
+  openMemo(){packMode='memo';memoEditId=null;openSheet()},
+  editChk(e){packMode='pack';packEditId=e.dataset.id;openSheet()},
+  editMemo(e){packMode='memo';memoEditId=e.dataset.id;openSheet()},
+  savePack(){const t=($('#ci').value||'').trim();if(!t)return toast('請輸入物品名稱');const n=($('#cn').value||'').trim().slice(0,80);
+    guard(async()=>{if(packEditId)await updateDoc(doc(db,'trips',T.id,'items',packEditId),{title:t.slice(0,80),note:n});else{const o={title:t.slice(0,80),done:false};if(n)o.note=n;await addItem('pack',o)}closeSheet()})},
+  saveMemo(){const v=($('#mt').value||'').trim();if(!v)return toast('請輸入內容');guard(async()=>{if(memoEditId)await updateDoc(doc(db,'trips',T.id,'items',memoEditId),{text:v.slice(0,2000)});else await addItem('memo',{text:v.slice(0,2000)});closeSheet()})},
   addChk(e){const k=e.dataset.k,v=$('#ci').value.trim();if(!v)return;const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn')&&$('#cn').value.trim())o.note=$('#cn').value.trim().slice(0,80);if(k=='tix'&&$('#cd').value)o.date=$('#cd').value;guard(async()=>{await addItem(k,o);$('#ci').value='';if($('#cn'))$('#cn').value='';closeSheet()})},
   addChk2(e){const k=e.dataset.k,v=($('#ci2').value||'').trim();if(!v)return toast('請輸入項目名稱');const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn2')&&$('#cn2').value.trim())o.note=$('#cn2').value.trim().slice(0,80);guard(async()=>{await addItem(k,o);if($('#ci2')){$('#ci2').value='';if($('#cn2'))$('#cn2').value='';$('#ci2').focus()}})},
   mateSubGo(e){mateSub=e.dataset.k;renderForm();renderList()},
