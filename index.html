@@ -336,6 +336,10 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 .lbx{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;font-size:18px;z-index:2}
 .lbc{color:#fff;padding:10px 20px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:3px;font-size:14px}.lbc span{font-size:11px;opacity:.75}.lbc small{opacity:.6}
 .lbn{position:absolute;top:50%;width:44px;height:64px;margin-top:-32px;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:30px;border-radius:12px}.lbn.l{left:6px}.lbn.r{right:6px}
+.mbar{display:flex;align-items:center;gap:12px;width:100%;margin:6px 0 14px;padding:12px 14px;border:1px solid var(--bd);border-radius:18px;background:#faf4e6;color:var(--ink);text-align:left;box-shadow:0 4px 14px rgba(80,50,20,.06)}
+.mav{display:flex}.mav i{width:34px;height:34px;border-radius:50%;background:#efd48c;border:2px solid #faf4e6;margin-left:-8px;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:14px}.mav i:first-child{margin-left:0}
+.mtx{flex:1;display:flex;flex-direction:column}.mtx small{font-size:12px;color:var(--mu,#8a7561)}.mgo{font-size:22px;opacity:.5}
+.mback{border:0;background:none;color:var(--ac);font-size:15px;padding:4px 0 10px;width:auto}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -356,7 +360,7 @@ if(!firebaseConfig||String(firebaseConfig.apiKey||'').startsWith('YOUR')){
   throw new Error('firebase not configured');
 }
 const fapp=initializeApp(firebaseConfig),auth=getAuth(fapp),db=(()=>{try{return initializeFirestore(fapp,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}catch(e){return getFirestore(fapp)}})();
-const TABS=['行程','分帳','備忘','票券','備忘','旅伴與分帳','旅程餐廳','首頁'],NAV=[7,0,3,4,5];let mateSub='exp',rateSel='',packMode='pack',packEditId=null,memoEditId=null;
+const TABS=['行程','分帳','備忘','票券','備忘','更多','旅程餐廳','首頁'],NAV=[7,0,3,4,5];let mateSub='hub',rateSel='',packMode='pack',packEditId=null,memoEditId=null;
 const PACK=['護照','簽證/入境文件','機票/登機證','錢包與外幣','手機與充電器','行動電源','轉接頭','網卡/漫遊','盥洗用品','常備藥品','換洗衣物','雨具'];
 const COLORS=['#8a5a2b','#b8892f','#7a4a3a','#5f6b3a','#a0522d','#6b4a32','#9a7b3c'];
 const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
@@ -480,26 +484,25 @@ function renderHeader(){
   renderHeroMeta();renderSwitch();
   if(openShareNext&&user&&isEd){openShareNext=false;A.openShare()}else if(shareMode)renderShare();
 }
+let shareKind='set';
 async function renderShare(){
   const box=$('#form');if(!box||!T||!shareMode)return;
   const base=location.origin+location.pathname+'#/t/'+T.id,tn=esc(T.name||'旅行行程');
   const shBtn=(u,label)=>`<button class="p g s" data-a=shareLink data-u="${esc(u)}" data-t="${tn}">${label}</button>`;
-  let html=`<div class=card><h3 style="margin-top:6px">分享旅程</h3><div class=mu>預覽連結(知道連結的人只能看):</div><input readonly value="${esc(base)}" data-a=sel>${shBtn(base,'分享 / 複製預覽連結')}`;
-  if(user&&isEd){
-    const d1=T.startDate||'',N=dayCount(),dd=d1&&N?dayDate(N):null,d2=dd?`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`:'';
-    if(T.ownerUid===user.uid){
+  if(shareKind=='mates'){
+    let html=`<div class=sh>旅伴</div>`+listMates()+`<h3>邀請旅伴</h3><div class=card><div class=mu>預覽連結(知道連結的人只能看):</div><input readonly value="${esc(base)}" data-a=sel>${shBtn(base,'分享 / 複製預覽連結')}`;
+    if(user&&isEd&&T.ownerUid===user.uid){
       let token='';try{const s=await getDoc(doc(db,'trips',T.id,'secrets','invite'));token=s.exists()?s.data().token:''}catch(e){}
       if(!token){token=randToken();try{await setDoc(doc(db,'trips',T.id,'secrets','invite'),{token})}catch(e){}}
       const ej=base+'?join='+token;
       html+=`<div class=mu style="margin-top:14px">編輯連結(拿到的人登入後可以編輯,請只給信任的人):</div><input readonly value="${esc(ej)}" data-a=sel>${shBtn(ej,'分享 / 複製編輯連結')}<button class="p g s" data-a=regen style="margin-top:6px">更換編輯連結(舊的失效)</button>`;
-    }else html+='<div class=mu style="margin-top:10px">只有建立者可以看到編輯連結與管理編輯者。</div>';
-    html+=offCard()+`<h3>旅程設定</h3><div class=mu>地點</div><input id=region value="${esc(T.region||'')}" placeholder="例如:日本東京(自動定位時會一起搜尋)"><div class=mu>封面圖片</div><div class=cvbox><div class=cvrow><input id=cvq value="${esc(cvQ||String(T.region||'').replace(/^日本/,'')||T.name||'')}" placeholder="輸入地點,例如:銀山溫泉"><button class=p data-a=cvSearch>搜尋實景</button></div><div id=cvres>${cvGrid()}</div><div class=cvrow2><label class="p g cvup">上傳我的照片<input id=cvf type=file accept="image/*" hidden></label>${T.cover?'<button class="p g" data-a=cvClear>移除封面</button>':''}</div>${T.coverCredit?`<div class=mu style="margin-top:6px">目前封面出處:${esc(T.coverCredit)}</div>`:''}<details style="margin-top:8px"><summary class=mu>或貼上圖片網址</summary><input id=cover inputmode=url value="${/^https?:/.test(T.cover||'')?esc(T.cover):''}" placeholder="https://…"></details></div><div class=row><div><div class=mu>出發日</div><input type=date id=startd value="${esc(d1)}"></div><div><div class=mu>回程日</div><input type=date id=endd value="${esc(d2)}"></div></div>`;
-    if(T.ownerUid===user.uid){
-      let eds=[];try{const s=await getDocs(collection(db,'trips',T.id,'editors'));eds=s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
-      html+=`<h3>編輯者</h3>${eds.map(e=>`<div class=it><div>${esc(e.name||e.id)} <span class=mu>${e.role=='owner'?'建立者':''}</span></div>${e.role=='owner'?'':`<button class=x data-a=rmEd data-id="${esc(e.id)}">移除</button>`}</div>`).join('')}<button class="p r s" data-a=delTrip style="margin-top:14px">刪除整個旅程</button>`;
-    }
-  }
-  box.innerHTML=html+'</div>';
+    }else html+='<div class=mu style="margin-top:10px">只有建立者可以看到編輯連結。</div>';
+    box.innerHTML=html+'</div>';loadEditors();return}
+  if(!(user&&isEd)){box.innerHTML='<div class=card><div class=mu>登入並取得編輯權限後,才能修改旅程設定。</div></div>';return}
+  const d1=T.startDate||'',N=dayCount(),dd=d1&&N?dayDate(N):null,d2=dd?`${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`:'';
+  let html=`<div class=sh>旅程設定</div><h3>基本資料</h3><div class=mu>地點</div><input id=region value="${esc(T.region||'')}" placeholder="例如:日本東京(自動定位時會一起搜尋)"><div class=mu>封面圖片</div><div class=cvbox><div class=cvrow><input id=cvq value="${esc(cvQ||String(T.region||'').replace(/^日本/,'')||T.name||'')}" placeholder="輸入地點,例如:銀山溫泉"><button class=p data-a=cvSearch>搜尋實景</button></div><div id=cvres>${cvGrid()}</div><div class=cvrow2><label class="p g cvup">上傳我的照片<input id=cvf type=file accept="image/*" hidden></label>${T.cover?'<button class="p g" data-a=cvClear>移除封面</button>':''}</div>${T.coverCredit?`<div class=mu style="margin-top:6px">目前封面出處:${esc(T.coverCredit)}</div>`:''}<details style="margin-top:8px"><summary class=mu>或貼上圖片網址</summary><input id=cover inputmode=url value="${/^https?:/.test(T.cover||'')?esc(T.cover):''}" placeholder="https://…"></details></div><div class=row><div><div class=mu>出發日</div><input type=date id=startd value="${esc(d1)}"></div><div><div class=mu>回程日</div><input type=date id=endd value="${esc(d2)}"></div></div>`;
+  if(T.ownerUid===user.uid)html+=`<button class="p r s" data-a=delTrip style="margin-top:14px">刪除整個旅程</button>`;
+  box.innerHTML=html;
 }
 const ICON=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const ICONS=[
@@ -508,7 +511,7 @@ const ICONS=[
  ICON('<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/>'),
  ICON('<path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2.5 2.5 0 0 0 0-5z"/><path d="M14 6.5v11" stroke-dasharray="2 2"/>'),
  ICON('<rect x="4" y="7.5" width="16" height="12.5" rx="2"/><path d="M9 7.5V5.5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M4 13h16"/>'),
- ICON('<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><path d="M15.5 5.6a3.1 3.1 0 0 1 0 5.8M17.5 14.4c1.9.6 3.1 2.3 3.5 4.6"/>'),
+ ICON('<circle cx="5.5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18.5" cy="12" r="1.4"/>'),
  ICON('<path d="M7 3v8M5 3v5a2 2 0 0 0 2 2M9 3v5a2 2 0 0 1-2 2M7 11v10M17 3c-2 2-2.5 5-2.5 8H17v10"/>'),
  ICON('<path d="M3.5 11.5 12 4l8.5 7.5M6 10v10h12V10M10 20v-5h4v5"/>')];
 function renderNav(){$('#nav').innerHTML=NAV.map(i=>`<button class="${i==tab?'on':''}" data-tab=${i}>${ICONS[i]}<span>${TABS[i]}</span></button>`).join('');$('#hero').classList.toggle('mini',tab!=0);$('#hero').style.display=tab==7?'none':'';$('#dayf').style.display=tab==0?'':'none';if(tab==0&&map)setTimeout(()=>{if(G)google.maps.event.trigger(map,'resize');else map.invalidateSize()},50)}
@@ -518,7 +521,7 @@ function openSheet(){if(!isEd)return;shareMode=false;renderForm();$('#sheet').cl
 function closeSheet(){tixEditId=null;packEditId=null;memoEditId=null;const was=shareMode;shareMode=false;if(was)renderForm();editId=null;selPlace=null;const a=$('#sheet'),b=$('#veil');if(a)a.classList.remove('open');if(b)b.classList.remove('open')}
 function renderForm(){
   const f=$('#form');if(!f||!T)return;
-  const fab=$('#fab');if(fab)fab.style.display=isEd&&tab!=7&&tab!=4?'flex':'none';
+  const fab=$('#fab');if(fab)fab.style.display=isEd&&tab!=7&&tab!=4&&!(tab==5&&mateSub!='exp')?'flex':'none';
   if(shareMode)return;
   if(!isEd){f.innerHTML='';closeSheet();return}
   const x=editId?items.find(i=>i.id==editId):null;
@@ -604,7 +607,7 @@ function renderList(){
   else if(tab==1)l.innerHTML=listExp();
   else if(tab==2)l.innerHTML=listMemo();
   else if(false)l.innerHTML=itemsOf('memo').sort((a,b)=>(b.ts||0)-(a.ts||0)).map(x=>`<div class=card><div class=it style="border:0"><div style="white-space:pre-wrap">${esc(x.text)}</div>${isEd?`<button class=x data-a=del data-id="${x.id}">🗑</button>`:''}</div></div>`).join('')||'<p class=mu>還沒有備忘</p>';
-  else if(tab==5){l.innerHTML=`<div class=kpills style="margin-top:6px"><button type=button class="kp ${mateSub=='mates'?'on':''}" data-a=mateSubGo data-k=mates>旅伴</button><button type=button class="kp ${mateSub=='exp'?'on':''}" data-a=mateSubGo data-k=exp>分帳</button></div>`+(mateSub=='exp'?listExp():listMates());if(mateSub!='exp')loadEditors()}
+  else if(tab==5){l.innerHTML=mateSub=='exp'?`<button type=button class=mback data-a=moreHub>‹ 更多</button>`+listExp():moreHub()}
   else if(tab==7)l.innerHTML=listHome();
   else if(tab==6)l.innerHTML=listFood();
   else if(tab==4)l.innerHTML=`<div class=sech><h3 style="margin-top:6px">行李清單</h3>${isEd?'<button class="p g s" data-a=openPack>＋ 新增</button>':''}</div>`+listChk('pack')+`<div class=sech><h3>備忘錄</h3>${isEd?'<button class="p g s" data-a=openMemo>＋ 新增</button>':''}</div>`+listMemo();
@@ -880,7 +883,7 @@ function listExp(){const s=settle(),rates=T.rates||{},all=expAll().sort((a,b)=>(
   all.forEach(e=>{if(e.cat=='還款')return;const k=e.cat||'其他';cats[k]=(cats[k]||0)+e.amt*rate(e.cur)});
   const ppl=(T.members||[]).map(m=>{const v=s.net[m]||0,k=v>.5?'pos':v<-.5?'neg':'';return `<div class=pcard><div class=av>${esc([...m][0]||'?')}</div><div class=pn2>${esc(m)}</div><div class=mu>${v>.5?'應收':v<-.5?'應付':'已結清'}</div><div class="pamt ${k}">${fmt(Math.abs(v))}</div></div>`}).join('');
   return `<div class=card><div class=mu>${esc(T.base)} 總花費</div><div class=big>${fmt(s.tot)}</div><div class=mu>含行程內記帳;外幣已依匯率換算,原始金額保留在明細。</div></div>
-  ${ppl?`<div class=pgrid>${ppl}</div>`:`<div class=card><div class=mu>還沒有旅伴,請先到「旅伴」頁新增,才能分帳。</div></div>`}
+  ${ppl?`<div class=pgrid>${ppl}</div>`:`<div class=card><div class=mu>還沒有旅伴,請先到「更多 → 旅伴」新增,才能分帳。</div></div>`}
   <h3>建議還款</h3><div class=card>${s.pairs.map(p=>`<div class=it><div><span style="font-weight:500">${esc(p.f)} → ${esc(p.t)}</span><div class=mu>${fmt(p.a)} ${esc(T.base)}</div></div>${isEd?`<button class="p g s" data-a=repaid data-f="${esc(p.f)}" data-t="${esc(p.t)}" data-m="${p.a}">記錄已還款</button>`:''}</div>`).join('')||'<span class=mu>目前沒有需要轉帳的款項</span>'}</div>
   <h3>各類別花費</h3><div class=card>${Object.entries(cats).sort((p,q)=>q[1]-p[1]).map(([k,v])=>`<span class=chip>${esc(k)} ${fmt(v)}</span>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
   <h3>花費明細</h3><div class=card>${all.map(e=>`<div class=it><div>${e.cat?`<span class=chip style="padding:0 10px;margin:0 6px 0 0;font-size:12px">${esc(e.cat)}</span>`:''}${esc(e.desc)} <b>${fmt(e.amt)} ${esc(e.cur)}</b>${e.cur!=T.base?` <span class=mu>≈ ${fmt(e.amt*rate(e.cur))} ${esc(T.base)}</span>`:''}<div class=mu>${esc(e.payer)} 先付 · ${(e.who||[]).length} 人分:${(e.who||[]).map(esc).join('、')}${e.linked?` · Day ${e.day} 行程`:''}</div></div>${isEd?(e.linked?`<button class=x data-a=editLinked data-id="${e.id}">✎</button>`:`<button class=x data-a=del data-id="${e.id}">🗑</button>`):''}</div>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
@@ -896,6 +899,14 @@ const maskMail=e=>{const p=String(e).split('@');return (p[0]||'').slice(0,2)+'**
 const memOf=n=>(T.memail||[]).find(x=>x.n===n);
 const memailPut=(n,e)=>sha(e).then(h=>[...(T.memail||[]).filter(x=>x.n!==n),{n,h,d:maskMail(e)}]);
 const linkedUid=n=>Object.keys(T.mlink||{}).find(u=>(T.mlink||{})[u]===n);
+function moreHub(){const ms=T.members||[],bound=ms.filter(m=>linkedUid(m)).length;let o=null;try{o=JSON.parse(localStorage.getItem(offKey())||'null')}catch(e){}const d=o?new Date(o.t):null;
+  return `<div class=card><div class=kick>TRAVEL TOGETHER</div><h3 style="margin:4px 0 8px">和旅伴一起安排</h3><div class=mu>邀請旅伴、綁定帳號,大家一起修改行程與清單。</div>
+  <button type=button class=mbar data-a=openMates style="margin:12px 0 0"><span class=mav>${ms.slice(0,4).map(m=>`<i>${esc([...m][0]||'?')}</i>`).join('')||'<i>＋</i>'}</span><span class=mtx><b>旅伴 ${ms.length} 人</b><small>${ms.length?`已綁定 ${bound} 人 · `:''}管理、邀請</small></span><span class=mgo>›</span></button></div>
+  <div class=card><div class=kick>EXPENSES</div><h3 style="margin:4px 0 8px">分帳與匯率</h3><div class=mu>記錄花費、換算幣別、算出誰該付誰多少。</div><button class="p g" data-a=mateSubGo data-k=exp style="margin-top:12px">打開分帳</button></div>
+  <div class=card><div class=kick>READY FOR THE ROAD</div><h3 style="margin:4px 0 8px">離線旅行包</h3><div class=mu>先在有網路時下載,山區沒訊號也能翻行程、票券和照片。離線時改的內容,恢復網路後會自動同步。</div>${o?`<div style="margin:10px 0"><span style="color:#6a8f4e">●</span> 已可離線閱讀<br><span class=mu>最近下載 ${d.getMonth()+1}/${d.getDate()} ${pad2(d.getHours())}:${pad2(d.getMinutes())} · ${o.n} 筆資料 · ${o.imgs} 張圖片</span></div>`:''}<button class=p data-a=offDownload style="margin-top:12px">${o?'更新離線旅行包':'下載離線旅行包'}</button></div>
+  ${isEd?`<div class=card><div class=kick>TRIP SETTINGS</div><h3 style="margin:4px 0 8px">旅程設定</h3><div class=mu>地點、封面照片、出發與回程日。</div><button class="p g" data-a=openShare style="margin-top:12px">編輯旅程設定</button></div>`:''}`}
+function matesBar(){const ms=T.members||[],bound=ms.filter(m=>linkedUid(m)).length;
+  return `<button type=button class=mbar data-a=openMates><span class=mav>${ms.slice(0,4).map(m=>`<i>${esc([...m][0]||'?')}</i>`).join('')||'<i>＋</i>'}</span><span class=mtx><b>旅伴 ${ms.length} 人</b><small>${ms.length?`已綁定 ${bound} 人 · `:''}點進去管理、邀請</small></span><span class=mgo>›</span></button>`}
 function listMates(){const ms=T.members||[],me=myMember();
   return `<h3>一起出發的旅伴</h3>${ms.length?`<div class=pgrid>${ms.map((m,i)=>{const lu=linkedUid(m),mine_=user&&lu===user.uid;
     return `<div class=pcard><div class=av>${esc([...m][0]||'?')}</div><div class=mu style="letter-spacing:.2em;font-size:11px">TRAVELER ${String(i+1).padStart(2,'0')}</div><div class=pn2>${esc(m)}${mine_?' <span class=mu>(你)</span>':''}</div>
@@ -904,9 +915,9 @@ function listMates(){const ms=T.members||[],me=myMember();
     ${isEd&&(!lu||T.ownerUid===(user&&user.uid))?`<button class=x data-a=setMail data-n="${esc(m)}" style="min-height:28px;font-size:12px">${memOf(m)?'修改':'設定'} Gmail</button>`:''}
     ${isEd&&!me&&!lu?`<button class="p g s" data-a=claim data-n="${esc(m)}" style="margin-top:6px">這是我</button>`:''}
     ${mine_?`<button class="p g s" data-a=nick style="margin-top:6px">改暱稱</button>`:''}
-    <div>${isEd&&lu&&T.ownerUid===(user&&user.uid)&&!mine_?`<button class=x data-a=unlink data-n="${esc(m)}" style="min-height:28px;font-size:12px">解除綁定</button>`:''}${isEd?`<button class=x data-a=delMem data-n="${esc(m)}" style="min-height:28px;font-size:12px">移除</button>`:''}</div></div>`}).join('')}</div>`:'<div class=card><span class=mu>還沒有旅伴。按右下角 ＋ 新增;旅伴名單用來分帳。</span></div>'}
+    <div>${isEd&&lu&&T.ownerUid===(user&&user.uid)&&!mine_?`<button class=x data-a=unlink data-n="${esc(m)}" style="min-height:28px;font-size:12px">解除綁定</button>`:''}${isEd?`<button class=x data-a=delMem data-n="${esc(m)}" style="min-height:28px;font-size:12px">移除</button>`:''}</div></div>`}).join('')}</div>`:'<div class=card><span class=mu>還沒有旅伴,先在下面新增;旅伴名單用來分帳。</span></div>'}
   ${isEd&&!me?`<div class=card><div class=mu>把自己加進旅伴名單,記帳時才選得到你。已經有你的名字?在上面的卡片按「這是我」。</div><button class=p data-a=joinMe style="margin-top:10px">用我的名字加入旅伴(${esc((user.displayName||user.email||'我').slice(0,12))})</button></div>`:''}
-  <div class=card><div class=mu>「綁定」就是把旅伴和登入的編輯者連起來。綁定後,你可以隨時改自己的暱稱,帳目裡的名字會一起更新。</div><button class="p g" data-a=openShare style="margin-top:10px">邀請旅伴一起編輯</button></div>
+  ${isEd?`<div class=card><div class=mu>新增旅伴(用來分帳)</div><div class=cvrow style="margin-top:6px"><input id=mn placeholder="旅伴名字" maxlength=20><button class=p data-a=addMem>加入</button></div><div class=mu style="font-size:12px;margin-top:8px">「綁定」是把旅伴和登入的編輯者連起來,綁定後可以改自己的暱稱,帳目裡的名字會一起更新。</div></div>`:''}
   <h3>可以編輯的人</h3><div class=card id=edbox><span class=mu>${T.ownerUid===(user&&user.uid)?'載入中…':'只有建立者可以看到編輯者名單。'}</span></div>`}
 async function loadEditors(){const b=$('#edbox');if(!b||!user||!T||T.ownerUid!==user.uid)return;let eds=[];try{const q=await getDocs(collection(db,'trips',T.id,'editors'));eds=q.docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
   const b2=$('#edbox');if(b2)b2.innerHTML=eds.map(e=>`<div class=it><div>${esc((T.mlink||{})[e.id]||e.name||e.id)} <span class=chip style="margin:0 0 0 6px;font-size:11px;padding:0 10px">${e.role=='owner'?'建立者':'已加入 · 可共編'}</span></div>${e.role=='owner'?'':`<button class=x data-a=rmEd data-id="${esc(e.id)}" style="font-size:12px">移除</button>`}</div>`).join('')||'<span class=mu>沒有資料</span>'}
@@ -1037,10 +1048,10 @@ const A={
       openShareNext=!!(btn&&btn.dataset&&btn.dataset.share);showNew=false;
       location.hash='#/t/'+id}catch(e){toast('建立失敗,請確認 Firestore 規則已發佈')}},
   cvSearch(){cvSearch()},
-  phSearch(){phSearch()},phPick(e){const x=phList[+e.dataset.i];if(x)phSet(x.u,x.c)},phClear(){phSet('','')},zoom(e){lbOpen(e.dataset.id)},lbClose(){lbClose()},lbPrev(){lbGo(-1)},lbNext(){lbGo(1)},offDownload(){offDownload()},openMates(){tab=5;mateSub='mates';renderNav();renderList();renderForm();window.scrollTo(0,0)},
+  phSearch(){phSearch()},phPick(e){const x=phList[+e.dataset.i];if(x)phSet(x.u,x.c)},phClear(){phSet('','')},zoom(e){lbOpen(e.dataset.id)},lbClose(){lbClose()},lbPrev(){lbGo(-1)},lbNext(){lbGo(1)},offDownload(){offDownload()},openMates(){shareKind='mates';shareMode=true;$('#sheet').classList.add('open');$('#veil').classList.add('open');renderShare()},
   cvPick(e){const x=cvList[+e.dataset.i];if(x)guard(()=>updateDoc(tripRef(),{cover:x.u,coverCredit:x.c}).then(()=>toast('封面已套用')))},
   cvClear(){guard(()=>updateDoc(tripRef(),{cover:'',coverCredit:''}))},
-  openShare(){shareMode=true;$('#sheet').classList.add('open');$('#veil').classList.add('open');renderShare()},
+  openShare(){shareKind='set';shareMode=true;$('#sheet').classList.add('open');$('#veil').classList.add('open');renderShare()},
   async shareLink(e){const u=e.dataset.u,t=e.dataset.t||'旅行行程';try{if(navigator.share){await navigator.share({title:t,text:t,url:u});return}}catch(x){if(x&&x.name=='AbortError')return}
     try{await navigator.clipboard.writeText(u);toast('已複製連結')}catch(x){const i=e.parentNode.querySelector('input');if(i){i.select();toast('請長按複製')}}},
   async unlist(e){const m=mine.find(x=>x.id==e.dataset.id);if(!confirm('要從清單移除「'+((m&&m.name)||'未命名')+'」嗎?\n\n只會從你的清單移除,旅程資料不會被刪除,之後仍可用連結開啟。\n(要永久刪除整個旅程,請進入旅程後按分享圖示,最下方的「刪除整個旅程」。)'))return;try{await deleteDoc(doc(db,'users',user.uid,'trips',e.dataset.id))}catch(x){}},
@@ -1130,7 +1141,8 @@ const A={
   saveMemo(){const v=($('#mt').value||'').trim();if(!v)return toast('請輸入內容');guard(async()=>{if(memoEditId)await updateDoc(doc(db,'trips',T.id,'items',memoEditId),{text:v.slice(0,2000)});else await addItem('memo',{text:v.slice(0,2000)});closeSheet()})},
   addChk(e){const k=e.dataset.k,v=$('#ci').value.trim();if(!v)return;const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn')&&$('#cn').value.trim())o.note=$('#cn').value.trim().slice(0,80);if(k=='tix'&&$('#cd').value)o.date=$('#cd').value;guard(async()=>{await addItem(k,o);$('#ci').value='';if($('#cn'))$('#cn').value='';closeSheet()})},
   addChk2(e){const k=e.dataset.k,v=($('#ci2').value||'').trim();if(!v)return toast('請輸入項目名稱');const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn2')&&$('#cn2').value.trim())o.note=$('#cn2').value.trim().slice(0,80);guard(async()=>{await addItem(k,o);if($('#ci2')){$('#ci2').value='';if($('#cn2'))$('#cn2').value='';$('#ci2').focus()}})},
-  mateSubGo(e){mateSub=e.dataset.k;renderForm();renderList()},
+  mateSubGo(e){mateSub=e.dataset.k;renderForm();renderList();window.scrollTo(0,0)},
+  moreHub(){mateSub='hub';renderForm();renderList();window.scrollTo(0,0)},
   tixKind(e){tixKind=e.dataset.k;renderForm()},
   tixTabGo(e){tixTab=e.dataset.k;renderList()},
   editTix(e){tixEditId=e.dataset.id;openSheet()},
