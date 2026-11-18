@@ -373,6 +373,13 @@ input,select,textarea{font-size:16px;letter-spacing:.02em}
 .ck{font-family:var(--sans);font-weight:500}
 .csub,.cdr{font-family:var(--sans);font-weight:500}
 .cy{font-weight:600}.ctt{font-weight:700}
+.cinfo{position:absolute;right:8px;bottom:5px;width:18px;height:18px;min-height:0;padding:0;border:1px solid rgba(138,117,97,.5);border-radius:50%;background:none;color:#8a7561;font:italic 600 10px/16px Georgia,serif;opacity:.65;z-index:5;letter-spacing:0}
+.ccr{display:none;right:32px!important;bottom:6px!important;background:rgba(58,42,30,.78);color:#f3ead8!important;opacity:1!important;padding:3px 8px;border-radius:8px;font-size:9px!important;max-width:78%}
+.cover.showcr .ccr{display:block}
+.tki{width:18px;height:18px;vertical-align:-3px;color:var(--ac);flex:none}.kp .tki{margin-right:2px;vertical-align:-4px}.kp.on .tki{color:#f3d9a0}.tkti .tki{margin-right:4px}
+.tkp{background:rgba(201,150,46,.2)!important;color:#7a5a1c!important}
+.tkw i{border-top-color:var(--ac)!important}.tkw span{color:var(--ac);display:inline-flex;align-items:center}.tkw .tki{width:16px;height:16px;vertical-align:0}
+.kpills{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;margin-right:-20px;padding-right:20px}.kpills::-webkit-scrollbar{display:none}.kp{white-space:nowrap;flex:none;padding:8px 12px!important}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -596,7 +603,7 @@ function tmSel(id,v){v=String(v||'');const m=/^(\d{1,2}):(\d{2})/.exec(v);let H=
 document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.tm)return;const w=t.closest('.tmp'),g=k=>w.querySelector('[data-tm='+k+']').value,ap=g('ap'),h=g('h'),mi=g('m'),o=w.querySelector('input');
   if(!h&&!mi&&!ap){o.value='';return}let H=(+h||12)%12+(ap=='pm'?12:0);if(!ap&&h)H=+h%12;o.value=String(H).padStart(2,'0')+':'+(mi||'00')});
 function tixForm(){const x=tixEditId?items.find(i=>i.id==tixEditId):null,k=x?(x.kind||'spot'):tixKind,v=f=>x?esc(x[f]||''):'';
-  const K=[['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點門票']];
+  const K=[['flight',TKI.flight+' 機票'],['train',TKI.train+' 車票'],['spot',TKI.spot+' 景點門票']];
   const pills=`<div class=kpills>${K.filter(([a])=>!x||a==k).map(([a,l])=>`<button type=button class="kp ${a==k?'on':''}" data-a=tixKind data-k=${a}>${l}</button>`).join('')}</div>`;
   const dt=fld('日期',`<input id=tx_date type=date value="${v('date')}">`),note=`<input id=tx_note placeholder="備註(選填),例如:48 小時前線上報到" maxlength=120 value="${v('note')}">`;
   let b='';
@@ -608,14 +615,15 @@ function tixForm(){const x=tixEditId?items.find(i=>i.id==tixEditId):null,k=x?(x.
   else b=`<input id=tx_ti placeholder="票券名稱,例如:teamLab 門票" maxlength=40 value="${v('title')}"><div class=row>${dt}${fld('入場時間(選填)',`${tmSel('tx_t1',v('t1'))}`)}</div><div class=row>${fld('張數',`<input id=tx_qty type=number inputmode=numeric min=1 value="${x&&+x.qty>0?x.qty:1}">`,'張')}</div><input id=tx_note placeholder="預約編號/備註(選填)" maxlength=120 value="${v('note')}">`;
   return `<div class=card>${pills}${b}<button class=p data-a=saveTix>${x?'儲存修改':'新增'}</button></div>`}
 const tixDate=d=>{if(!d)return '';const t=new Date(d+'T00:00:00');return isNaN(t)?esc(d):`${t.getMonth()+1}/${t.getDate()}(${'日一二三四五六'[t.getDay()]})`};
+const TKI={flight:'<svg class=tki viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/><path d="M10 13 21 3"/></svg>',train:'<svg class=tki viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M9 21l2-4M15 21l-2-4"/></svg>',spot:'<svg class=tki viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2.5 2.5 0 0 0 0 5v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2.5 2.5 0 0 0 0-5z"/><path d="M14 5v3M14 11v2M14 16v3"/></svg>'};
 function tixCard(x){const k=x.kind||'spot',ed=isEd?`<div class=tka><button class=x data-a=editTix data-id="${x.id}">✎</button><button class=x data-a=del data-id="${x.id}">✕</button></div>`:'',
   ck=`<label class=pkc style="width:22px;height:22px"><input type=checkbox data-id="${x.id}" ${x.done?'checked':''} ${isEd?'':'disabled'}><span class=pkb style="width:22px;height:22px"></span></label>`;
-  if(k=='flight'||k=='train'){const ic=k=='flight'?'✈️':'🚄',ln=(c,n)=>`${esc(c||'')} ${esc(n||'')}`.trim();
+  if(k=='flight'||k=='train'){const ic=TKI[k],ln=(c,n)=>`${esc(c||'')} ${esc(n||'')}`.trim();
     return `<div class="tkc ${x.done?'dn':''}"><div class=tkt0>${ck}<span class=tkti>${ic} ${esc(x.title||'')}</span>${ed}</div>
     <div class=tkb><div class=tkh><span class=tkp>${esc(k=='flight'?(x.leg||'去程'):'乘車')}${x.date?' · '+tixDate(x.date):''}</span><b>${esc(x.no||x.seat||'')}</b></div>
     <div class=tkr><div><div class=tkm>${esc(x.t1||'--:--')}</div><div class=tkl>${k=='flight'?ln(x.fromc,x.from):esc(x.from||'')}</div></div><div class=tkw><i></i><span>${ic}</span></div><div style="text-align:right"><div class=tkm>${esc(x.t2||'--:--')}</div><div class=tkl>${k=='flight'?ln(x.toc,x.to):esc(x.to||'')}</div></div></div></div>
     ${x.note?`<div class=tkn>${esc(x.note)}</div>`:''}</div>`}
-  return `<div class="tkc ${x.done?'dn':''}"><div class=tkt0>${ck}<span class=tkti>🎫 ${esc(x.title||'')}</span>${ed}</div><div class=tkb style="font-size:14px">${x.date?`<div>${tixDate(x.date)}${x.t1?' '+esc(x.t1):''}${+x.qty>0?` · ${x.qty} 張`:''}</div>`:(+x.qty>0?`<div>${x.qty} 張</div>`:'')}${x.note?`<div class=mu>${esc(x.note)}</div>`:''}</div></div>`}
+  return `<div class="tkc ${x.done?'dn':''}"><div class=tkt0>${ck}<span class=tkti>${TKI.spot} ${esc(x.title||'')}</span>${ed}</div><div class=tkb style="font-size:14px">${x.date?`<div>${tixDate(x.date)}${x.t1?' '+esc(x.t1):''}${+x.qty>0?` · ${x.qty} 張`:''}</div>`:(+x.qty>0?`<div>${x.qty} 張</div>`:'')}${x.note?`<div class=mu>${esc(x.note)}</div>`:''}</div></div>`}
 function markNow(){document.querySelectorAll('.tli.now').forEach(e=>{e.classList.remove('now');const c=e.querySelector('.tag.nowc');if(c)c.remove()});
   if(!T||tab!=0)return;const ph=tripPhase();if(ph.p!='during')return;const n=new Date(),hm=n.getHours()*60+n.getMinutes(),mn=t=>{const m=/^(\d+):(\d+)/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
   const li=[...document.querySelectorAll('.tli[data-day="'+ph.k+'"]')].map(e=>({e,m:mn(e.dataset.time)})).filter(o=>o.m!=null);let cur=null;
@@ -623,7 +631,7 @@ function markNow(){document.querySelectorAll('.tli.now').forEach(e=>{e.classList
   if(cur){cur.e.classList.add('now');const tg=cur.e.querySelector('.tlc .tag');const chip='<span class="tag nowc">目前行程</span>';if(tg)tg.insertAdjacentHTML('afterend',chip);else cur.e.querySelector('.tlc').insertAdjacentHTML('afterbegin',chip)}}
 setInterval(markNow,30000);
 function listTix(){const all=itemsOf('tix'),kk=x=>x.kind||'spot',n=all.filter(x=>x.done).length,pc=all.length?Math.round(n/all.length*100):0;
-  const T3=[['all','全部'],['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點門票']];
+  const T3=[['all','全部'],['flight',TKI.flight+' 機票'],['train',TKI.train+' 車票'],['spot',TKI.spot+' 景點門票']];
   const a=all.filter(x=>tixTab=='all'||kk(x)==tixTab).sort((p,q)=>({flight:0,train:1,spot:2}[kk(p)]-{flight:0,train:1,spot:2}[kk(q)])||(p.date||'9').localeCompare(q.date||'9')||(p.t1||'').localeCompare(q.t1||''));
   return `<div class="card pgc"><div class=pgh><b>票券準備進度:${n}／${all.length} 張</b><span>${pc}%</span></div><div class=pgb><i style="width:${pc}%"></i></div></div>
   <div class=kpills>${T3.map(([k,l])=>`<button type=button class="kp ${tixTab==k?'on':''}" data-a=tixTabGo data-k=${k}>${l} ${k=='all'?all.length:all.filter(x=>kk(x)==k).length}</button>`).join('')}</div>
@@ -832,10 +840,10 @@ function coverHTML(){const po=placeOf(),th0=themeOf(),th=po?{...(THEMES.find(t=>
   const say=rg&&rg.length<=5?`さあ、${rg}へ!`:'さあ、出発!';
   const mc={volcano:'#d9663f',sea:'#2aa6c8',snow:'#6f8fa8',temple:'#c0392b',onsen:'#c9962e',city:'#7e6bb5',gold:'#c9962e'}[th.k]||'#c9962e';
   return `<div class="cover ${T.cover?'photo':''}" data-theme=${th.k}>${bg}${sceneSVG(th.k,po&&po.lm)}<div class=csh></div>
-  <a class=cbtn href="#/" style="left:14px" aria-label=返回>‹</a><button class="cbtn cmt" data-a=openMates aria-label=旅伴>👥 旅伴</button><button class=cbtn data-a=openShare style="right:14px" aria-label=旅程設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+  <a class=cbtn href="#/" style="left:14px" aria-label=返回>‹</a><button class=cbtn data-a=openShare style="right:14px" aria-label=旅程設定><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
   <div class=ck>${esc(T.name||'')}</div>${po?`<div class="ctt en ${po.en.length>13?'l':po.en.length>9?'m':''}">${esc(po.en)}</div><div class=csub>${esc(title)} · ${N}天${Math.max(N-1,0)}夜</div>`:`<div class="ctt ${title.length>5?'sm':''}">${esc(title)}</div><div class=csub>${N}天${Math.max(N-1,0)}夜 自由行</div>`}
   ${st&&en?`<div class=cy>${st.getFullYear()}</div><div class=cdr>${MON[st.getMonth()]} ${pad2(st.getDate())} — ${MON[en.getMonth()]} ${pad2(en.getDate())}</div>`:'<div class=cdr>尚未設定日期</div>'}
-    ${T.cover&&T.coverCredit?`<div class=ccr>圖片:${esc(T.coverCredit)}</div>`:''}<button class=cgo data-a=goDay data-d=${ph.k}>查看${ph.p=='during'?'今日':''}行程 →</button>
+    ${T.cover&&T.coverCredit?`<div class=ccr>圖片:${esc(T.coverCredit)}</div><button type=button class=cinfo data-a=credit aria-label=圖片出處>i</button>`:''}<button class=cgo data-a=goDay data-d=${ph.k}>查看${ph.p=='during'?'今日':''}行程 →</button>
   <svg class=cwv viewBox="0 0 390 40" preserveAspectRatio="none" aria-hidden=true><path d="M0 22 Q60 2 130 16 T260 14 T390 10 V40 H0Z" fill="var(--bg)"/></svg></div>`}
 function todayCard(){const ph=tripPhase(),k=ph.k,all=sortItin(itemsOf('itin')),g=all.filter(x=>x.day==k),now=new Date(),hm=pad2(now.getHours())+':'+pad2(now.getMinutes());
   const row=(l,v)=>`<div class=prow><div class=pl>${l}</div><div class=pv>${v}</div></div>`;
@@ -1080,6 +1088,7 @@ const A={
       await setDoc(doc(db,'users',user.uid,'trips',id),{name:n,region:rg,startDate:d1||'',dayCount:dc||0,ts:Date.now()});
       openShareNext=!!(btn&&btn.dataset&&btn.dataset.share);showNew=false;
       location.hash='#/t/'+id}catch(e){toast('建立失敗,請確認 Firestore 規則已發佈')}},
+  credit(e){const c=e.closest('.cover');if(c)c.classList.toggle('showcr')},
   cvSearch(){cvSearch()},
   phSearch(){phSearch()},phPick(e){const x=phList[+e.dataset.i];if(x)phSet(x.u,x.c)},phClear(){phSet('','')},zoom(e){lbOpen(e.dataset.id)},lbClose(){lbClose()},lbPrev(){lbGo(-1)},lbNext(){lbGo(1)},offDownload(){offDownload()},openMates(){shareKind='mates';shareMode=true;$('#sheet').classList.add('open');$('#veil').classList.add('open');renderShare()},
   cvPick(e){const x=cvList[+e.dataset.i];if(x)guard(()=>updateDoc(tripRef(),{cover:x.u,coverCredit:x.c}).then(()=>toast('封面已套用')))},
