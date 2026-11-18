@@ -314,6 +314,15 @@ html,body{overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}
 #form .row{align-items:flex-end}#form .sh{font:600 21px var(--serif);margin:0 0 14px;letter-spacing:.04em}
 #form textarea{min-height:100px;resize:vertical;line-height:1.6}
 #form .row>button.p{margin-bottom:12px}#form .row[style*="margin-top:6px"]>button.p{margin-bottom:0}
+
+#form,#form .card{max-width:100%;box-sizing:border-box;overflow-x:hidden}
+#form .row>*{min-width:0}#form .fld{min-width:0;flex:1 1 0}
+#form input[type=date],#form input[type=time]{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;text-align:left;height:48px;line-height:1.2}
+#form input,#form select,#form textarea{max-width:100%;box-sizing:border-box;width:100%}
+#form .uf{min-width:0}
+#form .row>button.p{flex:0 0 auto}
+#form .row>select{width:auto;flex:0 0 112px}#form .row>input:not([type=checkbox]){flex:1 1 0}
+#form .fld{margin-bottom:12px}#form .fld input:not([type=checkbox]),#form .fld select,#form .fld textarea{margin:0}#form .row{align-items:flex-start}#form .row>button.p{margin-top:30px;margin-bottom:12px;min-height:48px}#form .row[style*="margin-top:6px"]>button.p{margin-top:0}
 </style></head><body><main id="app"></main><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
@@ -334,7 +343,7 @@ if(!firebaseConfig||String(firebaseConfig.apiKey||'').startsWith('YOUR')){
   throw new Error('firebase not configured');
 }
 const fapp=initializeApp(firebaseConfig),auth=getAuth(fapp),db=getFirestore(fapp);
-const TABS=['行程','分帳','備忘','票券','備忘','旅伴與分帳','旅程餐廳','首頁'],NAV=[7,0,3,4,5];let mateSub='mates';
+const TABS=['行程','分帳','備忘','票券','備忘','旅伴與分帳','旅程餐廳','首頁'],NAV=[7,0,3,4,5];let mateSub='mates',rateSel='';
 const PACK=['護照','簽證/入境文件','機票/登機證','錢包與外幣','手機與充電器','行動電源','轉接頭','網卡/漫遊','盥洗用品','常備藥品','換洗衣物','雨具'];
 const COLORS=['#8a5a2b','#b8892f','#7a4a3a','#5f6b3a','#a0522d','#6b4a32','#9a7b3c'];
 const DEFRATES={JPY:0.21,USD:32,KRW:0.023,EUR:35,THB:0.9,HKD:4.1};
@@ -529,13 +538,13 @@ function renderForm(){
   if(ft==0)showSel();
 }
 function tixForm(){const x=tixEditId?items.find(i=>i.id==tixEditId):null,k=x?(x.kind||'spot'):tixKind,v=f=>x?esc(x[f]||''):'';
-  const K=[['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點票']];
+  const K=[['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點門票']];
   const pills=`<div class=kpills>${K.filter(([a])=>!x||a==k).map(([a,l])=>`<button type=button class="kp ${a==k?'on':''}" data-a=tixKind data-k=${a}>${l}</button>`).join('')}</div>`;
   const dt=fld('日期',`<input id=tx_date type=date value="${v('date')}">`),note=`<input id=tx_note placeholder="備註(選填),例如:48 小時前線上報到" maxlength=120 value="${v('note')}">`;
   let b='';
-  if(k=='flight')b=`<input id=tx_ti placeholder="航空公司,例如:星宇航空" maxlength=40 value="${v('title')}"><div class=row><select id=tx_leg>${['去程','回程','其他'].map(o=>`<option ${x&&x.leg==o?'selected':''}>${o}</option>`).join('')}</select>${fld('航班號',`<input id=tx_no placeholder="JX890" maxlength=12 value="${v('no')}">`)}</div><div class=row>${dt}</div>
-   <div class=mu style="margin-top:6px">出發(當地時間)</div><div class=row>${fld('機場代碼',`<input id=tx_fc placeholder="TPE" maxlength=4 value="${v('fromc')}">`)}${fld('機場名稱',`<input id=tx_fn placeholder="桃園" maxlength=20 value="${v('from')}">`)}${fld('起飛時間',`<input id=tx_t1 type=time value="${v('t1')}">`)}</div>
-   <div class=mu style="margin-top:6px">抵達(當地時間)</div><div class=row>${fld('機場代碼',`<input id=tx_tc placeholder="SHI" maxlength=4 value="${v('toc')}">`)}${fld('機場名稱',`<input id=tx_tn placeholder="下地島" maxlength=20 value="${v('to')}">`)}${fld('抵達時間',`<input id=tx_t2 type=time value="${v('t2')}">`)}</div>${note}`;
+  if(k=='flight')b=`<input id=tx_ti placeholder="航空公司,例如:星宇航空" maxlength=40 value="${v('title')}"><div class=row>${fld('類型',`<select id=tx_leg>${['去程','回程','其他'].map(o=>`<option ${x&&x.leg==o?'selected':''}>${o}</option>`).join('')}</select>`)}${fld('航班號',`<input id=tx_no placeholder="JX890" maxlength=12 value="${v('no')}">`)}</div>${dt}
+   <div class=mu style="margin:2px 0 6px">出發(當地時間)</div><div class=row>${fld('機場代碼',`<input id=tx_fc placeholder="TPE" maxlength=4 value="${v('fromc')}">`)}${fld('機場名稱',`<input id=tx_fn placeholder="桃園" maxlength=20 value="${v('from')}">`)}</div>${fld('起飛時間',`<input id=tx_t1 type=time value="${v('t1')}">`)}
+   <div class=mu style="margin:2px 0 6px">抵達(當地時間)</div><div class=row>${fld('機場代碼',`<input id=tx_tc placeholder="SHI" maxlength=4 value="${v('toc')}">`)}${fld('機場名稱',`<input id=tx_tn placeholder="下地島" maxlength=20 value="${v('to')}">`)}</div>${fld('抵達時間',`<input id=tx_t2 type=time value="${v('t2')}">`)}${note}`;
   else if(k=='train')b=`<input id=tx_ti placeholder="車種/車次,例如:新幹線 のぞみ 12 號" maxlength=40 value="${v('title')}"><div class=row>${dt}${fld('座位/車廂(選填)',`<input id=tx_seat placeholder="7 車 12A" maxlength=20 value="${v('seat')}">`)}</div>
    <div class=row>${fld('出發站',`<input id=tx_fn placeholder="東京" maxlength=20 value="${v('from')}">`)}${fld('出發時間',`<input id=tx_t1 type=time value="${v('t1')}">`)}</div><div class=row>${fld('抵達站',`<input id=tx_tn placeholder="新大阪" maxlength=20 value="${v('to')}">`)}${fld('抵達時間',`<input id=tx_t2 type=time value="${v('t2')}">`)}</div>${note}`;
   else b=`<input id=tx_ti placeholder="票券名稱,例如:teamLab 門票" maxlength=40 value="${v('title')}"><div class=row>${dt}${fld('入場時間(選填)',`<input id=tx_t1 type=time value="${v('t1')}">`)}</div><div class=row>${fld('張數',`<input id=tx_qty type=number inputmode=numeric min=1 value="${x&&+x.qty>0?x.qty:1}">`,'張')}</div><input id=tx_note placeholder="預約編號/備註(選填)" maxlength=120 value="${v('note')}">`;
@@ -556,7 +565,7 @@ function markNow(){document.querySelectorAll('.tli.now').forEach(e=>{e.classList
   if(cur){cur.e.classList.add('now');const tg=cur.e.querySelector('.tlc .tag');const chip='<span class="tag nowc">目前行程</span>';if(tg)tg.insertAdjacentHTML('afterend',chip);else cur.e.querySelector('.tlc').insertAdjacentHTML('afterbegin',chip)}}
 setInterval(markNow,30000);
 function listTix(){const all=itemsOf('tix'),kk=x=>x.kind||'spot',n=all.filter(x=>x.done).length,pc=all.length?Math.round(n/all.length*100):0;
-  const T3=[['all','全部'],['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點票']];
+  const T3=[['all','全部'],['flight','✈️ 機票'],['train','🚄 車票'],['spot','🎫 景點門票']];
   const a=all.filter(x=>tixTab=='all'||kk(x)==tixTab).sort((p,q)=>(p.date||'9').localeCompare(q.date||'9')||(p.t1||'').localeCompare(q.t1||''));
   return `<div class="card pgc"><div class=pgh><b>票券準備進度:${n}／${all.length} 張</b><span>${pc}%</span></div><div class=pgb><i style="width:${pc}%"></i></div></div>
   <div class=kpills>${T3.map(([k,l])=>`<button type=button class="kp ${tixTab==k?'on':''}" data-a=tixTabGo data-k=${k}>${l} ${k=='all'?all.length:all.filter(x=>kk(x)==k).length}</button>`).join('')}</div>
@@ -798,6 +807,12 @@ function settle(){const b={};(T.members||[]).forEach(m=>b[m]=0);let tot=0;
   const cr=Object.entries(b).filter(x=>x[1]>.5).sort((x,y)=>y[1]-x[1]),dr=Object.entries(b).filter(x=>x[1]<-.5).sort((x,y)=>x[1]-y[1]),out=[];
   let i=0,j=0;while(i<dr.length&&j<cr.length){const m=Math.min(-dr[i][1],cr[j][1]);out.push(`${esc(dr[i][0])} → ${esc(cr[j][0])}:${fmt(m)} ${esc(T.base)}`);pairs.push({f:dr[i][0],t:cr[j][0],a:Math.round(m*100)/100});dr[i][1]+=m;cr[j][1]-=m;if(dr[i][1]>-.5)i++;if(cr[j][1]<.5)j++}
   return {tot,out,net,pairs}}
+async function fetchRates(base,codes){const out={},get=async u=>{try{const r=await fetch(u);if(r.ok)return await r.json()}catch(e){}return null};
+  const j=await get('https://open.er-api.com/v6/latest/'+encodeURIComponent(base));
+  if(j&&j.rates){codes.forEach(c=>{const v=+j.rates[c];if(v>0)out[c]=+(1/v).toPrecision(6)})}
+  if(codes.some(c=>!out[c])){const k=await get('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/'+base.toLowerCase()+'.json'),t=k&&k[base.toLowerCase()];
+    if(t)codes.forEach(c=>{if(out[c])return;const v=+t[c.toLowerCase()];if(v>0)out[c]=+(1/v).toPrecision(6)})}
+  return out}
 function listExp(){const s=settle(),rates=T.rates||{},all=expAll().sort((a,b)=>(b.ts||0)-(a.ts||0)),cats={};
   all.forEach(e=>{if(e.cat=='還款')return;const k=e.cat||'其他';cats[k]=(cats[k]||0)+e.amt*rate(e.cur)});
   const ppl=(T.members||[]).map(m=>{const v=s.net[m]||0,k=v>.5?'pos':v<-.5?'neg':'';return `<div class=pcard><div class=av>${esc([...m][0]||'?')}</div><div class=pn2>${esc(m)}</div><div class=mu>${v>.5?'應收':v<-.5?'應付':'已結清'}</div><div class="pamt ${k}">${fmt(Math.abs(v))}</div></div>`}).join('');
@@ -806,7 +821,12 @@ function listExp(){const s=settle(),rates=T.rates||{},all=expAll().sort((a,b)=>(
   <h3>建議還款</h3><div class=card>${s.pairs.map(p=>`<div class=it><div><span style="font-weight:500">${esc(p.f)} → ${esc(p.t)}</span><div class=mu>${fmt(p.a)} ${esc(T.base)}</div></div>${isEd?`<button class="p g s" data-a=repaid data-f="${esc(p.f)}" data-t="${esc(p.t)}" data-m="${p.a}">記錄已還款</button>`:''}</div>`).join('')||'<span class=mu>目前沒有需要轉帳的款項</span>'}</div>
   <h3>各類別花費</h3><div class=card>${Object.entries(cats).sort((p,q)=>q[1]-p[1]).map(([k,v])=>`<span class=chip>${esc(k)} ${fmt(v)}</span>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
   <h3>花費明細</h3><div class=card>${all.map(e=>`<div class=it><div>${e.cat?`<span class=chip style="padding:0 10px;margin:0 6px 0 0;font-size:12px">${esc(e.cat)}</span>`:''}${esc(e.desc)} <b>${fmt(e.amt)} ${esc(e.cur)}</b>${e.cur!=T.base?` <span class=mu>≈ ${fmt(e.amt*rate(e.cur))} ${esc(T.base)}</span>`:''}<div class=mu>${esc(e.payer)} 先付 · ${(e.who||[]).length} 人分:${(e.who||[]).map(esc).join('、')}${e.linked?` · Day ${e.day} 行程`:''}</div></div>${isEd?(e.linked?`<button class=x data-a=editLinked data-id="${e.id}">✎</button>`:`<button class=x data-a=del data-id="${e.id}">🗑</button>`):''}</div>`).join('')||'<span class=mu>還沒有花費</span>'}</div>
-  <h3>幣別與匯率</h3><div class=card><div class=mu>基準幣別</div>${isEd?`<select id=base>${curList().map(c=>curOpt(c,c==T.base)).join('')}</select>`:`<div>${esc(curLbl(T.base))}</div>`}<div class=mu style="margin-top:6px">匯率(1 外幣 = ? ${esc(T.base)}${isEd?',可手動修改':''})</div><div class=row>${Object.keys(rates).map(c=>`<div><span class=mu>${esc(curLbl(c))}</span><div class=uf><input type=number step=any value="${rates[c]}" data-r="${esc(c)}" ${isEd?'':'readonly'}><i>${esc(T.base)}</i></div></div>`).join('')}</div>${isEd?`<div class=row><input id=nc placeholder="新增幣別 例:GBP">${fld('匯率(1 外幣 = ?)','<input id=nr type=number step=any>',esc(T.base))}<button class=p data-a=addRate style="flex:0 0 60px;margin-bottom:6px">加</button></div>`:''}</div>`}
+  <h3>幣別與匯率</h3><div class=card>${(()=>{const fc=Object.keys(rates).filter(c=>c!==T.base);if(!fc.includes(rateSel))rateSel=fc[0]||'';const free=Object.keys(CNAME).filter(c=>c!==T.base&&!(c in rates));
+    return `${fld('基準幣別(帳目總計用的幣別)',isEd?`<select id=base>${curList().map(c=>curOpt(c,c==T.base)).join('')}</select>`:`<input value="${esc(curLbl(T.base))}" readonly>`)}
+    <div class=row>${fld('外幣',`<select id=rsel>${fc.map(c=>curOpt(c,c==rateSel)).join('')||'<option>尚未新增外幣</option>'}</select>`)}${fld('1 外幣 =',`<input id=rval type=number inputmode=decimal step=any value="${rateSel?rate(rateSel):''}" ${isEd&&rateSel?'':'readonly'}>`,esc(T.base))}</div>
+    <div class=mu style="margin:-2px 0 10px;font-size:12.5px">${T.rateAt?'即時匯率同步於 '+new Date(T.rateAt).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'尚未同步即時匯率,目前是手動設定的數值'}</div>
+    ${isEd?`<button class="p g" data-a=syncRates>同步即時匯率</button>
+    <div class=row style="margin-top:14px">${fld('新增幣別',`<select id=ncs>${free.map(c=>`<option value="${c}">${esc(curLbl(c))}</option>`).join('')||'<option value="">已全部加入</option>'}</select>`)}<button class=p data-a=addRate style="flex:0 0 76px">新增</button></div>`:''}`})()}</div>`}
 const myMember=()=>{const n=user&&(T.mlink||{})[user.uid];return n&&(T.members||[]).includes(n)?n:''};
 const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join('');
 const maskMail=e=>{const p=String(e).split('@');return (p[0]||'').slice(0,2)+'***@'+(p[1]||'')};
@@ -1030,7 +1050,9 @@ const A={
     const up={members:(T.members||[]).filter(m=>m!=n),memail:(T.memail||[]).filter(x=>x.n!==n)};Object.keys(T.mlink||{}).forEach(u=>{if(T.mlink[u]===n)up['mlink.'+u]=''});guard(()=>updateDoc(tripRef(),up).then(()=>{renderForm();renderList()}))}},
   addExp(){const d=$('#ed').value.trim(),a=+$('#ea').value,w=[...document.querySelectorAll('.ew:checked')].map(x=>x.value);if(!d||!a||!w.length)return toast('請填項目、金額與分攤者');
     guard(async()=>{await addItem('exp',{desc:d.slice(0,80),amt:a,cur:$('#ec').value,payer:$('#ep').value,who:w,cat:$('#ecat').value});$('#ed').value=$('#ea').value='';closeSheet()})},
-  addRate(){const c=$('#nc').value.trim().toUpperCase().slice(0,6),r=+$('#nr').value;if(!c||!r)return;guard(()=>updateDoc(tripRef(),{['rates.'+c]:r}).then(renderForm))},
+  syncRates(){const codes=Object.keys(T.rates||{}).filter(c=>c!==T.base);if(!codes.length)return toast('請先新增外幣');toast('同步中…');
+    fetchRates(T.base,codes).then(o=>{if(!Object.keys(o).length)return toast('抓不到即時匯率,請稍後再試或手動輸入');guard(()=>updateDoc(tripRef(),{rates:{...T.rates,...o},rateAt:Date.now()}).then(()=>toast('已同步 '+Object.keys(o).length+' 種幣別')))})},
+  addRate(){const c=($('#ncs')||{}).value;if(!c)return;fetchRates(T.base,[c]).then(o=>{guard(()=>updateDoc(tripRef(),{['rates.'+c]:o[c]||1}).then(()=>{rateSel=c;toast(o[c]?'已加入並套用即時匯率':'已加入,請手動輸入匯率')}))})},
   addMemo(){const v=$('#mt').value.trim();if(!v)return;guard(async()=>{await addItem('memo',{text:v.slice(0,2000)});$('#mt').value='';closeSheet()})},
   editChk(e){const x=items.find(i=>i.id==e.dataset.id);if(!x)return;const t=prompt('物品名稱',x.title);if(t===null||!t.trim())return;const n=prompt('小敘述(例如:帶冰爪)',x.note||'');if(n===null)return;guard(()=>updateDoc(doc(db,'trips',T.id,'items',x.id),{title:t.trim().slice(0,80),note:n.trim().slice(0,80)}))},
   addChk(e){const k=e.dataset.k,v=$('#ci').value.trim();if(!v)return;const o={title:v.slice(0,80),done:false};if(k=='pack'&&$('#cn')&&$('#cn').value.trim())o.note=$('#cn').value.trim().slice(0,80);if(k=='tix'&&$('#cd').value)o.date=$('#cd').value;guard(async()=>{await addItem(k,o);$('#ci').value='';if($('#cn'))$('#cn').value='';closeSheet()})},
@@ -1119,6 +1141,8 @@ document.addEventListener('change',e=>{const t=e.target;if(t&&t.classList&&t.cla
   else if(t.id=='endd'){if(!T.startDate){toast('請先設定出發日');t.value='';return}const n=Math.round((new Date(t.value+'T00:00:00')-new Date(T.startDate+'T00:00:00'))/864e5)+1;if(!(n>=1))return toast('回程日不能早於出發日');if(n>60)return toast('最多 60 天');
     const mx=Math.max(0,...itemsOf('itin').map(x=>+x.day||0));if(n<mx)return toast('第 '+mx+' 天還有行程,請先到編輯頁移除或移動');guard(()=>updateDoc(tripRef(),{dayCount:n}).then(renderShare))}
   else if(t.id=='base'){guard(()=>updateDoc(tripRef(),{base:t.value}).then(()=>{renderForm();renderList()}))}
+  else if(t.id=='rsel'){rateSel=t.value;const iv=$('#rval');if(iv)iv.value=rate(t.value)}
+  else if(t.id=='rval'){const v=+t.value;if(v>0&&rateSel)guard(()=>updateDoc(tripRef(),{['rates.'+rateSel]:v}))}
   else if(t.dataset.r){guard(()=>updateDoc(tripRef(),{['rates.'+t.dataset.r]:+t.value||1}))}
   else if(t.id=='region'){A.region(t)}
   else if(t.id=='csvf'){const f=t.files[0];if(f)f.text().then(importRows);t.value=''}
